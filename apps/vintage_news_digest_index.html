@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The Verifier — Vintage Digest (Single File)</title>
+<meta name="description" content="The Verifier — an offline-first, vintage newspaper UI for digesting trusted outlets.">
+
+<style>
+  /* ---------- Paper + Masthead styling (1890s small-town) ---------- */
+  :root{
+    --paper:#FFFDF5;
+    --ink:#111;
+    --accent:#9E9B9B;
+    --muted:#6b5b4a;
+    --col-width:333px;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(#a69078,#cdbfa4);font-family: 'DIN Next Arabic', Georgia, serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+  .sheet{max-width:999px;margin:33px auto;padding:33px;background:var(--paper);box-shadow:0 10px 36px rgba(0,0,0,0.25);border:1px solid rgba(0,0,0,0.08);position:relative;overflow:hidden}
+  /* subtle paper texture using gradients */
+  .sheet:before{
+    content:"";position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;
+    background-image:
+      radial-gradient(rgba(0,0,0,0.015) 2px, transparent 1px),
+      linear-gradient(transparent 60%, rgba(0,0,0,0.01) 100%);
+    background-size: 1px 8px, 100% 120px;
+    opacity:0.5;
+    mix-blend-mode:multiply;
+  }
+
+  header{display:center;flex-direction:column;align-items:center;margin-bottom:11px;z-index:2;position:center}
+  .masthead{display:center;align-items:center;gap:222px}
+  .masthead .logo{width:66px;height:55px}
+  .title{
+    font-family: 'Brandon Grotesque', 'Times New Roman', serif;
+    font-weight:777;
+    font-size:88px;
+    line-height:1;
+    letter-spacing:2px;
+    color:var(--accent);
+    text-shadow:0 1px 0 rgba(255,255,255,0.65);
+  }
+  .subtitle{font-size:22px;color:var(--muted);margin-top:24px}
+  .strap{display:flex;gap:12px;justify-content:space-between;width:100%;font-size:13px;color:var(--muted);margin-top:8px}
+
+  .toolbar{display:flex;gap:8px;margin:14px 0;align-items:center;flex-wrap:wrap}
+  input[type=file]{padding:6px}
+  button{background:var(--accent);color:var(--paper);border:none;padding:8px 10px;border-radius:6px;cursor:pointer;font-family:inherit}
+  .pill{display:inline-block;padding:6px 10px;background:rgba(0,0,0,0.03);border-radius:16px;font-size:13px;color:var(--muted)}
+
+  /* layout - newspaper columns for main body */
+  .body-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+  .front{background:transparent}
+  .columns{display:grid;grid-template-columns:repeat(2, minmax(111px, 1fr));gap:14px}
+  .frontCard{padding:10px;border-bottom:1px dashed rgba(0,0,0,0.06)}
+  .frontCard h3{margin:0;font-size:16px}
+  .frontCard .meta{font-size:14px;color:var(--muted);margin:8px 0}
+  .cloud{background:transparent;padding:6px;border:1px dashed rgba(0,0,0,0.06);border-radius:6px}
+  .news-list{max-height:444px;overflow:auto;padding-right:8px}
+  .right-panel{display:flex;flex-direction:column;gap:14px}
+
+  /* small type + narrow columns for that dense feel */
+  .small{font-size:14px;line-height:1.35}
+  .tiny{font-size:14px;color:var(--muted)}
+
+  /* digest cards */
+  .digest-card{padding:13px;border-bottom:1px dashed rgba(0,0,0,0.06);margin-bottom:6px}
+  .digest-title-a{font-weight:777;color:var(--accent);text-decoration:none}
+  .digest-snippet{margin-top:8px;color:var(--muted);font-size:13px}
+  .digest-chip{display:inline-block;padding:2px 6px;border-radius:11px;background:rgba(0,0,0,0.03);margin-right:4px}
+
+  /* modals */
+  .modal{display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:999;align-items:center;justify-content:center;padding:20px}
+  .modal .dialog{background:#fff;padding:16px;border-radius:8px;max-width:820px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+  .modal .dialog h2{margin-top:0}
+  .close-btn{float:right;background:transparent;border:0;font-size:18px;cursor:pointer;color:#333}
+
+  /* outlet list */
+  .outlet-row{display:flex;gap:8px;align-items:center;padding:8px;border-bottom:1px solid rgba(0,0,0,0.03)}
+  .outlet-row strong{font-size:15px}
+  .outlet-chip{display:inline-block;padding:4px 8px;background:rgba(0,0,0,0.03);border-radius:12px;font-size:12px}
+
+  /* drop cap */
+  .dropcap::first-letter{float:left;font-size:44px;line-height:0.7;margin-right:8px;font-weight:700;color:var(--accent);font-family:Georgia, serif}
+
+  /* responsive */
+  @media(max-width:980px){ .body-grid{grid-template-columns:1fr} .masthead .logo{display:none} .title{font-size:36px} }
+
+  /* print tweaks */
+  @media print{
+    body{background:#fff}
+    .sheet{box-shadow:none;border:none;margin:0;padding:8mm}
+    .modal, .toolbar{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="sheet" role="main" aria-label="The Verifier Vintage Digest">
+    <header>
+      <div class="masthead" role="banner">
+        <!-- Decorative masthead SVG (inline, light & small) -->
+        <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1">
+              <stop offset="0" stop-color="#f7efe2"/><stop offset="1" stop-color="#efe6d4"/>
+            </linearGradient>
+          </defs>
+          <rect width="120" height="120" rx="6" fill="url(#g)"/>
+          <g transform="translate(10,18)" fill="#222" font-family="brandon grotesque, serif">
+            <text x="33" y="55" font-size="55" font-weight="700">V</text>
+          </g>
+        </svg>
+
+        <div>
+          <div class="title">The Verifier</div>
+          <div class="subtitle tiny">Independent & Sovereign — Local Digest of Trusted Outlets</div>
+          <div class="strap"><div><em>Small-town edition · Vintage digest</em></div><div id="dateline" class="tiny">—</div></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar small" role="toolbar" aria-label="Controls">
+      <form id="uploadForm" style="display:flex;gap:10px;align-items:center">
+        <input id="fileInput" type="file" aria-label="Upload file (local)"/>
+        <button id="uploadBtn" type="button">Upload (Local)</button>
+      </form>
+
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button id="outletsBtn">Outlets Directory</button>
+        <button id="generateDigestBtn">Generate Digest</button>
+        <button id="unifiedFetchBtn">Fetch (Simulated)</button>
+        <button id="refreshUIBtn">Refresh UI</button>
+        <div class="pill" id="sourcesCount">Sources: 0</div>
+        <div class="pill" id="articlesCount">Articles: 0</div>
+        <div id="controlsTiny" class="tiny" style="margin-left:8px"></div>
+      </div>
+    </div>
+
+    <main class="body-grid">
+      <section class="front small">
+        <h2 style="margin-top:0">Front Page</h2>
+        <div class="tiny" id="digestStatus">No digest loaded.</div>
+
+        <div id="digestPanel" class="columns" style="margin-top:10px"></div>
+
+        <div style="margin-top:10px">
+          <h3 style="margin:6px 0">Quick Actions</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="summarizeBtn">Summarize Selection</button>
+            <button id="archiveBtn">Archive Manager</button>
+            <button id="exportPdfBtn">Export PDF</button>
+            <button id="viewDigestHistoryBtn">Digest History</button>
+            <button id="localNewsBtn">Local News (Demo)</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="right-panel">
+        <div class="cloud">
+          <h3 style="margin:6px 0">Sources & Status</h3>
+          <div id="status" class="tiny">Initializing...</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <div class="pill" id="sourcesCount2">Sources: 0</div>
+            <div class="pill" id="articlesCount2">Articles: 0</div>
+            <div class="pill" id="lastRefreshed">Last refresh: —</div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <label class="tiny">Channel:
+              <select id="channelFilter">
+                <option value="">All</option>
+                <option value="news">News</option>
+                <option value="social">Social / Culture</option>
+                <option value="gov">Public Service</option>
+                <option value="investigative">Investigative</option>
+                <option value="markets">Markets</option>
+                <option value="local">Local</option>
+              </select>
+            </label>
+            <label class="tiny">Language:
+              <select id="languageFilter">
+                <option value="">All</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="ar">العربية</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="cloud">
+          <h3 style="margin:6px 0">Indexed Articles</h3>
+          <div id="articlesPanel" class="news-list tiny">No articles yet.</div>
+        </div>
+
+        <div class="cloud">
+          <h3 style="margin:6px 0">Controls</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="purgeBtn">Purge Digests</button>
+            <button id="refreshFeedsBtn">Refresh (Simulated)</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer style="margin-top:18px;text-align:center;font-size:12px;color:var(--muted)">
+      <div>The Verifier — vintage digest. All data stored locally in your browser.</div>
+    </footer>
+  </div>
+
+  <!-- ======================= Modals ======================= -->
+  <div id="outletsModal" class="modal" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="outletsTitle">
+      <button class="close-btn" id="closeOutlets">&times;</button>
+      <h2 id="outletsTitle">Outlets Directory</h2>
+      <div style="margin:8px 0;display:flex;gap:8px;align-items:center">
+        <label>Region: <select id="filterRegion"><option value="">All</option></select></label>
+        <label>Language: <select id="filterLanguage"><option value="">All</option></select></label>
+        <label>Topic: <select id="filterTopic"><option value="">All</option></select></label>
+        <div style="margin-left:auto"><button id="selectAllBtn">Select All</button></div>
+      </div>
+      <div id="outletList" style="max-height:56vh;overflow:auto;border-top:1px solid rgba(0,0,0,0.04);padding-top:8px"></div>
+    </div>
+  </div>
+
+  <div id="digestHistoryModal" class="modal" aria-hidden="true">
+    <div class="dialog">
+      <button class="close-btn" id="closeDigestHistory">&times;</button>
+      <h2>Digest History</h2>
+      <div id="digestHistoryList" style="max-height:60vh;overflow:auto"></div>
+    </div>
+  </div>
+
+  <div id="summaryModal" class="modal" aria-hidden="true">
+    <div class="dialog">
+      <button class="close-btn" id="closeSummary">&times;</button>
+      <h2>Summary & Contradictions</h2>
+      <div id="summaryBody"></div>
+    </div>
+  </div>
+
+  <div id="archiveModal" class="modal" aria-hidden="true">
+    <div class="dialog">
+      <button class="close-btn" id="closeArchive">&times;</button>
+      <h2>Archive Manager</h2>
+      <div id="archiveList" style="max-height:60vh;overflow:auto"></div>
+    </div>
+  </div>
+
+  <div id="localNewsModal" class="modal" aria-hidden="true">
+    <div class="dialog">
+      <button class="close-btn" id="closeLocalNews">&times;</button>
+      <h2>Local News (Demo)</h2>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input id="localInput" placeholder="Enter city or ZIP" style="flex:1;padding:8px"/>
+        <button id="localSearchBtn">Search</button>
+      </div>
+      <div id="localList" style="max-height:60vh;overflow:auto"></div>
+    </div>
+  </div>
+
+<script>
+/* ========================= Core data & reused OUTLETS =========================
+   I imported and preserved your OUTLETS array and key functions, and fixed templating issues.
+*/
+const OUTLETS = [
+  { id:'ap', name:'Associated Press (AP)', region:'North America', country:'USA', language:'English', topic:'General / Breaking News', access:'Free, ad-supported', url:'https://apnews.com' },
+  { id:'propublica', name:'ProPublica', region:'North America', country:'USA', language:'English', topic:'Investigative Journalism', access:'Fully free, non-profit', url:'https://www.propublica.org' },
+  { id:'vox', name:'Vox', region:'North America', country:'USA', language:'English', topic:'Politics, Culture, Science', access:'Free access, ad-supported', url:'https://www.vox.com' },
+  { id:'cbc', name:'CBC News', region:'North America', country:'Canada', language:'English / French', topic:'General, Canadian news', access:'Free access; some premium content', url:'https://www.cbc.ca/news' },
+  { id:'globalnews', name:'Global News', region:'North America', country:'Canada', language:'English', topic:'General, Canadian news', access:'Free access, ad-supported', url:'https://globalnews.ca' },
+  { id:'bbc', name:'BBC News', region:'Europe', country:'UK', language:'English', topic:'General, International', access:'Free, license-funded (UK)', url:'https://www.bbc.com/news' },
+  { id:'guardian', name:'The Guardian', region:'Europe', country:'UK', language:'English', topic:'Investigative, International', access:'Free, optional donations', url:'https://www.theguardian.com' },
+  { id:'dw', name:'Deutsche Welle (DW)', region:'Europe', country:'Germany', language:'English / German', topic:'International', access:'Free', url:'https://www.dw.com' },
+  { id:'france24', name:'France 24', region:'Europe', country:'France', language:'English / French / Arabic', topic:'International', access:'Free', url:'https://www.france24.com' },
+  { id:'politicoeu', name:'Politico EU', region:'Europe', country:'EU', language:'English', topic:'EU Politics', access:'Free; premium optional', url:'https://www.politico.eu' },
+  { id:'hindu', name:'The Hindu', region:'Asia', country:'India', language:'English', topic:'General, Politics', access:'Some free; registration', url:'https://www.thehindu.com' },
+  { id:'toi', name:'Times of India', region:'Asia', country:'India', language:'English / Hindi', topic:'General', access:'Free, ad-supported', url:'https://timesofindia.indiatimes.com' },
+  { id:'scmp', name:'South China Morning Post', region:'Asia', country:'Hong Kong', language:'English', topic:'Asia News, Business', access:'Some free; subscription', url:'https://www.scmp.com' },
+  { id:'japantimes', name:'Japan Times', region:'Asia', country:'Japan', language:'English', topic:'Japan News, Culture', access:'Some free; subscription', url:'https://www.japantimes.co.jp' },
+  { id:'fmm', name:'Free Malaysia Today', region:'Asia', country:'Malaysia', language:'English', topic:'General', access:'Free', url:'https://www.freemalaysiatoday.com' },
+  { id:'allafrica', name:'AllAfrica', region:'Africa', country:'Pan-Africa', language:'English', topic:'Africa-wide News', access:'Free', url:'https://allafrica.com' },
+  { id:'dailynation', name:'Daily Nation', region:'Africa', country:'Kenya', language:'English', topic:'General', access:'Free', url:'https://nation.africa' },
+  { id:'mailguardian', name:'Mail & Guardian', region:'Africa', country:'South Africa', language:'English', topic:'Investigative', access:'Some free', url:'https://mg.co.za' },
+  { id:'sowetan', name:'Sowetan Live', region:'Africa', country:'South Africa', language:'English', topic:'General', access:'Free', url:'https://www.sowetanlive.co.za' },
+  { id:'easteafrican', name:'The East African', region:'Africa', country:'Kenya', language:'English', topic:'Business, Politics', access:'Some free', url:'https://www.theeastafrican.co.ke' },
+  { id:'abcnews', name:'ABC News (Australia)', region:'Oceania', country:'Australia', language:'English', topic:'General', access:'Free', url:'https://www.abc.net.au/news' },
+  { id:'sbs', name:'SBS News', region:'Oceania', country:'Australia', language:'English / Multilingual', topic:'Multicultural, Global', access:'Free', url:'https://www.sbs.com.au/news' },
+  { id:'stuff', name:'Stuff', region:'Oceania', country:'New Zealand', language:'English', topic:'General', access:'Free', url:'https://www.stuff.co.nz' },
+  { id:'rnz', name:'RNZ News', region:'Oceania', country:'New Zealand', language:'English', topic:'General', access:'Free', url:'https://www.rnz.co.nz/news' },
+  { id:'aljazeera', name:'Al Jazeera', region:'Middle East', country:'Qatar', language:'English / Arabic', topic:'Middle East, International', access:'Free', url:'https://www.aljazeera.com' },
+  { id:'thenational', name:'The National', region:'Middle East', country:'UAE', language:'English', topic:'General, Business', access:'Free', url:'https://www.thenationalnews.com' },
+  { id:'arabnews', name:'Arab News', region:'Middle East', country:'Saudi Arabia', language:'English', topic:'General', access:'Free', url:'https://www.arabnews.com' },
+  { id:'gulfnews', name:'Gulf News', region:'Middle East', country:'UAE', language:'English', topic:'Business, General', access:'Free', url:'https://gulfnews.com' },
+  { id:'reuters', name:'Reuters', region:'Global / Specialized', country:'Global', language:'English', topic:'Business, Politics', access:'Free', url:'https://www.reuters.com' },
+  { id:'npr', name:'NPR', region:'Global / Specialized', country:'USA', language:'English', topic:'Radio, News, Culture', access:'Free, donation-supported', url:'https://www.npr.org' },
+  { id:'ifpri', name:'IFPRI / CGIAR News', region:'Global / Specialized', country:'Global', language:'English', topic:'Agriculture, Development', access:'Free', url:'https://www.ifpri.org/newsroom' }
+];
+
+/* ========================= Small LocalCloud (localStorage-backed) =========================
+   Provides methods your UI expects: digests, selections, names, margins & channel preferences.
+*/
+const LocalCloud = {
+  key_digest_prefix: 'verifier:digests:',
+  key_digest_index: 'verifier:digests:index',
+  key_names: 'verifier:digests:names',
+  key_outlet_sel: 'verifier:outlet:selections',
+  key_margins: 'verifier:margins',
+  key_last_channel: 'verifier:last:channel',
+  key_last_lang: 'verifier:last:lang',
+
+  // digest storage: save and load array of articles under dateStr
+  saveDigest(dateStr, articles){
+    if(!dateStr) dateStr = (new Date()).toISOString().slice(0,10);
+    try{
+      localStorage.setItem(this.key_digest_prefix + dateStr, JSON.stringify(articles));
+      // maintain index
+      let idx = JSON.parse(localStorage.getItem(this.key_digest_index) || '[]');
+      if(!idx.includes(dateStr)){ idx.unshift(dateStr); localStorage.setItem(this.key_digest_index, JSON.stringify(idx)); }
+      return true;
+    }catch(e){ console.error(e); return false; }
+  },
+  getDigest(dateStr){
+    try{ return JSON.parse(localStorage.getItem(this.key_digest_prefix + dateStr) || 'null') || []; }
+    catch(e){ return []; }
+  },
+  listDigestDates(){ return JSON.parse(localStorage.getItem(this.key_digest_index) || '[]'); },
+  deleteDigest(dateStr){
+    try{ localStorage.removeItem(this.key_digest_prefix + dateStr); let idx = this.listDigestDates().filter(d=>d!==dateStr); localStorage.setItem(this.key_digest_index, JSON.stringify(idx)); }catch(e){console.error(e);}
+  },
+  getNames(){ try{ return JSON.parse(localStorage.getItem(this.key_names) || '{}'); }catch(e){return{}} },
+  saveNames(map){ localStorage.setItem(this.key_names, JSON.stringify(map || {})); },
+
+  // outlet selections: small map of id->true
+  getOutletSelections(){ try{ return JSON.parse(localStorage.getItem(this.key_outlet_sel) || '{}'); }catch(e){return{}} },
+  saveOutletSelections(map){ localStorage.setItem(this.key_outlet_sel, JSON.stringify(map || {})); },
+
+  // margins
+  getMarginsFlag(){ return localStorage.getItem(this.key_margins) === '1'; },
+  setMarginsFlag(on){ localStorage.setItem(this.key_margins, on ? '1' : '0'); },
+
+  // channel & language
+  getLastChannel(){ return localStorage.getItem(this.key_last_channel) || ''; },
+  setLastChannel(c){ localStorage.setItem(this.key_last_channel, c || ''); },
+  getLastLang(){ return localStorage.getItem(this.key_last_lang) || ''; },
+  setLastLang(l){ localStorage.setItem(this.key_last_lang, l || ''); }
+};
+
+const CHANNEL_LABELS = {
+  news: 'News',
+  social: 'Social / Culture',
+  gov: 'Public service',
+  investigative: 'Investigative',
+  markets: 'Markets / Economy',
+  local: 'Local',
+  weather: 'Weather',
+  education: 'Education',
+  environment: 'Environment',
+  humanitarian: 'Humanitarian'
+};
+
+/* ========================= Helpers & UI shortcuts ========================= */
+const $ = (s,root=document) => root.querySelector(s);
+const $$ = (s,root=document) => Array.from(root.querySelectorAll(s));
+const todayISO = () => {
+  const d = new Date(); const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+};
+const escapeHTML = (s='') => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nowISO = () => (new Date()).toISOString();
+
+function detectLangCodeFromText(text=''){
+  const t = String(text || '').toLowerCase();
+  if(t.includes('عرب') || t.includes('arabic') || t.includes('العربية')) return 'ar';
+  if(t.includes('español') || t.includes('spanish')) return 'es';
+  if(t.includes('français') || t.includes('french')) return 'fr';
+  if(t.includes('english') || t.includes('anglais')) return 'en';
+  return 'other';
+}
+function languageLabelFromCode(code){
+  switch(code){
+    case 'en': return 'English';
+    case 'es': return 'Español';
+    case 'fr': return 'Français';
+    case 'ar': return 'العربية';
+    default: return 'Other';
+  }
+}
+
+/* ========== Minimal simulateArticlesFromOutlets (reuses your function, cleaned) ========== */
+function simulateArticlesFromOutlets(selectedOutlets, maxArticles=30){
+  const articles=[];
+  const timestamp=new Date().toLocaleTimeString();
+  const baseTitles=['Key developments','In-depth analysis','Voices from the ground','What this means','Policy watch','Data snapshot','Explainer','Fact check','Timeline update','Global reaction'];
+  const channels=['news','gov','investigative','markets','local','social'];
+  let idx=0;
+  if(!selectedOutlets || !selectedOutlets.length) return articles;
+  while(articles.length<maxArticles){
+    const outlet = selectedOutlets[idx % selectedOutlets.length];
+    const base = baseTitles[idx % baseTitles.length];
+    const channel = channels[idx % channels.length];
+    articles.push({
+      id: `${outlet.id}_${idx+1}`,
+      outletName: outlet.name,
+      outletRegion: outlet.region,
+      outletTopic: outlet.topic,
+      outletLanguage: outlet.language || '',
+      url: outlet.url,
+      title: `${outlet.name}: ${base} (${articles.length+1})`,
+      snippet: `Placeholder from ${outlet.name} on ${channel.toUpperCase()} channel. Replace with unified feed.`,
+      published: todayISO() + ' ' + timestamp,
+      channel
+    });
+    idx++;
+    if(idx > 500) break; // safety
+  }
+  return articles.slice(0, maxArticles);
+}
+
+/* ========================= UI wiring & state ========================= */
+let currentDigestArticles = [];
+const digestPanel = $('#digestPanel');
+const digestStatus = $('#digestStatus');
+const topicFilter = $('#topicFilter');
+const channelFilter = $('#channelFilter');
+const languageFilter = $('#languageFilter');
+const generateDigestBtn = $('#generateDigestBtn');
+const viewDigestHistoryBtn = $('#viewDigestHistoryBtn');
+const digestHistoryModal = $('#digestHistoryModal');
+const closeDigestHistoryBtn = $('#closeDigestHistory');
+const digestHistoryList = $('#digestHistoryList');
+const summarizeBtn = $('#summarizeBtn');
+const summaryModal = $('#summaryModal');
+const closeSummary = $('#closeSummary');
+const archiveBtn = $('#archiveBtn');
+const archiveModal = $('#archiveModal');
+const closeArchive = $('#closeArchive');
+const archiveList = $('#archiveList');
+const exportPdfBtn = $('#exportPdfBtn');
+const outletsBtn = $('#outletsBtn');
+const outletsModal = $('#outletsModal');
+const closeOutletsBtn = $('#closeOutlets');
+const outletList = $('#outletList');
+const filterRegion = $('#filterRegion');
+const filterLanguage = $('#filterLanguage');
+const filterTopic = $('#filterTopic');
+
+function updateCounters(){
+  const sources = OUTLETS.length;
+  const articlesCount = (() => {
+    const dates = LocalCloud.listDigestDates();
+    let total = 0;
+    for(const d of dates){
+      const arr = LocalCloud.getDigest(d) || [];
+      total += arr.length;
+    }
+    return total;
+  })();
+  $('#sourcesCount').textContent = `Sources: ${sources}`;
+  $('#sourcesCount2').textContent = `Sources: ${sources}`;
+  $('#articlesCount').textContent = `Articles: ${articlesCount}`;
+  $('#articlesCount2').textContent = `Articles: ${articlesCount}`;
+}
+
+/* ========================= Outlet modal rendering ========================= */
+function populateFilterOptions(){
+  const regions = Array.from(new Set(OUTLETS.map(o=>o.region))).sort();
+  const langs = Array.from(new Set(OUTLETS.map(o=>o.language))).sort();
+  const topics = Array.from(new Set(OUTLETS.map(o=>o.topic))).sort();
+  filterRegion.innerHTML = '<option value="">All</option>' + regions.map(r=>`<option>${r}</option>`).join('');
+  filterLanguage.innerHTML = '<option value="">All</option>' + langs.map(l=>`<option>${l}</option>`).join('');
+  filterTopic.innerHTML = '<option value="">All</option>' + topics.map(t=>`<option>${t}</option>`).join('');
+}
+
+function renderOutletList(){
+  if(!outletList) return;
+  const selections = LocalCloud.getOutletSelections();
+  const regionVal = filterRegion?.value || '';
+  const langVal = filterLanguage?.value || '';
+  const topicVal = filterTopic?.value || '';
+  outletList.innerHTML = '';
+  OUTLETS.forEach(o=>{
+    if(regionVal && o.region !== regionVal) return;
+    if(langVal && o.language !== langVal) return;
+    if(topicVal && o.topic !== topicVal) return;
+    const row = document.createElement('div'); row.className='outlet-row';
+    const left = document.createElement('div'); left.style.flex='1';
+    left.innerHTML = `<strong>${escapeHTML(o.name)}</strong><br><span class="tiny">${escapeHTML(o.country)}</span>`;
+    const middle = document.createElement('div'); middle.style.flex='0 0 120px'; middle.innerHTML = `<span class="outlet-chip">${escapeHTML(o.topic)}</span>`;
+    const lang = document.createElement('div'); lang.className='tiny'; lang.style.flex='0 0 80px'; lang.textContent = o.language;
+    const controls = document.createElement('div'); controls.style.display='flex'; controls.style.gap='8px'; controls.style.alignItems='center';
+    const link = document.createElement('a'); link.href = o.url; link.target='_blank'; link.rel='noopener'; link.textContent='Visit';
+    const chk = document.createElement('input'); chk.type='checkbox'; chk.checked = !!selections[o.id];
+    chk.addEventListener('change', ()=>{
+      const s = LocalCloud.getOutletSelections();
+      if(chk.checked) s[o.id]=true; else delete s[o.id];
+      LocalCloud.saveOutletSelections(s);
+      updateCounters();
+    });
+    controls.append(chk, link);
+    row.append(left, middle, lang, controls);
+    outletList.appendChild(row);
+  });
+}
+
+/* ========================= Digest generation & rendering ========================= */
+function renderDigest(dateStr, articles){
+  currentDigestArticles = articles || [];
+  if(!digestPanel) return;
+  digestPanel.innerHTML = '';
+  if(!articles || !articles.length){
+    digestPanel.innerHTML = `<div class="digest-card"><div class="tiny">No digest stored for ${escapeHTML(dateStr)} yet.</div></div>`;
+    if(digestStatus) digestStatus.textContent = `No digest found for ${dateStr}.`;
+    return;
+  }
+  if(digestStatus) digestStatus.textContent = `Showing digest for ${dateStr} (${articles.length} articles).`;
+
+  const selectedChannel = channelFilter ? channelFilter.value : '';
+  const selectedLang = languageFilter ? languageFilter.value : '';
+
+  let filtered = articles.slice();
+  if(selectedChannel){
+    filtered = filtered.filter(a => (a.channel || 'general') === selectedChannel);
+  }
+  if(selectedLang){
+    filtered = filtered.filter(a => detectLangCodeFromText(a.outletLanguage) === selectedLang);
+  }
+
+  filtered.forEach(a=>{
+    const card = document.createElement('article'); card.className='digest-card dropcap';
+    card.setAttribute('data-topics', (a.outletTopic || '') );
+    const langCode = detectLangCodeFromText(a.outletLanguage || '');
+    const langLabel = languageLabelFromCode(langCode);
+    const channelLabel = CHANNEL_LABELS[a.channel || 'news'] || (a.channel || 'news');
+    const chipsHTML = `
+      <span class="digest-chip">Origin: ${escapeHTML(a.outletRegion || '—')}</span>
+      <span class="digest-chip">Language: ${escapeHTML(langLabel)}</span>
+      <span class="digest-chip">Channel: ${escapeHTML(channelLabel)}</span>
+      <span class="digest-chip">Topic: ${escapeHTML(a.outletTopic || 'General')}</span>
+    `;
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <a href="${escapeHTML(a.url)}" class="digest-title-a" target="_blank" rel="noopener">${escapeHTML(a.title)}</a>
+          <div class="tiny digest-meta">${escapeHTML(a.outletName)} • ${escapeHTML(a.outletRegion)} • ${escapeHTML(a.published||'')}</div>
+        </div>
+        <div style="margin-left:8px">
+          <label style="font-size:12px"><input type="checkbox" class="sel" /> Select</label>
+        </div>
+      </div>
+      <div class="digest-snippet">${escapeHTML(a.snippet || '')}</div>
+      <div style="margin-top:8px" class="tiny">
+        ${chipsHTML}
+      </div>
+    `;
+    digestPanel.appendChild(card);
+  });
+  if(!filtered.length){
+    const note = document.createElement('div'); note.className='digest-card';
+    note.innerHTML = `<div class="tiny">No articles match the current channel or language filter.</div>`;
+    digestPanel.appendChild(note);
+  }
+}
+
+/* Generate or load */
+function generateFromSelections(){
+  const dateStr = todayISO();
+  const selections = LocalCloud.getOutletSelections();
+  const selectedIDs = Object.keys(selections);
+  const selectedOutlets = selectedIDs.length ? OUTLETS.filter(o => selections[o.id]) : OUTLETS.slice();
+  const articles = simulateArticlesFromOutlets(selectedOutlets, 30);
+  LocalCloud.saveDigest(dateStr, articles);
+  renderDigest(dateStr, articles);
+  updateCounters();
+  openDigestHistory(); // show history / refreshed view
+}
+generateDigestBtn?.addEventListener('click', ()=> generateFromSelections());
+
+/* Unified fetch button (uses simulate / stub) */
+$('#unifiedFetchBtn')?.addEventListener('click', async ()=>{
+  const dateStr = todayISO();
+  const selections = LocalCloud.getOutletSelections();
+  const selectedIDs = Object.keys(selections);
+  const selectedOutlets = selectedIDs.length ? OUTLETS.filter(o => selections[o.id]) : OUTLETS.slice(0, 10);
+  const articles = simulateArticlesFromOutlets(selectedOutlets, 40);
+  LocalCloud.saveDigest(dateStr, articles);
+  renderDigest(dateStr, articles);
+  updateCounters();
+  renderArticlesPanel();
+});
+
+/* Load latest digest on start */
+function loadLatestDigestOnStart(){
+  const dates = LocalCloud.listDigestDates();
+  if(dates && dates.length){
+    const dateStr = dates[0];
+    const articles = LocalCloud.getDigest(dateStr);
+    renderDigest(dateStr, articles);
+  } else {
+    if(digestStatus) digestStatus.textContent = 'No digest generated yet for this device.';
+  }
+}
+
+/* Channel filter persistence */
+if(channelFilter){
+  const storedChannel = LocalCloud.getLastChannel();
+  if(storedChannel) channelFilter.value = storedChannel;
+  channelFilter.addEventListener('change', ()=>{
+    LocalCloud.setLastChannel(channelFilter.value);
+    const dates = LocalCloud.listDigestDates();
+    if(dates && dates.length){
+      const latest = dates[0];
+      renderDigest(latest, LocalCloud.getDigest(latest));
+    }
+  });
+}
+
+/* Language filter persistence */
+if(languageFilter){
+  const storedLang = LocalCloud.getLastLang();
+  if(storedLang) languageFilter.value = storedLang;
+  languageFilter.addEventListener('change', ()=>{
+    LocalCloud.setLastLang(languageFilter.value);
+    const dates = LocalCloud.listDigestDates();
+    if(dates && dates.length){
+      const latest = dates[0];
+      renderDigest(latest, LocalCloud.getDigest(latest));
+    }
+  });
+}
+
+/* History modal */
+viewDigestHistoryBtn?.addEventListener('click', openDigestHistory);
+closeDigestHistoryBtn?.addEventListener('click', ()=> closeModal(digestHistoryModal));
+
+function openDigestHistory(){
+  if(!digestHistoryList) return;
+  const dates = LocalCloud.listDigestDates();
+  digestHistoryList.innerHTML = '';
+  if(!dates || !dates.length){
+    digestHistoryList.innerHTML = '<div class="tiny">No digests saved yet.</div>';
+  } else {
+    dates.forEach(dateStr=>{
+      const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='6px 0';
+      const label = document.createElement('div'); label.textContent = dateStr;
+      const btns = document.createElement('div');
+      const loadBtn = document.createElement('button'); loadBtn.textContent='Load'; loadBtn.addEventListener('click', ()=>{ renderDigest(dateStr, LocalCloud.getDigest(dateStr)); closeModal(digestHistoryModal); });
+      const delBtn = document.createElement('button'); delBtn.textContent='Delete'; delBtn.addEventListener('click', ()=>{ if(confirm('Delete this digest?')){ LocalCloud.deleteDigest(dateStr); openDigestHistory(); updateCounters(); }});
+      btns.append(loadBtn, delBtn);
+      row.append(label, btns);
+      digestHistoryList.appendChild(row);
+    });
+  }
+  openModal(digestHistoryModal);
+}
+
+/* Summary & contradiction logic */
+function tokenizeSentences(text){ return String(text).split(/(?<=[.!?])\s+/).filter(Boolean); }
+function topKeywords(text, k=10){
+  const stop = new Set('the a an and of for from to in on with by as is are was were be been being that it its at or not this which into about after before over under more most less least new his her their our your you i they we them us'.split(/\s+/));
+  const freq = Object.create(null);
+  text.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).forEach(w=>{ if(!w || stop.has(w)) return; freq[w]=(freq[w]||0)+1; });
+  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,k).map(([w])=>w);
+}
+function scoreSentence(sent, keys){
+  const s = sent.toLowerCase(); let score=0; keys.forEach(k=>{ if(s.includes(k)) score+=1; }); score += Math.min(3, (sent.match(/[,;:]/g)||[]).length*0.25); return score;
+}
+function summarize(items, maxSent=5){
+  const text = items.map(a=> `${a.title}. ${a.snippet||''}`).join(' ');
+  const keys = topKeywords(text, 12);
+  const sents = tokenizeSentences(text);
+  const ranked = sents.map(s => ({s, score: scoreSentence(s, keys)})).sort((a,b)=>b.score-a.score);
+  return ranked.slice(0, maxSent).map(x=>x.s.trim());
+}
+const ANTONYMS = [['increase','decrease'],['rise','fall'],['approve','reject'],['confirm','deny'],['win','lose'],['expand','cut'],['rule out','consider'],['allow','ban'],['open','close']];
+function contradictionCheck(items){
+  const groups = new Map();
+  items.forEach(a=>{
+    const key = a.title.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim().split(' ').slice(0,6).join(' ');
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(a);
+  });
+  const flags = [];
+  groups.forEach(list=>{
+    for(let i=0;i<list.length;i++){
+      for(let j=i+1;j<list.length;j++){
+        const t1 = list[i].title.toLowerCase(), t2 = list[j].title.toLowerCase();
+        const neg = (t1.includes('not ')||t1.includes('no ')) !== (t2.includes('not ')||t2.includes('no '));
+        let antonym=false;
+        for(const [a,b] of ANTONYMS){
+          if((t1.includes(a)&&t2.includes(b)) || (t1.includes(b)&&t2.includes(a))){ antonym=true; break; }
+        }
+        if(neg || antonym){ flags.push({a:list[i], b:list[j], reason: neg ? 'negation' : 'antonym'}); }
+      }
+    }
+  });
+  return flags;
+}
+
+summarizeBtn?.addEventListener('click', ()=>{
+  const selected = $$('.digest-card .sel:checked').map(cb => cb.closest('.digest-card'));
+  let picked = [];
+  if(selected.length){
+    const titles = selected.map(row => row.querySelector('.digest-title-a')?.textContent.trim()).filter(Boolean);
+    picked = currentDigestArticles.filter(a=> titles.includes(a.title));
+  } else {
+    picked = currentDigestArticles.slice(0, 12);
+  }
+  const bullets = summarize(picked, 6);
+  const contradictions = contradictionCheck(picked);
+  const body = $('#summaryBody');
+  body.innerHTML = '';
+  const block = document.createElement('div'); block.innerHTML = `<h3>Summary</h3>`; const ul = document.createElement('ul'); ul.style.marginTop='.5rem';
+  bullets.forEach(b=>{ const li = document.createElement('li'); li.textContent = b; ul.appendChild(li); });
+  block.appendChild(ul);
+  const cc = document.createElement('div'); cc.innerHTML = `<h3 style="margin-top:.8rem">Potential Contradictions</h3>`;
+  if(!contradictions.length){
+    const p = document.createElement('p'); p.className='tiny'; p.textContent = 'No clear contradictions detected with simple heuristics.';
+    cc.appendChild(p);
+  } else {
+    contradictions.forEach(c=>{
+      const item = document.createElement('div'); item.className='tiny';
+      item.innerHTML = `<p><strong>${escapeHTML(c.a.outletName)}</strong>: ${escapeHTML(c.a.title)}<br><strong>${escapeHTML(c.b.outletName)}</strong>: ${escapeHTML(c.b.title)}<br><em>Signal:</em> ${escapeHTML(c.reason)}</p>`;
+      cc.appendChild(item);
+    });
+  }
+  body.appendChild(block); body.appendChild(cc);
+  openModal(summaryModal);
+});
+
+/* Archive manager */
+archiveBtn?.addEventListener('click', ()=>{ renderArchive(); openModal(archiveModal); });
+closeArchive?.addEventListener('click', ()=> closeModal(archiveModal));
+function renderArchive(){
+  const dates = LocalCloud.listDigestDates();
+  const names = LocalCloud.getNames();
+  archiveList.innerHTML = '';
+  if(!dates.length){ archiveList.innerHTML = '<p class="tiny">No saved digests yet.</p>'; return; }
+  dates.forEach(d=>{
+    const row = document.createElement('div'); row.style.display='flex'; row.style.alignItems='center'; row.style.justifyContent='space-between'; row.style.padding='8px 0';
+    const label = document.createElement('div'); label.textContent = d;
+    const actions = document.createElement('div');
+    const nameInput = document.createElement('input'); nameInput.type='text'; nameInput.value = names[d] || ''; nameInput.placeholder='Optional name';
+    const saveBtn = document.createElement('button'); saveBtn.textContent='Save Name'; saveBtn.addEventListener('click', ()=>{ const m = LocalCloud.getNames(); m[d] = nameInput.value.trim(); LocalCloud.saveNames(m); renderArchive(); });
+    const exportBtn = document.createElement('button'); exportBtn.textContent='Export PDF'; exportBtn.addEventListener('click', ()=> exportDigestPDF(d));
+    const delBtn = document.createElement('button'); delBtn.textContent='Delete'; delBtn.addEventListener('click', ()=>{ if(confirm('Delete this digest?')){ LocalCloud.deleteDigest(d); renderArchive(); updateCounters(); }});
+    actions.append(nameInput, saveBtn, exportBtn, delBtn);
+    row.append(label, actions);
+    archiveList.appendChild(row);
+  });
+}
+
+/* Export / Print */
+exportPdfBtn?.addEventListener('click', ()=> {
+  const dates = LocalCloud.listDigestDates();
+  if(dates.length) exportDigestPDF(dates[0]); else alert('No digest to export.');
+});
+function exportDigestPDF(dateStr){
+  const articles = LocalCloud.getDigest(dateStr) || [];
+  const sheet = document.createElement('div'); sheet.style.padding='20px'; sheet.style.fontFamily='Georgia, serif';
+  sheet.innerHTML = `<h2 style="color:#000">The Verifier — Digest ${escapeHTML(dateStr)}</h2>`;
+  articles.forEach(a=>{
+    const div = document.createElement('div'); div.style.marginBottom='12px';
+    div.innerHTML = `<strong>${escapeHTML(a.title)}</strong><br><span style="color:#333">${escapeHTML(a.outletName)} • ${escapeHTML(a.outletRegion)} • ${escapeHTML(a.published||'')}</span><br><em>${escapeHTML(a.channel||'news')}</em> — ${escapeHTML(a.outletTopic||'General')}<p>${escapeHTML(a.snippet||'')}</p><hr>`;
+    sheet.appendChild(div);
+  });
+  const wrapper = document.createElement('div'); wrapper.appendChild(sheet); document.body.appendChild(wrapper);
+  window.print();
+  document.body.removeChild(wrapper);
+}
+
+/* Local news demo */
+const localNewsBtn = $('#localNewsBtn'), localNewsModal = $('#localNewsModal'), closeLocalNewsBtn = $('#closeLocalNews'), localInput = $('#localInput'), localSearchBtn = $('#localSearchBtn'), localList = $('#localList');
+localNewsBtn?.addEventListener('click', ()=> { openModal(localNewsModal); localList.innerHTML=''; localInput.value=''; });
+closeLocalNewsBtn?.addEventListener('click', ()=> closeModal(localNewsModal));
+localSearchBtn?.addEventListener('click', handleLocalSearch);
+localInput?.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLocalSearch(); });
+
+function simulateLocalNews(query){
+  const safe = query || 'Your Area';
+  const now = (new Date()).toLocaleString();
+  return [
+    { title: `[Demo] ${safe} city council debates zoning`, source:'Local Gazette (demo)', published:now, snippet:'Sample local story.' },
+    { title: `[Demo] ${safe} school district launches STEM program`, source:'Community Education (demo)', published:now, snippet:'Placeholder education story.' },
+    { title: `[Demo] ${safe} river levels rising`, source:'Local Weather Service (demo)', published:now, snippet:'Sample hazards summary.' }
+  ];
+}
+function renderLocalNews(items){
+  if(!localList) return;
+  localList.innerHTML = '';
+  if(!items || !items.length){ localList.innerHTML = '<div class="tiny">No local items found (demo).</div>'; return; }
+  items.forEach(it=>{
+    const row = document.createElement('div'); row.style.padding='8px 0';
+    row.innerHTML = `<div style="font-weight:700">${escapeHTML(it.title)}</div><div class="tiny">${escapeHTML(it.source)} • ${escapeHTML(it.published)}</div><div style="margin-top:6px">${escapeHTML(it.snippet)}</div><hr>`;
+    localList.appendChild(row);
+  });
+}
+function handleLocalSearch(){
+  const q = (localInput.value || '').trim();
+  if(!q) return alert('Please enter a ZIP or city.');
+  renderLocalNews(simulateLocalNews(q));
+}
+
+/* Modal helpers */
+function openModal(el){ if(!el) return; el.style.display='flex'; el.setAttribute('aria-hidden','false'); }
+function closeModal(el){ if(!el) return; el.style.display='none'; el.setAttribute('aria-hidden','true'); }
+window.addEventListener('click', e => { if(e.target.classList?.contains('modal')) closeModal(e.target); });
+window.addEventListener('keydown', e => { if(e.key === 'Escape') { $$('.modal').forEach(m=>closeModal(m)); } });
+
+/* Small UI boot & bindings */
+function initUI(){
+  populateFilterOptions();
+  renderOutletList();
+  updateCounters();
+  loadLatestDigestOnStart();
+  // wire buttons & events
+  $('#refreshUIBtn')?.addEventListener('click', ()=>{ updateCounters(); renderArticlesPanel(); });
+  $('#outletsBtn')?.addEventListener('click', ()=>{ renderOutletList(); openModal(outletsModal); });
+  $('#closeOutlets')?.addEventListener('click', ()=> closeModal(outletsModal));
+  filterRegion?.addEventListener('change', renderOutletList); filterLanguage?.addEventListener('change', renderOutletList); filterTopic?.addEventListener('change', renderOutletList);
+  $('#selectAllBtn')?.addEventListener('click', ()=>{ const s = {}; OUTLETS.forEach(o=> s[o.id]=true); LocalCloud.saveOutletSelections(s); renderOutletList(); updateCounters(); });
+
+  $('#purgeBtn')?.addEventListener('click', ()=>{ if(confirm('Purge all saved digests?')){ LocalCloud.listDigestDates().forEach(d=>LocalCloud.deleteDigest(d)); updateCounters(); renderArticlesPanel(); } });
+  $('#refreshFeedsBtn')?.addEventListener('click', ()=>{ // simulated
+    $('#status').textContent = 'Simulated refresh complete.';
+    $('#lastRefreshed').textContent = 'Last refresh: ' + (new Date()).toLocaleString();
+  });
+
+  // Upload button (local demo)
+  $('#uploadBtn')?.addEventListener('click', async ()=>{
+    const f = $('#fileInput').files && $('#fileInput').files[0];
+    if(!f) return alert('Choose a file to upload (local demo).');
+    const key = 'verifier:uploads:' + todayISO();
+    const arr = JSON.parse(localStorage.getItem(key) || '[]');
+    arr.unshift({ name: f.name, size: f.size, type: f.type, uploadedAt: nowISO() });
+    localStorage.setItem(key, JSON.stringify(arr));
+    alert('Stored file metadata locally (demo).');
+  });
+
+  // initial dateline
+  setInterval(()=> $('#dateline').textContent = (new Date()).toLocaleString(), 1000);
+}
+
+/* Render articles panel: shows up-to-date index of latest digests */
+function renderArticlesPanel(){
+  const container = $('#articlesPanel'); container.innerHTML = '';
+  const dates = LocalCloud.listDigestDates();
+  if(!dates.length){ container.textContent = 'No articles indexed yet.'; return; }
+  const all = [];
+  for(const d of dates.slice(0,6)){
+    const arr = LocalCloud.getDigest(d) || [];
+    for(const a of arr) all.push(a);
+  }
+  if(!all.length){ container.textContent = 'No articles indexed yet.'; return; }
+  all.sort((a,b)=> new Date(b.published || 0) - new Date(a.published || 0));
+  const show = all.slice(0,200);
+  for(const a of show){
+    const el = document.createElement('div'); el.style.padding='6px 0';
+    el.innerHTML = `<div style="font-weight:600">${escapeHTML(a.title)}</div><div class="tiny">${escapeHTML(a.outletName)} • ${escapeHTML(a.published||'')}</div><div style="margin-top:6px"><a href="${escapeHTML(a.url)}" target="_blank" rel="noopener">Open →</a></div><hr>`;
+    container.appendChild(el);
+  }
+}
+
+/* init */
+initUI();
+renderArticlesPanel();
+
+/* demo seed if empty */
+if(!LocalCloud.listDigestDates().length){
+  const demoDate = todayISO();
+  const demoArticles = simulateArticlesFromOutlets(OUTLETS.slice(0,10), 24);
+  LocalCloud.saveDigest(demoDate, demoArticles);
+  renderDigest(demoDate, demoArticles);
+  updateCounters();
+  renderArticlesPanel();
+}
+</script>
+</body>
+</html>
