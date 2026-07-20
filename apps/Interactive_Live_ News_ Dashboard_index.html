@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interactive Live News Dashboard</title>
+<style>
+  :root{
+    --fs: 22px;                 /* user slider controls this (22px+) */
+    --bg:#f7f9fc;
+    --text:#111827;
+    --muted:#475569;
+    --card:#ffffff;
+    --card2:#f1f5f9;
+    --accent:#1e40af;
+    --accent2:#0ea5e9;
+    --border:#e5e7eb;
+    --shadow: 0 8px 22px rgba(0,0,0,0.10);
+    --shadow2: 0 12px 34px rgba(0,0,0,0.14);
+    --radius: 14px;
+  }
+  html{ font-size: var(--fs); }
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  body.contrast{
+    --bg:#ffffff;
+    --text:#000000;
+    --muted:#0b1220;
+    --card:#ffffff;
+    --card2:#ffffff;
+    --accent:#000000;
+    --accent2:#111827;
+    --border:#000000;
+    --shadow: 0 0 0 3px #000000;
+    --shadow2: 0 0 0 4px #000000;
+  }
+
+  header{
+    background:#111827;
+    color:#ffffff;
+    padding: 0.9rem 1rem;
+    text-align:center;
+  }
+  header h1{ margin:0; font-size:1.1rem; letter-spacing:0.02em; }
+  header p{ margin:0.25rem 0 0; opacity:0.85; font-size:0.85rem; }
+
+  main{
+    max-width: 1111px;
+    margin: 0.9rem auto 2rem;
+    padding: 0 0.85rem;
+  }
+
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.55rem;
+    align-items:center;
+    justify-content:space-between;
+    background: var(--card);
+    border: 3px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.65rem 0.75rem;
+    box-shadow: var(--shadow);
+  }
+
+  .tool-left,.tool-right{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0.55rem;
+    align-items:center;
+  }
+
+  .pill{
+    display:flex;
+    align-items:center;
+    gap:0.45rem;
+    border:1px solid var(--border);
+    background: var(--card2);
+    padding: 0.45rem 0.6rem;
+    border-radius: 999px;
+  }
+  .pill label{ font-size:0.8rem; color: var(--muted); }
+  .pill small{ font-size:0.75rem; color: var(--muted); }
+
+  input[type="range"]{ width: 150px; }
+  .btn{
+    border:none;
+    cursor:pointer;
+    border-radius: 999px;
+    padding: 0.5rem 0.75rem;
+    font-weight:700;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    font-size:0.82rem;
+    display:inline-flex;
+    align-items:center;
+    gap:0.4rem;
+  }
+  body.contrast .btn{ background:#000; color:#fff; box-shadow:none; border:2px solid #000; }
+  .btn.ghost{
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow:none;
+  }
+
+  .search-wrap{
+    margin-top: 0.75rem;
+    display:flex;
+    gap:0.6rem;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .search-wrap input{
+    flex:1;
+    min-width: 240px;
+    padding: 0.7rem 0.9rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 0.9rem;
+  }
+
+  .filters{
+    display:flex;
+    gap:0.6rem;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-top: 0.65rem;
+  }
+  select{
+    padding: 0.55rem 0.7rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 0.85rem;
+  }
+
+  /* Spotlight */
+  .spotlight{
+    margin-top: 0.85rem;
+    background: linear-gradient(135deg, rgba(30,64,175,0.10), rgba(14,165,233,0.10));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow:hidden;
+    box-shadow: var(--shadow2);
+  }
+  .spot-head{
+    padding: 0.8rem 0.9rem 0.6rem;
+    display:flex;
+    justify-content:space-between;
+    gap:0.75rem;
+    flex-wrap:wrap;
+    align-items:flex-start;
+  }
+  .spot-title{
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1.2;
+    margin:0;
+  }
+  .chips{
+    display:flex;
+    gap:0.4rem;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-top:0.45rem;
+  }
+  .chip{
+    font-size:0.72rem;
+    padding:0.18rem 0.55rem;
+    border-radius:999px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.75);
+  }
+  body.contrast .chip{ background:#fff; border:2px solid #000; }
+
+  .spot-media{
+    display:block;
+    width:100%;
+    max-height: 666px;
+    object-fit: cover;
+    background: #e5e7eb;
+  }
+  .spot-body{
+    padding: 0.8rem 0.9rem 0.95rem;
+  }
+  .spot-desc{
+    margin:0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .spot-actions{
+    margin-top: 0.75rem;
+    display:flex;
+    gap:0.55rem;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  /* Tabs + Issues */
+  .tabs{
+    display:flex;
+    gap:0.5rem;
+    flex-wrap:wrap;
+    margin-top: 0.95rem;
+  }
+  .tab{
+    padding: 0.55rem 0.8rem;
+    border-radius: 999px;
+    background: #e5e7eb;
+    cursor:pointer;
+    font-weight:800;
+    font-size:0.82rem;
+    border: 1px solid var(--border);
+    user-select:none;
+  }
+  .tab.active{
+    background: var(--accent);
+    color:#fff;
+    border-color: transparent;
+  }
+
+  .issue{
+    margin-top: 0.75rem;
+    border-radius: var(--radius);
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+  }
+  .summary-card{
+    padding: 0.85rem 0.95rem;
+    border-left: 10px solid var(--accent);
+    cursor:pointer;
+  }
+  .summary-card:hover{ background: rgba(59,130,246,0.06); }
+  .summary-card .sum-top{
+    display:flex;
+    justify-content:space-between;
+    gap:0.6rem;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .summary-card h2{
+    margin:0;
+    font-size: 0.95rem;
+    font-weight: 950;
+  }
+  .summary-card p{
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    font-size:0.86rem;
+    line-height: 1.4;
+  }
+  .summary-items{
+    margin-top: 0.55rem;
+    display:grid;
+    gap: 0.45rem;
+  }
+  .mini{
+    display:flex;
+    gap:0.6rem;
+    align-items:flex-start;
+    padding: 0.55rem 0.6rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.7);
+  }
+  .mini img{
+    width: 88px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 10px;
+    flex-shrink:0;
+    background:#e5e7eb;
+  }
+  .mini .t{
+    margin:0;
+    font-size:0.86rem;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+  .mini .m{
+    margin:0.18rem 0 0;
+    font-size:0.74rem;
+    color: var(--muted);
+  }
+
+  .issue-content{
+    padding: 0 0.95rem 0.75rem;
+    max-height: 0;
+    overflow:hidden;
+    transition: max-height 0.5s ease;
+  }
+
+  .feed-item{
+    display:flex;
+    gap:0.75rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items:flex-start;
+  }
+  .feed-item:last-child{ border-bottom:none; }
+  .feed-item img{
+    width: 120px;
+    height: 76px;
+    object-fit: cover;
+    border-radius: 12px;
+    background:#e5e7eb;
+    flex-shrink:0;
+  }
+  .feed-main{ flex:1; min-width: 0; }
+  .feed-title{
+    margin:0;
+    font-size: 0.92rem;
+    font-weight: 950;
+    line-height: 1.2;
+  }
+  .feed-meta{
+    margin: 0.25rem 0 0.35rem;
+    font-size:0.75rem;
+    color: var(--muted);
+    display:flex;
+    gap:0.4rem;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .feed-desc{
+    margin:0;
+    font-size:0.82rem;
+    color: var(--muted);
+    line-height:1.4;
+  }
+  .feed-actions{
+    margin-top:0.5rem;
+    display:flex;
+    gap:0.45rem;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .a{
+    font-size:0.75rem;
+    padding:0.35rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    cursor:pointer;
+    font-weight: 800;
+  }
+  body.contrast .a{ border:2px solid #000; background:#fff; }
+  a{ color: var(--accent); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+
+  mark{ background: #fffa65; padding:0 0.1em; border-radius: 0.25em; }
+
+  /* Drawer */
+  .drawer{
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: min(520px, 92vw);
+    height: 100vh;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    box-shadow: -16px 0 40px rgba(0,0,0,0.18);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    z-index: 50;
+    display:flex;
+    flex-direction:column;
+  }
+  .drawer.open{ transform: translateX(0); }
+  .drawer header{
+    background: var(--accent);
+    color:#fff;
+    text-align:left;
+    padding: 0.85rem 0.9rem;
+  }
+  .drawer header h3{ margin:0; font-size:0.95rem; }
+  .drawer header p{ margin:0.25rem 0 0; font-size:0.78rem; opacity:0.9; }
+  .drawer .content{
+    padding: 0.85rem 0.9rem;
+    overflow:auto;
+    flex:1;
+  }
+  .drawer .close-row{
+    display:flex;
+    gap:0.55rem;
+    padding: 0.7rem 0.9rem;
+    border-top: 1px solid var(--border);
+    background: var(--card2);
+  }
+
+  .list-item{
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.65rem 0.7rem;
+    margin-bottom: 0.6rem;
+    background: #fff;
+  }
+  body.contrast .list-item{ border:2px solid #000; }
+  .list-item .lt{ font-weight: 950; margin:0; font-size:0.88rem; }
+  .list-item .lm{ margin:0.25rem 0 0; font-size:0.75rem; color: var(--muted); line-height:1.35; }
+  .list-item .la{ margin-top:0.45rem; display:flex; gap:0.45rem; flex-wrap:wrap; }
+
+  .note{
+    font-size:0.78rem;
+    color: var(--muted);
+    line-height:1.35;
+    margin: 0.45rem 0 0.8rem;
+  }
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Interactive Live News Dashboard</h1>
+  <p>Spotlight + live feeds across major issues — with kid-safe & accessibility modes</p>
+</header>
+
+<main>
+  <div class="toolbar">
+    <div class="tool-left">
+      <div class="pill">
+        <label for="fsRange">Font</label>
+        <input id="fsRange" type="range" min="22" max="34" step="1" />
+        <small id="fsVal">22px</small>
+      </div>
+      <button class="btn ghost" id="contrastBtn">🌓 High Contrast</button>
+      <button class="btn ghost" id="kidBtn">🧒 Kid-Safe: OFF</button>
+    </div>
+    <div class="tool-right">
+      <button class="btn ghost" id="listsBtn">⭐ Lists</button>
+      <button class="btn ghost" id="outletsBtn">🗞️ Outlets</button>
+      <button class="btn ghost" id="refreshBtn">⟳ Refresh</button>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <input id="searchInput" type="text" placeholder="Search articles by keyword..." />
+  </div>
+
+  <div class="filters">
+    <select id="categorySelect">
+      <option value="__all__">All categories</option>
+    </select>
+    <select id="sortSelect">
+      <option value="newest">Sort: Newest</option>
+      <option value="spicy">Sort: Unusual / Controversial</option>
+    </select>
+  </div>
+
+  <!-- Spotlight -->
+  <section class="spotlight" id="spotlight">
+    <div class="spot-head">
+      <div>
+        <h2 class="spot-title" id="spotTitle">Loading spotlight…</h2>
+        <div class="chips" id="spotChips"></div>
+      </div>
+    </div>
+    <img id="spotImg" class="spot-media" alt="" />
+    <div class="spot-body">
+      <p class="spot-desc" id="spotDesc"></p>
+      <div class="spot-actions">
+        <button class="btn" id="spotOpenBtn">Open ↗</button>
+        <button class="btn ghost" id="spotFavBtn">⭐ Favorite</button>
+        <button class="btn ghost" id="spotReadBtn">📚 Read Later</button>
+        <button class="btn ghost" id="spotCopyBtn">🔗 Copy Link</button>
+        <button class="btn ghost" id="spotShareBtn">📣 Share</button>
+      </div>
+      <p class="note" id="spotNote"></p>
+    </div>
+  </section>
+
+  <!-- Tabs -->
+  <div class="tabs" id="tabs"></div>
+
+  <!-- Issues mount -->
+  <div id="issuesMount"></div>
+</main>
+
+<!-- Drawer -->
+<div class="drawer" id="drawer">
+  <header>
+    <h3 id="drawerTitle">Lists</h3>
+    <p id="drawerSubtitle">Saved items persist on this device (localStorage).</p>
+  </header>
+  <div class="content" id="drawerContent"></div>
+  <div class="close-row">
+    <button class="btn ghost" id="drawerClose">Close</button>
+    <button class="btn" id="drawerClear">Clear</button>
+  </div>
+</div>
+
+<script>
+/* =======================
+   STOPWORDS + TOKENS (expanded)
+======================= */
+const STOP_WORDS = new Set([
+  "the","a","an","and","or","but","to","of","in","on","for","with","as","at","by","from","into","that","this","it","is","are","was","were","be","been","being",
+  "i","me","my","mine","you","your","yours","we","us","our","ours","they","them","their","theirs","he","him","his","she","her","hers","its","itself",
+  "not","no","yes","do","does","did","doing","done","so","if","then","than","because","about","over","under","up","down","out","very","just","also","still","yet",
+  "can","could","would","should","may","might","must","will","shall",
+  "more","most","less","much","many","some","any","all","each","every","either","neither","both","few","several","other","another","same","own","such","only","even",
+  "here","there","when","where","why","how","what","which","who","whom","whose",
+  "before","after","during","while","above","below","between","among","through","against","within","without","onto","off","per","via","vs"
+]);
+
+const CONTRACTION_TOKENS = new Set([
+  "im","ive","ill","id","youre","youve","youll","youd",
+  "were","weve","well","wed",
+  "theyre","theyve","theyll","theyd",
+  "hes","shes","its","thats","theres","whats","whos","wheres","whens","whys","hows",
+  "cant","dont","didnt","doesnt","isnt","arent","wasnt","werent","wont","wouldnt","shouldnt","couldnt","havent","hasnt","hadnt","aint","yall","lets",
+  "ok","okay","yes","yeah","nope","hey","hi","gonna","wanna","kinda","sorta"
+]);
+
+/* =======================
+   KID-SAFE FILTER WORDS
+======================= */
+const KID_BLOCK = [
+  "war","wars","violence","violent","murder","kill","killed","killing","shot","shooting","gun","guns","weapon","weapons",
+  "bomb","bombing","terror","terrorist","attack","attacks","massacre","hostage","abduction","kidnap","kidnapping",
+  "rape","sexual assault","genocide","blood","dead","death","fatal","fatality","casualty","torture","execution"
+];
+
+/* =======================
+   OUTLETS DIRECTORY (your list; used for optional fetching)
+   NOTE: We DO NOT fetch 100 at once. We enforce a max enabled count.
+======================= */
+const OUTLETS = [
+  { id:'ap', name:'Associated Press', region:'North America', country:'USA', language:'en', topic:'General', url:'https://apnews.com' },
+  { id:'reuters', name:'Reuters', region:'Global', country:'UK/USA', language:'en', topic:'Business/Politics', url:'https://reuters.com' },
+  { id:'bbc', name:'BBC News', region:'Europe', country:'UK', language:'en', topic:'International', url:'https://www.bbc.com/news' },
+  { id:'guardian', name:'The Guardian', region:'Europe', country:'UK', language:'en', topic:'Investigative', url:'https://www.theguardian.com/international' },
+  { id:'nytimes', name:'The New York Times', region:'North America', country:'USA', language:'en', topic:'General', url:'https://www.nytimes.com' },
+  { id:'washpost', name:'The Washington Post', region:'North America', country:'USA', language:'en', topic:'Politics', url:'https://www.washingtonpost.com' },
+  { id:'wsj', name:'Wall Street Journal', region:'North America', country:'USA', language:'en', topic:'Business', url:'https://www.wsj.com' },
+  { id:'ft', name:'Financial Times', region:'Europe', country:'UK', language:'en', topic:'Markets', url:'https://www.ft.com' },
+  { id:'cnn', name:'CNN', region:'North America', country:'USA', language:'en', topic:'Breaking News', url:'https://edition.cnn.com' },
+  { id:'bloomberg', name:'Bloomberg', region:'North America', country:'USA', language:'en', topic:'Markets', url:'https://www.bloomberg.com' },
+  { id:'npr', name:'NPR', region:'North America', country:'USA', language:'en', topic:'Culture / News', url:'https://www.npr.org' },
+  { id:'aljazeera', name:'Al Jazeera', region:'Middle East', country:'Qatar', language:'en', topic:'International', url:'https://www.aljazeera.com' },
+  { id:'dw', name:'Deutsche Welle', region:'Europe', country:'Germany', language:'en', topic:'International', url:'https://www.dw.com' },
+  { id:'politico', name:'Politico', region:'North America', country:'USA', language:'en', topic:'Politics', url:'https://www.politico.com' },
+  { id:'techcrunch', name:'TechCrunch', region:'North America', country:'USA', language:'en', topic:'Technology', url:'https://techcrunch.com' },
+  { id:'wired', name:'Wired', region:'North America', country:'USA', language:'en', topic:'Science & Tech', url:'https://www.wired.com' },
+  { id:'verge', name:'The Verge', region:'North America', country:'USA', language:'en', topic:'Technology / Culture', url:'https://www.theverge.com' },
+  { id:'arstech', name:'Ars Technica', region:'North America', country:'USA', language:'en', topic:'Tech', url:'https://arstechnica.com' },
+  { id:'mittech', name:'MIT Technology Review', region:'North America', country:'USA', language:'en', topic:'Tech / Future', url:'https://www.technologyreview.com' },
+  { id:'propublica', name:'ProPublica', region:'North America', country:'USA', language:'en', topic:'Investigative', url:'https://www.propublica.org' }
+];
+
+/* Known direct RSS (best effort). If not here, we fall back to Google News RSS via site:domain */
+const KNOWN_RSS = {
+  bbc: "https://feeds.bbci.co.uk/news/rss.xml",
+  guardian: "https://www.theguardian.com/international/rss",
+  nytimes: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+  cnn: "https://rss.cnn.com/rss/cnn_topstories.rss",
+  npr: "https://feeds.npr.org/1001/rss.xml",
+  dw: "https://rss.dw.com/rdf/rss-en-all",
+  techcrunch: "https://techcrunch.com/feed/",
+  wired: "https://www.wired.com/feed/rss",
+  verge: "https://www.theverge.com/rss/index.xml",
+  arstech: "http://feeds.arstechnica.com/arstechnica/index/",
+  mittech: "https://www.technologyreview.com/feed/",
+  propublica: "https://www.propublica.org/feeds/propublica/main"
+};
+
+function domainFromUrl(u){
+  try{
+    const x = new URL(u);
+    return x.hostname.replace(/^www\./,'');
+  }catch(e){ return ""; }
+}
+function googleNewsRSSForSite(siteDomain){
+  // Works broadly even when an outlet has no public RSS
+  return `https://news.google.com/rss/search?q=site:${encodeURIComponent(siteDomain)}&hl=en-US&gl=US&ceid=US:en`;
+}
+function outletFeedUrl(outlet){
+  if(KNOWN_RSS[outlet.id]) return KNOWN_RSS[outlet.id];
+  const d = domainFromUrl(outlet.url);
+  if(!d) return "";
+  return googleNewsRSSForSite(d);
+}
+
+/* =======================
+   ISSUES (expanded: includes Science/Tech + Finance + Education)
+======================= */
+const DEFAULT_ISSUES = [
+  { key:"climate", title:"Climate & Environment", color:"#16a34a", summary:"Climate, weather extremes, conservation, and energy shifts.", sources:[
+    "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
+    "https://rss.nytimes.com/services/xml/rss/nyt/Climate.xml",
+    "https://www.climate.gov/news-features/feed"
+  ]},
+  { key:"ai", title:"AI & Tech", color:"#0ea5e9", summary:"AI breakthroughs, innovation, computing, and digital society.", sources:[
+    "https://www.technologyreview.com/feed/",
+    "https://www.theverge.com/rss/index.xml",
+    "http://feeds.arstechnica.com/arstechnica/index/"
+  ]},
+  { key:"education", title:"Education", color:"#4a7efc", summary:"Schools, higher ed, policy, students, and learning research.", sources:[
+    "https://feeds.bbci.co.uk/news/education/rss.xml",
+    "https://www.edweek.org/rss",
+    "https://www.insidehighered.com/rss/news"
+  ]},
+  { key:"finance", title:"Finance & Markets", color:"#f59e0b", summary:"Markets, business, personal finance, and economic policy.", sources:[
+    "https://www.ft.com/?format=rss",
+    "https://www.economist.com/the-world-this-week/rss.xml",
+    "https://www.forbes.com/innovation/feed/"
+  ]},
+  { key:"health", title:"Global Health", color:"#0ea5e9", summary:"Public health, outbreaks, medicine, and preparedness.", sources:[
+    "https://www.who.int/feeds/entity/csr/don/en/rss.xml",
+    "https://www.cdc.gov/media/rss.xml"
+  ]},
+  { key:"misinfo", title:"Misinformation", color:"#10b981", summary:"Online misinformation, media literacy, and trust in institutions.", sources:[
+    "https://www.pewresearch.org/feed/"
+  ]},
+  { key:"economy", title:"Economy & Work", color:"#6366f1", summary:"Jobs, labor, inequality, and the future of work.", sources:[
+    "https://www.economicpolicyinstitute.org/feed"
+  ]},
+  { key:"science", title:"Science & Discovery", color:"#8b5cf6", summary:"Space, biology, physics, and research breakthroughs.", sources:[
+    "https://www.nature.com/nature.rss",
+    "https://www.science.org/rss/news_current.xml"
+  ]},
+  { key:"culture", title:"Culture & Society", color:"#ec4899", summary:"Social change, culture debates, and major public conversations.", sources:[
+    "https://www.theguardian.com/world/rss"
+  ]},
+  { key:"bookbans", title:"Books & Speech", color:"#3b82f6", summary:"Censorship, book challenges, and intellectual freedom.", sources:[
+    "https://www.ala.org/news/rss.xml"
+  ]}
+];
+
+function loadIssues(){
+  try{
+    const saved = localStorage.getItem("dash_issues_override");
+    if(saved) return JSON.parse(saved);
+  }catch(e){}
+  return DEFAULT_ISSUES;
+}
+let issues = loadIssues();
+
+/* =======================
+   UI STATE
+======================= */
+const tabsEl = document.getElementById("tabs");
+const mountEl = document.getElementById("issuesMount");
+const searchInput = document.getElementById("searchInput");
+const categorySelect = document.getElementById("categorySelect");
+const sortSelect = document.getElementById("sortSelect");
+
+const spotTitle = document.getElementById("spotTitle");
+const spotDesc  = document.getElementById("spotDesc");
+const spotImg   = document.getElementById("spotImg");
+const spotChips = document.getElementById("spotChips");
+const spotNote  = document.getElementById("spotNote");
+
+const spotOpenBtn  = document.getElementById("spotOpenBtn");
+const spotFavBtn   = document.getElementById("spotFavBtn");
+const spotReadBtn  = document.getElementById("spotReadBtn");
+const spotCopyBtn  = document.getElementById("spotCopyBtn");
+const spotShareBtn = document.getElementById("spotShareBtn");
+
+const contrastBtn = document.getElementById("contrastBtn");
+const kidBtn = document.getElementById("kidBtn");
+const refreshBtn = document.getElementById("refreshBtn");
+
+const fsRange = document.getElementById("fsRange");
+const fsVal = document.getElementById("fsVal");
+
+const drawer = document.getElementById("drawer");
+const drawerTitle = document.getElementById("drawerTitle");
+const drawerSubtitle = document.getElementById("drawerSubtitle");
+const drawerContent = document.getElementById("drawerContent");
+const drawerClose = document.getElementById("drawerClose");
+const drawerClear = document.getElementById("drawerClear");
+const listsBtn = document.getElementById("listsBtn");
+const outletsBtn = document.getElementById("outletsBtn");
+
+let kidSafe = (localStorage.getItem("dash_kidSafe")==="1");
+let highContrast = (localStorage.getItem("dash_contrast")==="1");
+
+let activeIssueKey = issues[0]?.key || "";
+let feedIndex = {};     // issueKey -> array of parsed articles
+let domIndex = {};      // issueKey -> {issueDiv, contentDiv, allFeedNodes[]}
+let spotlightItem = null;
+
+const CACHE_KEY = "dash_cache_v2";
+const FAV_KEY = "dash_favs_v1";
+const READ_KEY = "dash_read_v1";
+const OUTLET_ENABLED_KEY = "dash_enabled_outlets_v1";
+
+function nowISO(){ return new Date().toISOString(); }
+
+/* =======================
+   STORAGE: FAVS + READ
+======================= */
+function safeParse(json, fallback){
+  try{ return JSON.parse(json); }catch(e){ return fallback; }
+}
+function getFavs(){ return safeParse(localStorage.getItem(FAV_KEY)||"[]",[]); }
+function getReads(){ return safeParse(localStorage.getItem(READ_KEY)||"[]",[]); }
+
+function upsertList(key, item){
+  const arr = safeParse(localStorage.getItem(key)||"[]",[]);
+  const id = (item.link||"") + "::" + (item.title||"");
+  const exists = arr.some(x => ((x.link||"")+ "::"+(x.title||"")) === id);
+  if(!exists){
+    arr.unshift(item);
+    localStorage.setItem(key, JSON.stringify(arr.slice(0,200)));
+  }
+}
+function removeFromList(key, item){
+  const arr = safeParse(localStorage.getItem(key)||"[]",[]);
+  const id = (item.link||"") + "::" + (item.title||"");
+  const next = arr.filter(x => ((x.link||"")+ "::"+(x.title||"")) !== id);
+  localStorage.setItem(key, JSON.stringify(next));
+}
+function isInList(key, item){
+  const arr = safeParse(localStorage.getItem(key)||"[]",[]);
+  const id = (item.link||"") + "::" + (item.title||"");
+  return arr.some(x => ((x.link||"")+ "::"+(x.title||"")) === id);
+}
+
+/* =======================
+   FETCH + PARSE RSS (AllOrigins + DOMParser)
+======================= */
+const MAX_ITEMS_PER_FEED = 10;
+const REQUEST_TIMEOUT_MS = 12000;
+
+function stripHtml(html){
+  const d = document.createElement("div");
+  d.innerHTML = html || "";
+  return (d.textContent || d.innerText || "").trim();
+}
+function extractFirstImage(html){
+  try{
+    const d = document.createElement("div");
+    d.innerHTML = html || "";
+    const img = d.querySelector("img");
+    if(img && img.getAttribute("src")) return img.getAttribute("src");
+  }catch(e){}
+  return "";
+}
+function pickImageFromItem(itemNode){
+  const enc = itemNode.querySelector("enclosure[url]");
+  if(enc) return enc.getAttribute("url") || "";
+  const m1 = itemNode.querySelector("media\\:content[url], content[url]");
+  if(m1) return m1.getAttribute("url") || "";
+  const m2 = itemNode.querySelector("media\\:thumbnail[url], thumbnail[url]");
+  if(m2) return m2.getAttribute("url") || "";
+  const desc = itemNode.querySelector("description")?.textContent || "";
+  return extractFirstImage(desc);
+}
+
+function abortableFetch(url){
+  const controller = new AbortController();
+  const t = setTimeout(()=>controller.abort(), REQUEST_TIMEOUT_MS);
+  return fetch(url, { signal: controller.signal })
+    .finally(()=>clearTimeout(t));
+}
+
+async function fetchFeed(url){
+  const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+  const res = await abortableFetch(proxy);
+  if(!res.ok) throw new Error("Network error");
+  const data = await res.json();
+  const xmlText = data.contents || "";
+  const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+
+  // RSS <item> or Atom <entry>
+  let nodes = Array.from(doc.querySelectorAll("item"));
+  let isAtom = false;
+  if(!nodes.length){
+    nodes = Array.from(doc.querySelectorAll("entry"));
+    isAtom = true;
+  }
+
+  return nodes.slice(0, MAX_ITEMS_PER_FEED).map(n=>{
+    let title = (n.querySelector("title")?.textContent || "").trim();
+    let link = "";
+    if(isAtom){
+      const l = n.querySelector("link[rel='alternate']") || n.querySelector("link");
+      link = l?.getAttribute("href") || "";
+    }else{
+      link = (n.querySelector("link")?.textContent || "").trim();
+    }
+
+    const pub = (n.querySelector("pubDate")?.textContent || n.querySelector("updated")?.textContent || n.querySelector("published")?.textContent || "").trim();
+    const descRaw = (n.querySelector("description")?.textContent || n.querySelector("content")?.textContent || n.querySelector("summary")?.textContent || "").trim();
+    const cats = Array.from(n.querySelectorAll("category")).map(c=>{
+      const v = (c.textContent || c.getAttribute("term") || "").trim();
+      return v;
+    }).filter(Boolean);
+
+    const image = pickImageFromItem(n) || extractFirstImage(descRaw);
+
+    return {
+      title: title || "(no title)",
+      link: link || "",
+      pubDate: pub || "",
+      description: descRaw || "",
+      text: (title + " " + stripHtml(descRaw)).trim(),
+      categories: cats.length ? cats : ["Uncategorized"],
+      image: image || ""
+    };
+  });
+}
+
+/* =======================
+   SCORING: "Spicy / Unusual"
+======================= */
+const SPICY_TRIGGERS = [
+  "scandal","lawsuit","probe","corruption","fraud","ban","censorship","whistleblower","leak","resign","impeach","controversy",
+  "secret","exposed","shocking","bizarre","mystery","rare","unexpected","unusual","stuns","stunned","chaos","backlash","outrage"
+];
+
+function tokenize(text){
+  return (text||"")
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g," ")
+    .replace(/[^a-z0-9\s']/g," ")
+    .split(/\s+/)
+    .map(t=>t.replace(/'/g,"").trim())
+    .filter(Boolean)
+    .filter(t=>!STOP_WORDS.has(t))
+    .filter(t=>!CONTRACTION_TOKENS.has(t))
+    .filter(t=>t.length>2);
+}
+function kidSafeReject(text){
+  const t = (text||"").toLowerCase();
+  return KID_BLOCK.some(k => t.includes(k));
+}
+
+function computeSpicyScores(items){
+  // If kidSafe -> disable spicy scoring completely
+  if(kidSafe){
+    items.forEach(it => it.spicy = 0);
+    return;
+  }
+  // frequency map for rarity
+  const freq = new Map();
+  items.forEach(it=>{
+    tokenize(it.text).forEach(tok=>{
+      freq.set(tok, (freq.get(tok)||0)+1);
+    });
+  });
+
+  items.forEach(it=>{
+    const toks = tokenize(it.text);
+    let rarity = 0;
+    for(const t of toks){
+      const f = freq.get(t) || 1;
+      rarity += (1 / f);
+    }
+    const lt = (it.title||"").toLowerCase();
+    const ld = stripHtml(it.description||"").toLowerCase();
+    let trig = 0;
+    for(const k of SPICY_TRIGGERS){
+      if(lt.includes(k) || ld.includes(k)) trig += 1.5;
+    }
+    const punct = /(\!|\?){1,}/.test(it.title||"") ? 1.2 : 0;
+    const caps = (it.title||"").split(" ").filter(w=>w.length>=5 && w===w.toUpperCase()).length;
+    const capsScore = Math.min(2, caps*0.5);
+    it.spicy = rarity + trig + punct + capsScore;
+  });
+}
+
+function pickSpotlight(allItems){
+  let candidates = allItems.slice();
+
+  // kid-safe filters out violence/war
+  if(kidSafe){
+    candidates = candidates.filter(it => !kidSafeReject((it.title||"")+" "+(it.text||"")));
+  }
+
+  if(!candidates.length) return null;
+
+  // If kidSafe: pick newest-ish
+  if(kidSafe){
+    candidates.sort((a,b)=>(Date.parse(b.pubDate||"")||0)-(Date.parse(a.pubDate||"")||0));
+    const top = candidates.slice(0, Math.min(10, candidates.length));
+    return top[Math.floor(Math.random()*top.length)];
+  }
+
+  // Normal mode: spicy scoring random-from-top
+  candidates.sort((a,b)=>(b.spicy||0)-(a.spicy||0));
+  const top = candidates.slice(0, Math.min(12, candidates.length));
+  return top[Math.floor(Math.random()*top.length)];
+}
+
+/* =======================
+   OUTLET ENABLED (limit to avoid overload)
+======================= */
+const MAX_ENABLED_OUTLETS = 12;
+function loadEnabledOutlets(){
+  const raw = localStorage.getItem(OUTLET_ENABLED_KEY);
+  if(raw){
+    const ids = safeParse(raw, []);
+    if(Array.isArray(ids) && ids.length) return ids.slice(0, MAX_ENABLED_OUTLETS);
+  }
+  // default small pack
+  return ["ap","reuters","bbc","guardian","nytimes","cnn","npr","aljazeera","dw","politico","techcrunch","wired"].slice(0, MAX_ENABLED_OUTLETS);
+}
+function saveEnabledOutlets(ids){
+  localStorage.setItem(OUTLET_ENABLED_KEY, JSON.stringify(ids.slice(0, MAX_ENABLED_OUTLETS)));
+}
+let enabledOutletIds = loadEnabledOutlets();
+
+/* =======================
+   RENDER: TABS + ISSUES
+======================= */
+function makeTab(issue){
+  const t = document.createElement("div");
+  t.className = "tab";
+  t.textContent = issue.title;
+  t.dataset.key = issue.key;
+  t.addEventListener("click", ()=> setActiveIssue(issue.key));
+  return t;
+}
+
+function renderTabs(){
+  tabsEl.innerHTML = "";
+  issues.forEach((iss, idx)=>{
+    const t = makeTab(iss);
+    if(idx===0) t.classList.add("active");
+    tabsEl.appendChild(t);
+  });
+}
+
+function setActiveIssue(key){
+  activeIssueKey = key;
+  document.querySelectorAll(".tab").forEach(x=>{
+    x.classList.toggle("active", x.dataset.key===key);
+  });
+  Object.values(domIndex).forEach(o=>{
+    o.issueDiv.style.display = (o.issueDiv.dataset.key===key) ? "block" : "none";
+  });
+  rebuildCategorySelectForActive();
+  applySearchAndCategory();
+}
+
+function buildIssueCard(issue, items){
+  const issueDiv = document.createElement("div");
+  issueDiv.className = "issue";
+  issueDiv.dataset.key = issue.key;
+
+  const summary = document.createElement("div");
+  summary.className = "summary-card";
+  summary.style.borderLeftColor = issue.color;
+
+  const miniItems = items.slice(0,2).map(it=>{
+    const img = it.image || "https://via.placeholder.com/176x112?text=No+Image";
+    const date = it.pubDate ? new Date(it.pubDate).toLocaleString() : "";
+    const safeTitle = escapeHtml(it.title||"");
+    const safeLink = escapeAttr(it.link||"#");
+    return `
+      <div class="mini">
+        <img loading="lazy" src="${escapeAttr(img)}" alt="">
+        <div>
+          <p class="t"><a href="${safeLink}" target="_blank" rel="noopener">${safeTitle}</a></p>
+          <p class="m">${escapeHtml(date)}</p>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  summary.innerHTML = `
+    <div class="sum-top">
+      <h2>${escapeHtml(issue.title)}</h2>
+      <span class="a" style="border-color:${issue.color}; background:rgba(255,255,255,0.65);">View Full Feed ▼</span>
+    </div>
+    <p>${escapeHtml(issue.summary)}</p>
+    <div class="summary-items">${miniItems || ""}</div>
+  `;
+
+  const content = document.createElement("div");
+  content.className = "issue-content";
+
+  // Toggle open/close
+  summary.addEventListener("click", ()=>{
+    const open = content.style.maxHeight && content.style.maxHeight !== "0px";
+    content.style.maxHeight = open ? "0px" : (content.scrollHeight + "px");
+    const badge = summary.querySelector(".a");
+    if(badge) badge.textContent = open ? "View Full Feed ▼" : "Hide Full Feed ▲";
+  });
+
+  // Full feed list
+  const nodes = [];
+  items.forEach(it=>{
+    const img = it.image || "https://via.placeholder.com/240x152?text=No+Image";
+    const date = it.pubDate ? new Date(it.pubDate).toLocaleString() : "";
+    const cats = (it.categories||["Uncategorized"]).slice(0,4);
+    const metaBits = [
+      date ? `🕒 ${escapeHtml(date)}` : "",
+      ...cats.map(c=>`🏷️ ${escapeHtml(c)}`)
+    ].filter(Boolean);
+
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "feed-item";
+    itemDiv.dataset.key = issue.key;
+    itemDiv.dataset.title = (it.title||"").toLowerCase();
+    itemDiv.dataset.text  = (it.text||"").toLowerCase();
+    itemDiv.dataset.categories = (it.categories||["Uncategorized"]).map(x=>x.toLowerCase()).join("|");
+    itemDiv.dataset.rawTitle = it.title || "";
+    itemDiv.dataset.rawDesc = stripHtml(it.description||"") || "";
+    itemDiv.dataset.link = it.link || "";
+    itemDiv.dataset.pub = it.pubDate || "";
+    itemDiv.dataset.image = it.image || "";
+    itemDiv.dataset.spicy = String(it.spicy||0);
+
+    itemDiv.innerHTML = `
+      <img loading="lazy" src="${escapeAttr(img)}" alt="">
+      <div class="feed-main">
+        <p class="feed-title"><a href="${escapeAttr(it.link||"#")}" target="_blank" rel="noopener">${escapeHtml(it.title||"(no title)")}</a></p>
+        <div class="feed-meta">${metaBits.map(x=>`<span class="chip">${x}</span>`).join("")}</div>
+        <p class="feed-desc">${escapeHtml(stripHtml(it.description||"").slice(0, 260))}${stripHtml(it.description||"").length>260?"…":""}</p>
+        <div class="feed-actions">
+          <span class="a" data-act="fav">⭐</span>
+          <span class="a" data-act="read">📚</span>
+          <span class="a" data-act="copy">🔗 Copy</span>
+          <span class="a" data-act="share">📣 Share</span>
+        </div>
+      </div>
+    `;
+
+    // actions
+    itemDiv.querySelectorAll("[data-act]").forEach(btn=>{
+      btn.addEventListener("click", (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        const act = btn.getAttribute("data-act");
+        const itemObj = exportItemFromNode(itemDiv, issue);
+        if(act==="fav"){
+          upsertList(FAV_KEY, itemObj);
+          toast("Saved to Favorites ⭐");
+        }else if(act==="read"){
+          upsertList(READ_KEY, itemObj);
+          toast("Saved to Reading List 📚");
+        }else if(act==="copy"){
+          copyText(itemObj.link||"");
+        }else if(act==="share"){
+          shareItem(itemObj);
+        }
+      });
+    });
+
+    content.appendChild(itemDiv);
+    nodes.push(itemDiv);
+  });
+
+  issueDiv.appendChild(summary);
+  issueDiv.appendChild(content);
+
+  domIndex[issue.key] = { issueDiv, contentDiv: content, feedNodes: nodes };
+  return issueDiv;
+}
+
+function rebuildIssuesUI(){
+  mountEl.innerHTML = "";
+  domIndex = {};
+
+  issues.forEach((iss, idx)=>{
+    const items = feedIndex[iss.key] || [];
+    const card = buildIssueCard(iss, items);
+    card.style.display = (idx===0) ? "block" : "none";
+    mountEl.appendChild(card);
+  });
+
+  setActiveIssue(activeIssueKey || issues[0]?.key || "");
+}
+
+/* =======================
+   CATEGORY DROPDOWN
+======================= */
+function rebuildCategorySelectForActive(){
+  const items = feedIndex[activeIssueKey] || [];
+  const set = new Set(["__all__"]);
+  items.forEach(it => (it.categories||["Uncategorized"]).forEach(c=>set.add(c)));
+  const prev = categorySelect.value || "__all__";
+  categorySelect.innerHTML = "";
+  Array.from(set).sort((a,b)=>{
+    if(a==="__all__") return -1;
+    if(b==="__all__") return 1;
+    return a.localeCompare(b);
+  }).forEach(c=>{
+    const opt = document.createElement("option");
+    opt.value = (c==="__all__") ? "__all__" : c.toLowerCase();
+    opt.textContent = (c==="__all__") ? "All categories" : c;
+    categorySelect.appendChild(opt);
+  });
+  // try keep selection
+  if(Array.from(categorySelect.options).some(o=>o.value===prev)) categorySelect.value = prev;
+  else categorySelect.value = "__all__";
+}
+
+/* =======================
+   SEARCH + FILTER + SORT
+======================= */
+function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function highlight(text, query){
+  if(!query) return escapeHtml(text);
+  const r = new RegExp(`(${escapeRegExp(query)})`, "ig");
+  return escapeHtml(text).replace(r, "<mark>$1</mark>");
+}
+
+function applySearchAndCategory(){
+  const q = (searchInput.value || "").trim().toLowerCase();
+  const cat = categorySelect.value || "__all__";
+  const sortMode = sortSelect.value || "newest";
+
+  const nodes = (domIndex[activeIssueKey]?.feedNodes) || [];
+  let visible = [];
+
+  nodes.forEach(n=>{
+    const title = n.dataset.rawTitle || "";
+    const desc  = n.dataset.rawDesc || "";
+    const text = (title + " " + desc).toLowerCase();
+    const cats = (n.dataset.categories || "");
+    const passQ = !q || text.includes(q);
+    const passC = (cat==="__all__") || cats.includes(cat);
+    const passKid = !kidSafe || !kidSafeReject(text);
+    const show = passQ && passC && passKid;
+
+    n.style.display = show ? "flex" : "none";
+    if(show) visible.push(n);
+
+    // highlight
+    const titleLink = n.querySelector(".feed-title a");
+    const descEl = n.querySelector(".feed-desc");
+    if(titleLink) titleLink.innerHTML = highlight(title, q);
+    if(descEl) descEl.innerHTML = highlight(desc.slice(0,260) + (desc.length>260?"…":""), q);
+  });
+
+  // sort visible nodes
+  visible.sort((a,b)=>{
+    if(sortMode==="spicy" && !kidSafe){
+      const sa = parseFloat(a.dataset.spicy||"0") || 0;
+      const sb = parseFloat(b.dataset.spicy||"0") || 0;
+      return sb - sa;
+    }
+    const da = Date.parse(a.dataset.pub||"") || 0;
+    const db = Date.parse(b.dataset.pub||"") || 0;
+    return db - da;
+  });
+
+  // re-append in sorted order
+  const content = domIndex[activeIssueKey]?.contentDiv;
+  if(content){
+    visible.forEach(n => content.appendChild(n));
+    // keep height correct if open
+    if(content.style.maxHeight && content.style.maxHeight !== "0px"){
+      content.style.maxHeight = content.scrollHeight + "px";
+    }
+  }
+
+  // Update spotlight chips note with current modes
+  updateSpotNote();
+}
+
+function debounce(fn, delay){
+  let t;
+  return (...args)=>{
+    clearTimeout(t);
+    t = setTimeout(()=>fn(...args), delay);
+  };
+}
+
+/* =======================
+   SPOTLIGHT RENDER + ACTIONS
+======================= */
+function updateSpotNote(){
+  const bits = [];
+  bits.push(`Refresh: hourly`);
+  bits.push(`Mode: ${kidSafe ? "Kid-Safe (spicy off)" : "Standard (spicy on)"}`);
+  bits.push(`Sort: ${sortSelect.value==="spicy" && !kidSafe ? "Spicy" : "Newest"}`);
+  spotNote.textContent = bits.join(" · ");
+}
+
+function setSpotlight(item){
+  spotlightItem = item;
+  if(!item){
+    spotTitle.textContent = "Couldn’t load spotlight right now.";
+    spotDesc.textContent = "Check connection and refresh. Cached feeds may appear shortly.";
+    spotImg.src = "https://via.placeholder.com/1200x520?text=No+Spotlight";
+    spotChips.innerHTML = "";
+    updateSpotNote();
+    return;
+  }
+
+  spotTitle.textContent = item.title || "(no title)";
+  spotDesc.textContent = (stripHtml(item.description||"") || "").slice(0, 420) + ((stripHtml(item.description||"")||"").length>420 ? "…" : "");
+  spotImg.src = item.image || "https://via.placeholder.com/1200x520?text=No+Image";
+  spotImg.alt = item.title || "";
+
+  const chips = [];
+  if(item.issueTitle) chips.push(item.issueTitle);
+  if(item.outletName) chips.push(item.outletName);
+  if(item.pubDate){
+    try{ chips.push(new Date(item.pubDate).toLocaleString()); }catch(e){}
+  }
+  if(!kidSafe){
+    chips.push(`Spicy: ${(item.spicy||0).toFixed ? (item.spicy||0).toFixed(1) : item.spicy}`);
+  }
+  spotChips.innerHTML = chips.map(c=>`<span class="chip">${escapeHtml(c)}</span>`).join("");
+  updateSpotNote();
+
+  spotOpenBtn.onclick = ()=>{ if(item.link) window.open(item.link, "_blank", "noopener"); };
+  spotFavBtn.onclick  = ()=>{ upsertList(FAV_KEY, exportSpotItem()); toast("Saved to Favorites ⭐"); };
+  spotReadBtn.onclick = ()=>{ upsertList(READ_KEY, exportSpotItem()); toast("Saved to Reading List 📚"); };
+  spotCopyBtn.onclick = ()=>{ copyText(item.link||""); };
+  spotShareBtn.onclick= ()=>{ shareItem(exportSpotItem()); };
+}
+
+function exportSpotItem(){
+  if(!spotlightItem) return {};
+  return {
+    title: spotlightItem.title || "",
+    link: spotlightItem.link || "",
+    pubDate: spotlightItem.pubDate || "",
+    description: stripHtml(spotlightItem.description||""),
+    image: spotlightItem.image || "",
+    issue: spotlightItem.issueKey || "",
+    issueTitle: spotlightItem.issueTitle || "",
+    outlet: spotlightItem.outletId || "",
+    outletName: spotlightItem.outletName || ""
+  };
+}
+
+/* =======================
+   SHARE / COPY
+======================= */
+async function copyText(text){
+  if(!text){ toast("No link to copy."); return; }
+  try{
+    await navigator.clipboard.writeText(text);
+    toast("Link copied 🔗");
+  }catch(e){
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    toast("Link copied 🔗");
+  }
+}
+
+function shareItem(item){
+  const url = item.link || "";
+  const title = item.title || "News";
+  const text = (item.description || "").slice(0, 180);
+
+  if(navigator.share){
+    navigator.share({ title, text, url }).catch(()=>{});
+    return;
+  }
+
+  // fallback: open a simple share picker (new tabs)
+  const x = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+  const fb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  const li = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+  window.open(x, "_blank", "noopener");
+  window.open(fb, "_blank", "noopener");
+  window.open(li, "_blank", "noopener");
+  toast("Opened share tabs 📣");
+}
+
+/* =======================
+   DRAWER: Lists + Outlets
+======================= */
+function openDrawer(mode){
+  drawer.classList.add("open");
+  drawerContent.innerHTML = "";
+
+  if(mode==="lists"){
+    drawerTitle.textContent = "⭐ Lists";
+    drawerSubtitle.textContent = "Favorites + Reading List (stored on this device).";
+    const favs = getFavs();
+    const reads = getReads();
+
+    drawerContent.innerHTML += `<p class="note"><b>Favorites:</b> ${favs.length} · <b>Reading List:</b> ${reads.length}</p>`;
+
+    drawerContent.innerHTML += `<h4 style="margin:0.4rem 0 0.6rem;">⭐ Favorites</h4>`;
+    drawerContent.innerHTML += (favs.length ? "" : `<p class="note">No favorites yet.</p>`);
+    favs.slice(0,80).forEach(it=>{
+      drawerContent.appendChild(renderSavedItem(it, "fav"));
+    });
+
+    drawerContent.innerHTML += `<h4 style="margin:0.9rem 0 0.6rem;">📚 Reading List</h4>`;
+    drawerContent.innerHTML += (reads.length ? "" : `<p class="note">No reading list items yet.</p>`);
+    reads.slice(0,80).forEach(it=>{
+      drawerContent.appendChild(renderSavedItem(it, "read"));
+    });
+
+    drawerClear.onclick = ()=>{
+      localStorage.setItem(FAV_KEY, "[]");
+      localStorage.setItem(READ_KEY, "[]");
+      toast("Lists cleared.");
+      openDrawer("lists");
+    };
+  }
+
+  if(mode==="outlets"){
+    drawerTitle.textContent = "🗞️ Outlets";
+    drawerSubtitle.textContent = `Select up to ${MAX_ENABLED_OUTLETS} outlets for Spotlight sourcing (uses RSS when known, otherwise Google News RSS site:domain).`;
+
+    const note = document.createElement("p");
+    note.className = "note";
+    note.textContent = "Tip: Fewer outlets = faster refresh. Spotlight uses these outlets + your issue feeds.";
+    drawerContent.appendChild(note);
+
+    // search box
+    const sWrap = document.createElement("div");
+    sWrap.style.display="flex";
+    sWrap.style.gap="0.5rem";
+    sWrap.style.alignItems="center";
+    sWrap.style.margin="0 0 0.7rem";
+    sWrap.innerHTML = `<input id="outletSearch" placeholder="Search outlets…" style="flex:1;padding:0.65rem 0.75rem;border-radius:12px;border:1px solid var(--border);font-size:0.85rem;">`;
+    drawerContent.appendChild(sWrap);
+
+    const list = document.createElement("div");
+    drawerContent.appendChild(list);
+
+    function renderOutletList(filter=""){
+      list.innerHTML = "";
+      const f = (filter||"").toLowerCase();
+      OUTLETS
+        .filter(o => !f || (o.name.toLowerCase().includes(f) || o.region.toLowerCase().includes(f) || o.topic.toLowerCase().includes(f)))
+        .forEach(o=>{
+          const row = document.createElement("div");
+          row.className = "list-item";
+          const checked = enabledOutletIds.includes(o.id);
+          row.innerHTML = `
+            <div style="display:flex;justify-content:space-between;gap:0.6rem;align-items:flex-start;">
+              <div>
+                <p class="lt" style="margin:0;">${escapeHtml(o.name)}</p>
+                <p class="lm" style="margin:0.2rem 0 0;">
+                  ${escapeHtml(o.region)} · ${escapeHtml(o.country)} · ${escapeHtml(o.language)} · ${escapeHtml(o.topic)}
+                </p>
+                <p class="lm" style="margin:0.25rem 0 0;">
+                  Feed: <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">${escapeHtml(outletFeedUrl(o))}</span>
+                </p>
+              </div>
+              <label style="display:flex;gap:0.35rem;align-items:center;font-weight:900;">
+                <input type="checkbox" ${checked ? "checked":""} data-outlet="${escapeAttr(o.id)}">
+                Use
+              </label>
+            </div>
+          `;
+          list.appendChild(row);
+        });
+
+      list.querySelectorAll("input[type='checkbox'][data-outlet]").forEach(cb=>{
+        cb.addEventListener("change", ()=>{
+          const id = cb.getAttribute("data-outlet");
+          let ids = enabledOutletIds.slice();
+          if(cb.checked){
+            if(ids.length >= MAX_ENABLED_OUTLETS){
+              cb.checked = false;
+              toast(`Max ${MAX_ENABLED_OUTLETS} outlets.`);
+              return;
+            }
+            if(!ids.includes(id)) ids.push(id);
+          }else{
+            ids = ids.filter(x=>x!==id);
+          }
+          enabledOutletIds = ids;
+          saveEnabledOutlets(enabledOutletIds);
+        });
+      });
+    }
+
+    renderOutletList("");
+
+    const outletSearch = sWrap.querySelector("#outletSearch");
+    outletSearch.addEventListener("input", debounce(()=>renderOutletList(outletSearch.value), 180));
+
+    drawerClear.onclick = ()=>{
+      enabledOutletIds = loadEnabledOutlets(); // revert to defaults
+      saveEnabledOutlets(enabledOutletIds);
+      toast("Outlet selection reset.");
+      openDrawer("outlets");
+    };
+  }
+}
+
+function renderSavedItem(it, kind){
+  const box = document.createElement("div");
+  box.className = "list-item";
+  box.innerHTML = `
+    <p class="lt">${escapeHtml(it.title||"(no title)")}</p>
+    <p class="lm">${escapeHtml((it.pubDate||"") ? new Date(it.pubDate).toLocaleString() : "")}${it.issueTitle ? " · " + escapeHtml(it.issueTitle) : ""}${it.outletName ? " · " + escapeHtml(it.outletName) : ""}</p>
+    <p class="lm">${escapeHtml((it.description||"").slice(0, 160))}${(it.description||"").length>160?"…":""}</p>
+    <div class="la">
+      ${it.link ? `<a class="a" href="${escapeAttr(it.link)}" target="_blank" rel="noopener">Open ↗</a>` : ""}
+      <span class="a" data-act="copy">🔗 Copy</span>
+      <span class="a" data-act="share">📣 Share</span>
+      <span class="a" data-act="remove">🗑️ Remove</span>
+    </div>
+  `;
+  box.querySelector("[data-act='copy']")?.addEventListener("click", ()=>copyText(it.link||""));
+  box.querySelector("[data-act='share']")?.addEventListener("click", ()=>shareItem(it));
+  box.querySelector("[data-act='remove']")?.addEventListener("click", ()=>{
+    removeFromList(kind==="fav" ? FAV_KEY : READ_KEY, it);
+    toast("Removed.");
+    openDrawer("lists");
+  });
+  return box;
+}
+
+drawerClose.onclick = ()=> drawer.classList.remove("open");
+
+/* =======================
+   TOAST
+======================= */
+let toastTimer = null;
+function toast(msg){
+  let el = document.getElementById("toast");
+  if(!el){
+    el = document.createElement("div");
+    el.id = "toast";
+    el.style.position="fixed";
+    el.style.left="50%";
+    el.style.bottom="18px";
+    el.style.transform="translateX(-50%)";
+    el.style.padding="10px 14px";
+    el.style.borderRadius="999px";
+    el.style.background="rgba(17,24,39,0.92)";
+    el.style.color="#fff";
+    el.style.fontWeight="900";
+    el.style.fontSize="0.8rem";
+    el.style.zIndex="80";
+    el.style.boxShadow="0 10px 30px rgba(0,0,0,0.25)";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity="1";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.style.opacity="0"; }, 1800);
+}
+
+/* =======================
+   HELPERS
+======================= */
+function escapeHtml(s){
+  return String(s||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+function escapeAttr(s){ return escapeHtml(s).replace(/"/g,"&quot;"); }
+
+function exportItemFromNode(node, issue){
+  return {
+    title: node.dataset.rawTitle || "",
+    link: node.dataset.link || "",
+    pubDate: node.dataset.pub || "",
+    description: node.dataset.rawDesc || "",
+    image: node.dataset.image || "",
+    issue: issue.key,
+    issueTitle: issue.title,
+    outlet: "",
+    outletName: ""
+  };
+}
+
+/* =======================
+   LOAD: CACHE + NETWORK
+======================= */
+function loadCache(){
+  const raw = localStorage.getItem(CACHE_KEY);
+  if(!raw) return null;
+  const obj = safeParse(raw, null);
+  if(!obj || !obj.ts || !obj.data) return null;
+  return obj;
+}
+function saveCache(data){
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+}
+
+async function loadAllIssues(force=false){
+  // 1) paint quickly from cache
+  const cache = loadCache();
+  const age = cache ? (Date.now() - cache.ts) : Infinity;
+  if(!force && cache && age < (55*60*1000)){
+    feedIndex = cache.data || {};
+    rebuildIssuesUI();
+    rebuildCategorySelectForActive();
+    applySearchAndCategory();
+    // still refresh spotlight with newest cache
+    rebuildSpotlightFromCurrent();
+  }
+
+  // 2) fetch fresh
+  const fresh = {};
+  for(const iss of issues){
+    const urls = (iss.sources||[]).slice(0, 8);
+    const results = await Promise.allSettled(urls.map(u=>fetchFeed(u)));
+    let items = [];
+    results.forEach(r=>{
+      if(r.status==="fulfilled") items = items.concat(r.value||[]);
+    });
+
+    // tag issue + basic normalization
+    items.forEach(it=>{
+      it.issueKey = iss.key;
+      it.issueTitle = iss.title;
+      it.issueColor = iss.color;
+    });
+
+    // dedupe by link+title
+    const seen = new Set();
+    items = items.filter(it=>{
+      const id = (it.link||"") + "::" + (it.title||"");
+      if(seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+
+    // kid-safe filter applied later in UI, but we also keep all for toggles.
+    fresh[iss.key] = items;
+  }
+
+  // 3) outlet feeds for spotlight pool (small, max enabled)
+  const enabled = enabledOutletIds.slice(0, MAX_ENABLED_OUTLETS);
+  const outletObjs = OUTLETS.filter(o=>enabled.includes(o.id));
+  let outletItems = [];
+  const outletUrls = outletObjs.map(o=>({ outlet:o, url: outletFeedUrl(o) })).filter(x=>x.url);
+
+  // fetch outlets in parallel (small)
+  const outletRes = await Promise.allSettled(outletUrls.map(x=>fetchFeed(x.url)));
+  outletRes.forEach((r, i)=>{
+    if(r.status==="fulfilled"){
+      const outlet = outletUrls[i].outlet;
+      (r.value||[]).forEach(it=>{
+        it.outletId = outlet.id;
+        it.outletName = outlet.name;
+        it.issueKey = it.issueKey || ""; // not an issue; used in spotlight
+      });
+      outletItems = outletItems.concat(r.value||[]);
+    }
+  });
+
+  // store outlet pool in a special key
+  fresh["__outlets__"] = outletItems;
+
+  // compute spicy per issue + outlet pool
+  Object.keys(fresh).forEach(k=>{
+    computeSpicyScores(fresh[k]);
+  });
+
+  // adopt as live
+  feedIndex = fresh;
+  saveCache(fresh);
+
+  // render UI
+  rebuildIssuesUI();
+  rebuildCategorySelectForActive();
+  applySearchAndCategory();
+  rebuildSpotlightFromCurrent();
+
+  toast("Feeds refreshed.");
+}
+
+function rebuildSpotlightFromCurrent(){
+  // Build global pool = active issue feeds + all issues + outlet pool
+  let all = [];
+  issues.forEach(iss=>{
+    all = all.concat(feedIndex[iss.key] || []);
+  });
+  all = all.concat(feedIndex["__outlets__"] || []);
+
+  // attach outlet names to issue items if missing
+  // (optional; most issue feeds won't have outlet info)
+  const picked = pickSpotlight(all);
+  if(!picked){ setSpotlight(null); return; }
+
+  // give fallback outlet label
+  if(!picked.outletName){
+    // try infer from link domain
+    const d = domainFromUrl(picked.link||"");
+    if(d) picked.outletName = d;
+  }
+  setSpotlight(picked);
+}
+
+/* =======================
+   ACCESSIBILITY CONTROLS
+======================= */
+function applyContrast(){
+  document.body.classList.toggle("contrast", highContrast);
+  localStorage.setItem("dash_contrast", highContrast ? "1":"0");
+}
+function applyKid(){
+  localStorage.setItem("dash_kidSafe", kidSafe ? "1":"0");
+  kidBtn.textContent = kidSafe ? "🧒 Kid-Safe: ON" : "🧒 Kid-Safe: OFF";
+  // re-score spicy (disables if kidSafe)
+  // (we do it for current cached data)
+  Object.keys(feedIndex).forEach(k=>computeSpicyScores(feedIndex[k]||[]));
+  rebuildSpotlightFromCurrent();
+  applySearchAndCategory();
+}
+
+function applyFont(px){
+  document.documentElement.style.setProperty("--fs", px + "px");
+  fsVal.textContent = px + "px";
+  localStorage.setItem("dash_fs", String(px));
+}
+
+/* =======================
+   EVENTS
+======================= */
+searchInput.addEventListener("input", debounce(applySearchAndCategory, 220));
+categorySelect.addEventListener("change", applySearchAndCategory);
+sortSelect.addEventListener("change", applySearchAndCategory);
+
+contrastBtn.addEventListener("click", ()=>{
+  highContrast = !highContrast;
+  applyContrast();
+});
+
+kidBtn.addEventListener("click", ()=>{
+  kidSafe = !kidSafe;
+  applyKid();
+});
+
+refreshBtn.addEventListener("click", ()=> loadAllIssues(true));
+
+listsBtn.addEventListener("click", ()=> openDrawer("lists"));
+outletsBtn.addEventListener("click", ()=> openDrawer("outlets"));
+
+/* =======================
+   INIT
+======================= */
+(function init(){
+  // load prefs
+  applyContrast();
+  applyKid();
+
+  const savedFs = parseInt(localStorage.getItem("dash_fs") || "22", 10);
+  const fs = (isFinite(savedFs) ? Math.min(34, Math.max(22, savedFs)) : 22);
+  fsRange.value = fs;
+  applyFont(fs);
+  fsRange.addEventListener("input", ()=> applyFont(parseInt(fsRange.value,10)));
+
+  // build tabs
+  renderTabs();
+  activeIssueKey = issues[0]?.key || "";
+  setActiveIssue(activeIssueKey);
+
+  // load data
+  loadAllIssues(false);
+
+  // Hourly refresh (feeds + spotlight)
+  setInterval(()=> loadAllIssues(false), 60 * 60 * 1000);
+
+  // If user just wants spotlight to reshuffle hourly without refetching:
+  setInterval(()=> rebuildSpotlightFromCurrent(), 60 * 60 * 1000);
+})();
+</script>
+</body>
+</html>
