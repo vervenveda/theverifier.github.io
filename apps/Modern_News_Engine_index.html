@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Verifier — Modern News Engine by Jennifer Pearl</title>
+<meta name="description" content="The Verifier News Engine at VervenVeda.com — a modern, searchable, global news portal by Jennifer Pearl." />
+<style>
+  :root{
+    --bg:#f6f1e8;
+    --bg2:#fffaf1;
+    --ink:#111827;
+    --muted:#5b6472;
+    --card:#ffffff;
+    --card2:#f8fafc;
+    --line:#e4dac8;
+    --navy:#101a2e;
+    --navy2:#17233d;
+    --gold:#c99a38;
+    --blue:#2563eb;
+    --red:#b91c1c;
+    --green:#0f766e;
+    --purple:#7c3aed;
+    --shadow:0 22px 55px rgba(25,31,48,.13);
+    --radius:22px;
+    --font:17px;
+  }
+  [data-theme="dark"]{
+    --bg:#08111f;
+    --bg2:#0d1728;
+    --ink:#f8fafc;
+    --muted:#b6c1d3;
+    --card:#101a2c;
+    --card2:#0b1321;
+    --line:#263246;
+    --navy:#050914;
+    --navy2:#0b1220;
+    --gold:#f7c65d;
+    --blue:#75a7ff;
+    --shadow:0 24px 60px rgba(0,0,0,.35);
+  }
+  [data-contrast="high"]{
+    --bg:#fff;
+    --bg2:#fff;
+    --ink:#000;
+    --muted:#111;
+    --card:#fff;
+    --card2:#fff;
+    --line:#000;
+    --navy:#000;
+    --navy2:#000;
+    --gold:#000;
+    --blue:#000;
+    --shadow:none;
+  }
+  *{box-sizing:border-box}
+  html{font-size:var(--font); scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background:
+      radial-gradient(900px 420px at 15% -5%, rgba(201,154,56,.20), transparent 60%),
+      radial-gradient(900px 420px at 90% 0%, rgba(37,99,235,.12), transparent 58%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+    color:var(--ink);
+  }
+  a{color:var(--blue); text-decoration:none}
+  a:hover{text-decoration:underline}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .shell{max-width:1520px; margin:0 auto; padding:18px clamp(12px,2vw,24px) 42px}
+  .hero{
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff;
+    border-radius:30px;
+    padding:clamp(20px,4vw,44px);
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .hero:before{
+    content:"";
+    position:absolute; inset:-120px -80px auto auto;
+    width:420px; height:420px; border-radius:50%;
+    background:radial-gradient(circle, rgba(201,154,56,.36), transparent 62%);
+    z-index:-1;
+  }
+  .hero:after{
+    content:"";
+    position:absolute; inset:auto auto -150px -100px;
+    width:450px; height:450px; border-radius:50%;
+    background:radial-gradient(circle, rgba(37,99,235,.24), transparent 64%);
+    z-index:-1;
+  }
+  .hero-top{display:flex; gap:18px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap}
+  .brand-kicker{font-weight:900; letter-spacing:.18em; color:var(--gold); text-transform:uppercase; font-size:.82rem}
+  h1{font-size:clamp(2.25rem,6vw,5.25rem); line-height:.92; margin:.3rem 0 .75rem; letter-spacing:-.055em}
+  .hero p{max-width:880px; color:rgba(255,255,255,.82); line-height:1.55; margin:0}
+  .hero-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px}
+  .btn{
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--ink);
+    border-radius:999px;
+    padding:.72rem 1rem;
+    font-weight:850;
+    display:inline-flex;
+    align-items:center;
+    gap:.45rem;
+    min-height:42px;
+  }
+  .btn.primary{background:var(--gold); border-color:transparent; color:#111827}
+  .btn.dark{background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.22); color:#fff}
+  .btn.ghost{background:transparent; color:inherit}
+  .btn.small{padding:.5rem .75rem; font-size:.88rem; min-height:34px}
+  .btn.danger{border-color:rgba(185,28,28,.35); color:var(--red)}
+  .btn:hover{transform:translateY(-1px); text-decoration:none}
+  .status-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:18px}
+  .status-card{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); border-radius:18px; padding:12px 14px}
+  .status-card b{display:block; font-size:.86rem; color:#fff}
+  .status-card small{color:rgba(255,255,255,.72); line-height:1.35}
+  .notice{
+    margin:14px 0 0;
+    color:rgba(255,255,255,.75);
+    font-size:.82rem;
+    line-height:1.35;
+  }
+
+  .sticky-controls{
+    position:sticky; top:0; z-index:40;
+    margin-top:14px;
+    background:color-mix(in srgb, var(--bg2) 90%, transparent);
+    backdrop-filter: blur(18px);
+    border:1px solid var(--line);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:12px;
+  }
+  .toolbar{display:grid; grid-template-columns: minmax(220px,1.2fr) repeat(5, minmax(130px,.6fr)) auto; gap:10px; align-items:center}
+  .input,.select,textarea{
+    width:100%; border:1px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:16px; padding:.74rem .86rem; outline:none;
+  }
+  .input:focus,.select:focus,textarea:focus{border-color:var(--blue); box-shadow:0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent)}
+  .mode-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; justify-content:space-between}
+  .tabs{display:flex; gap:8px; flex-wrap:wrap}
+  .tab{border:1px solid var(--line); background:var(--card); color:var(--muted); border-radius:999px; padding:.55rem .82rem; font-weight:850; cursor:pointer}
+  .tab.active{background:var(--navy); color:#fff; border-color:var(--navy)}
+  [data-theme="dark"] .tab.active{background:var(--gold); color:#111827; border-color:var(--gold)}
+  .utility-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .live-ticker{margin-top:10px; overflow:hidden; border-radius:16px; background:var(--navy); color:#fff; border:1px solid var(--line)}
+  .ticker-track{white-space:nowrap; display:inline-block; padding:10px 0; animation:ticker 70s linear infinite}
+  .ticker-track span{margin:0 28px; color:rgba(255,255,255,.88)}
+  @keyframes ticker{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+
+  .layout{display:grid; grid-template-columns: minmax(0,1fr) 380px; gap:16px; margin-top:16px; align-items:start}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .panel.pad{padding:18px}
+  .panel-head{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:18px 18px 0; flex-wrap:wrap}
+  .panel-head h2,.side h2{font-size:1.1rem; margin:0; letter-spacing:-.02em}
+  .muted{color:var(--muted)}
+  .note{font-size:.86rem; color:var(--muted); line-height:1.45}
+
+  .spotlight{display:grid; grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr); gap:0; overflow:hidden}
+  .spot-img{min-height:360px; background:#111827; position:relative}
+  .spot-img img{width:100%; height:100%; min-height:360px; object-fit:cover; display:block}
+  .spot-img .badge{position:absolute; top:16px; left:16px}
+  .spot-body{padding:clamp(18px,3vw,34px); display:flex; flex-direction:column; gap:14px; justify-content:center}
+  .eyebrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .badge,.chip{display:inline-flex; align-items:center; gap:.35rem; border:1px solid var(--line); border-radius:999px; padding:.25rem .62rem; font-size:.76rem; font-weight:850; background:var(--card2); color:var(--muted)}
+  .badge.live{background:rgba(15,118,110,.12); color:var(--green); border-color:rgba(15,118,110,.25)}
+  .badge.verify{background:rgba(201,154,56,.16); color:color-mix(in srgb, var(--gold), #5a3c00 55%); border-color:rgba(201,154,56,.35)}
+  [data-theme="dark"] .badge.verify{color:var(--gold)}
+  .spot-title{font-size:clamp(1.55rem,3vw,2.75rem); line-height:1.03; margin:0; letter-spacing:-.045em}
+  .spot-desc{line-height:1.55; color:var(--muted); margin:0}
+  .actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+
+  .grid-wrap{max-height:72vh; overflow:auto; padding:18px; scroll-padding:20px}
+  .grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:20px; overflow:hidden; box-shadow:0 12px 28px rgba(16,24,46,.08); display:flex; flex-direction:column; min-height:100%}
+  [data-theme="dark"] .card{box-shadow:none}
+  .thumb{height:160px; background:linear-gradient(135deg,var(--navy),var(--navy2)); position:relative; overflow:hidden}
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .28s ease}
+  .card:hover .thumb img{transform:scale(1.035)}
+  .thumb .media-badge{position:absolute; top:10px; left:10px; background:rgba(0,0,0,.62); color:#fff; border-color:rgba(255,255,255,.22)}
+  .card-body{padding:14px; display:flex; flex-direction:column; gap:9px; flex:1}
+  .card-title{font-weight:950; line-height:1.18; font-size:1.02rem; margin:0}
+  .card-desc{font-size:.88rem; color:var(--muted); line-height:1.45; margin:0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+  .meta{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+  .card-actions{margin-top:auto; display:flex; gap:7px; flex-wrap:wrap}
+  .link-btn{border:1px solid var(--line); background:var(--card2); color:var(--ink); padding:.42rem .6rem; border-radius:999px; font-weight:850; font-size:.8rem; cursor:pointer}
+  .link-btn:hover{background:color-mix(in srgb, var(--gold) 18%, var(--card2)); text-decoration:none}
+
+  .side{display:grid; gap:14px; position:sticky; top:166px}
+  .side .panel{padding:16px}
+  .briefing-box{white-space:pre-wrap; background:var(--card2); border:1px solid var(--line); border-radius:16px; padding:12px; max-height:250px; overflow:auto; font-size:.88rem; line-height:1.45}
+  .trend-cloud{display:flex; gap:7px; flex-wrap:wrap}
+  .trend{border:1px solid var(--line); background:var(--card2); border-radius:999px; padding:.34rem .58rem; cursor:pointer; font-weight:850; font-size:.8rem}
+  .resource-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:14px}
+  .resource-card{border:1px solid var(--line); background:var(--card); border-radius:18px; padding:14px; min-height:122px}
+  .resource-card b{display:block; margin-bottom:6px}
+  .resource-card p{font-size:.84rem; color:var(--muted); line-height:1.38; margin:0 0 10px}
+
+  .drawer-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.36); display:none; z-index:90}
+  .drawer{position:fixed; right:0; top:0; width:min(680px,94vw); height:100vh; background:var(--card); color:var(--ink); z-index:100; transform:translateX(104%); transition:.22s ease; box-shadow:-22px 0 60px rgba(0,0,0,.22); display:flex; flex-direction:column; border-left:1px solid var(--line)}
+  .drawer.open{transform:translateX(0)}
+  .drawer-backdrop.open{display:block}
+  .drawer-head{padding:18px; background:var(--navy); color:#fff; display:flex; justify-content:space-between; gap:12px; align-items:flex-start}
+  .drawer-head h2{margin:0; font-size:1.25rem}
+  .drawer-head p{margin:.35rem 0 0; color:rgba(255,255,255,.72); font-size:.86rem; line-height:1.35}
+  .drawer-content{padding:18px; overflow:auto; flex:1}
+  .drawer-section{border:1px solid var(--line); border-radius:18px; padding:14px; margin-bottom:14px; background:var(--card2)}
+  .drawer-section h3{margin:0 0 8px; font-size:1rem}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .saved-item{border:1px solid var(--line); border-radius:16px; padding:12px; margin-bottom:10px; background:var(--card)}
+  .saved-item b{display:block; line-height:1.2}
+  .saved-item small{color:var(--muted)}
+
+  .hidden{display:none!important}
+  .footer{margin-top:22px; text-align:center; color:var(--muted); font-size:.84rem; line-height:1.45}
+  .toast{position:fixed; left:50%; bottom:18px; transform:translateX(-50%); background:var(--navy); color:#fff; padding:10px 14px; border-radius:999px; z-index:200; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.18s ease; max-width:92vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px)}
+
+  .list-view .grid{grid-template-columns:1fr}
+  .list-view .card{display:grid; grid-template-columns:260px 1fr}
+  .list-view .thumb{height:100%}
+  .compact .card-desc{display:none}
+  .compact .thumb{height:118px}
+  .compact .grid{gap:10px}
+  mark{background:#fff176; color:#111; border-radius:.2em; padding:0 .06em}
+
+  @media(max-width:1180px){
+    .toolbar{grid-template-columns:minmax(220px,1fr) repeat(2,minmax(130px,1fr));}
+    .layout{grid-template-columns:1fr}.side{position:static; grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media(max-width:760px){
+    .shell{padding:10px 10px 30px}.hero{border-radius:22px}.status-grid{grid-template-columns:1fr 1fr}.sticky-controls{border-radius:18px; position:static}.toolbar{grid-template-columns:1fr}.spotlight{grid-template-columns:1fr}.spot-img,.spot-img img{min-height:240px}.grid{grid-template-columns:1fr}.side{grid-template-columns:1fr}.resource-grid{grid-template-columns:1fr}.list-view .card{display:flex}.two-col{grid-template-columns:1fr}.grid-wrap{max-height:none;padding:12px}.hero-actions .btn{width:100%; justify-content:center}
+  }
+</style>
+</head>
+<body data-theme="light" data-contrast="normal">
+<div class="shell" id="appShell">
+  <section class="hero" aria-label="The Verifier hero">
+    <div class="hero-top">
+      <div>
+        <div class="brand-kicker">VervenVeda.com · by Jennifer Pearl</div>
+        <h1>The Verifier<br><span style="color:var(--gold)">News Engine</span></h1>
+        <p>A modern, readable global news desk for live headlines, research links, verification tools, multilingual resources, images, video leads, saved lists, watchlists, and daily social sharing.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn primary" href="https://vervenveda.com/theverifier" target="_blank" rel="noopener">Official Editorial Archive ↗</a>
+        <button class="btn dark" id="refreshHeroBtn">Refresh Live Feeds</button>
+        <button class="btn dark" id="openBriefingBtn">Generate Daily Briefing</button>
+      </div>
+    </div>
+    <div class="status-grid">
+      <div class="status-card"><b id="feedStatus">Feeds: ready</b><small>RSS/API-ready live desk with local cache fallback.</small></div>
+      <div class="status-card"><b id="storyCount">Stories: —</b><small>Searchable grid with category, region, language, and media filters.</small></div>
+      <div class="status-card"><b>Verification-first</b><small>Compare coverage, search primary records, and open fact-check resources.</small></div>
+      <div class="status-card"><b>Share daily</b><small>Copy or share a daily briefing for social platforms.</small></div>
+    </div>
+    <p class="notice">Note: Some publishers block direct feeds, embeds, or scraping. This portal uses public RSS where available, external search launchers where needed, and a graceful demo/cache fallback for a sovereign single-file deployment.</p>
+  </section>
+
+  <section class="sticky-controls" aria-label="News controls">
+    <div class="toolbar">
+      <input class="input" id="searchInput" placeholder="Search headlines, sources, countries, tags…" />
+      <select class="select" id="topicFilter"></select>
+      <select class="select" id="regionFilter"></select>
+      <select class="select" id="languageFilter"></select>
+      <select class="select" id="mediaFilter">
+        <option value="all">All media</option><option value="article">Articles</option><option value="video">Video leads</option><option value="audio">Audio/podcast</option><option value="official">Official/report</option>
+      </select>
+      <select class="select" id="sortFilter"><option value="newest">Newest</option><option value="relevance">Relevance</option><option value="watchlist">Watchlist matches</option><option value="source">Source A–Z</option></select>
+      <button class="btn primary" id="externalSearchBtn">Deep Search</button>
+    </div>
+    <div class="mode-row">
+      <div class="tabs" id="viewTabs">
+        <button class="tab active" data-view="desk">Live Desk</button>
+        <button class="tab" data-view="grid">Grid</button>
+        <button class="tab" data-view="briefing">Daily Briefing</button>
+        <button class="tab" data-view="research">Research Vault</button>
+        <button class="tab" data-view="editorials">Editorial Links</button>
+      </div>
+      <div class="utility-row">
+        <button class="btn small" id="themeBtn">Dark</button>
+        <button class="btn small" id="contrastBtn">High Contrast</button>
+        <button class="btn small" id="kidsBtn">Kid-Safe: OFF</button>
+        <button class="btn small" id="listBtn">List View</button>
+        <button class="btn small" id="compactBtn">Compact</button>
+        <button class="btn small" id="fontMinus">A−</button>
+        <button class="btn small" id="fontPlus">A+</button>
+      </div>
+    </div>
+    <div class="live-ticker" aria-label="Latest headlines ticker"><div class="ticker-track" id="tickerTrack"><span>Loading live headlines…</span></div></div>
+  </section>
+
+  <main class="layout" id="deskView">
+    <section class="panel spotlight" id="spotlightPanel">
+      <div class="spot-img"><span class="badge live">Top Story</span><img id="spotImg" alt="Top story image" /></div>
+      <div class="spot-body">
+        <div class="eyebrow" id="spotMeta"></div>
+        <h2 class="spot-title" id="spotTitle">Loading The Verifier…</h2>
+        <p class="spot-desc" id="spotDesc">Live stories will appear here after the feed loader finishes.</p>
+        <div class="actions" id="spotActions"></div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <h2>Daily Social Briefing</h2>
+        <p class="note">Generate a short daily post from the current filtered stories. Designed for copy/paste sharing.</p>
+        <div class="briefing-box" id="dailyBriefing">Click “Generate Daily Briefing.”</div>
+        <div class="actions" style="margin-top:10px">
+          <button class="btn small primary" id="generateBriefingBtn">Generate</button>
+          <button class="btn small" id="copyBriefingBtn">Copy</button>
+          <button class="btn small" id="downloadBriefingBtn">Download</button>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Watchlist & Trends</h2>
+        <p class="note">Separate keywords with commas. Matching stories can be sorted to the top.</p>
+        <textarea id="watchlistInput" placeholder="climate, election, AI, local, education"></textarea>
+        <div class="actions" style="margin-top:10px"><button class="btn small" id="saveWatchlistBtn">Save Watchlist</button><button class="btn small" id="clearSearchBtn">Clear Search</button></div>
+        <div class="trend-cloud" id="trendCloud" style="margin-top:12px"></div>
+      </section>
+      <section class="panel">
+        <h2>Saved Desk</h2>
+        <p class="note"><span id="savedCounts">Favorites: 0 · Read Later: 0</span></p>
+        <div class="actions"><button class="btn small" id="openSavedBtn">Open Saved</button><button class="btn small" id="exportBtn">Export JSON</button><label class="btn small" for="importFile">Import JSON</label><input id="importFile" type="file" accept="application/json" class="hidden"></div>
+      </section>
+    </aside>
+  </main>
+
+  <section class="panel" id="gridPanel" style="margin-top:16px">
+    <div class="panel-head">
+      <div><h2>Scrollable News Grid</h2><p class="note">Images, videos, source badges, verification actions, sharing, and translation launchers.</p></div>
+      <div class="actions"><button class="btn small" id="scrollTopBtn">Top</button><button class="btn small" id="refreshGridBtn">Refresh</button></div>
+    </div>
+    <div class="grid-wrap"><div class="grid" id="cardsGrid"></div></div>
+  </section>
+
+  <section class="panel pad hidden" id="briefingView" style="margin-top:16px">
+    <h2>Daily Briefing Studio</h2>
+    <p class="note">Create a clean daily digest from the current search/filter view. It can be copied, downloaded, or shared through the browser share sheet.</p>
+    <textarea id="briefingEditor" style="min-height:300px; margin-top:10px"></textarea>
+    <div class="actions" style="margin-top:10px"><button class="btn primary" id="regenBriefingBtn">Regenerate</button><button class="btn" id="copyBriefingEditorBtn">Copy</button><button class="btn" id="shareBriefingBtn">Share</button></div>
+  </section>
+
+  <section class="panel pad hidden" id="researchView" style="margin-top:16px">
+    <h2>Global Research & Verification Vault</h2>
+    <p class="note">Outside resources around the globe for primary records, official sources, public broadcasters, fact-checking, open data, science, finance, weather, elections, law, and media literacy.</p>
+    <div class="resource-grid" id="resourceGrid"></div>
+  </section>
+
+  <section class="panel pad hidden" id="editorialsView" style="margin-top:16px">
+    <h2>The Verifier Editorial Link Desk</h2>
+    <p class="note">Your official Verifier page can remain the public editorial archive. This desk lets you add Google Doc links locally for quick access while you work.</p>
+    <div class="actions" style="margin:12px 0"><a class="btn primary" href="https://vervenveda.com/theverifier" target="_blank" rel="noopener">Open Official Editorial Archive ↗</a></div>
+    <div class="two-col">
+      <input class="input" id="editorialTitle" placeholder="Editorial title" />
+      <input class="input" id="editorialUrl" placeholder="Google Doc or article URL" />
+    </div>
+    <div class="actions" style="margin-top:10px"><button class="btn" id="addEditorialBtn">Add Link</button><button class="btn danger" id="clearEditorialsBtn">Clear Local Links</button></div>
+    <div id="editorialList" style="margin-top:14px"></div>
+  </section>
+
+  <div class="footer">The Verifier News Engine · VervenVeda.com · by Jennifer Pearl · Built as a sovereign, single-file, vanilla HTML/CSS/JS portal.</div>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer" aria-label="Verifier drawer">
+  <div class="drawer-head"><div><h2 id="drawerTitle">Verifier</h2><p id="drawerSub">Tools and details.</p></div><button class="btn small dark" id="drawerClose">Close</button></div>
+  <div class="drawer-content" id="drawerContent"></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const bySel = sel => Array.from(document.querySelectorAll(sel));
+  const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+  const now = () => Date.now();
+  const DEFAULT_IMG = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 720'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop stop-color='#101a2e'/><stop offset='.55' stop-color='#17233d'/><stop offset='1' stop-color='#c99a38'/></linearGradient></defs><rect fill='url(#g)' width='1200' height='720'/><circle cx='920' cy='130' r='210' fill='rgba(255,255,255,.11)'/><text x='70' y='372' font-family='Arial' font-size='72' fill='white' font-weight='700'>The Verifier</text><text x='74' y='432' font-family='Arial' font-size='32' fill='rgba(255,255,255,.72)'>News Engine · VervenVeda.com</text></svg>`);
+
+  const storage = (() => {
+    const mem = new Map();
+    function can(){ try{ const k="__tv_test"; localStorage.setItem(k,"1"); localStorage.removeItem(k); return true;} catch(e){return false;} }
+    const ok = can();
+    return {
+      get(k, fallback){ try{ const raw = ok ? localStorage.getItem(k) : mem.get(k); return raw ? JSON.parse(raw) : fallback; }catch(e){ return fallback; } },
+      set(k, val){ try{ const raw = JSON.stringify(val); ok ? localStorage.setItem(k, raw) : mem.set(k, raw); }catch(e){} },
+      remove(k){ try{ ok ? localStorage.removeItem(k) : mem.delete(k); }catch(e){} }
+    };
+  })();
+
+  const LS = {
+    cache:"verifier_cache_v1", fav:"verifier_favs_v1", read:"verifier_read_v1", settings:"verifier_settings_v1", editorials:"verifier_editorials_v1", watch:"verifier_watchlist_v1"
+  };
+
+  const KID_BLOCK = ["war","wars","violence","violent","murder","kill","killed","killing","shooting","shot","gun","weapon","bomb","terror","terrorist","attack","massacre","hostage","kidnap","rape","sexual assault","genocide","blood","dead","death","fatal","fatality","torture","execution","suicide"];
+  const STOP = new Set("the,a,an,and,or,but,to,of,in,on,for,with,as,at,by,from,into,that,this,it,is,are,was,were,be,been,being,not,no,yes,do,does,did,so,if,then,than,because,about,over,under,up,down,out,very,just,also,still,yet,can,could,would,should,may,might,must,will,shall,more,most,less,much,many,some,any,all,each,every,other,another,same,own,such,only,even,here,there,when,where,why,how,what,which,who,news,said,says,report,update,latest".split(","));
+
+  const FEED_SOURCES = [
+    {id:"google-top", name:"Google News Top", region:"Global", country:"Global", language:"en", topic:"Top Stories", media:"article", url:"https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"},
+    {id:"bbc-world", name:"BBC World", region:"Europe", country:"UK", language:"en", topic:"World", media:"article", url:"https://feeds.bbci.co.uk/news/world/rss.xml"},
+    {id:"bbc-us", name:"BBC US & Canada", region:"North America", country:"USA/Canada", language:"en", topic:"U.S.", media:"article", url:"https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml"},
+    {id:"guardian-world", name:"The Guardian World", region:"Europe", country:"UK", language:"en", topic:"World", media:"article", url:"https://www.theguardian.com/world/rss"},
+    {id:"aljazeera", name:"Al Jazeera", region:"Middle East", country:"Qatar", language:"en", topic:"World", media:"article", url:"https://www.aljazeera.com/xml/rss/all.xml"},
+    {id:"dw", name:"Deutsche Welle", region:"Europe", country:"Germany", language:"en", topic:"World", media:"video", url:"https://rss.dw.com/rdf/rss-en-all"},
+    {id:"npr", name:"NPR", region:"North America", country:"USA", language:"en", topic:"U.S.", media:"audio", url:"https://feeds.npr.org/1001/rss.xml"},
+    {id:"pbs", name:"PBS NewsHour", region:"North America", country:"USA", language:"en", topic:"U.S.", media:"video", url:"https://www.pbs.org/newshour/feeds/rss/headlines"},
+    {id:"politico", name:"Politico", region:"North America", country:"USA", language:"en", topic:"Politics", media:"article", url:"https://www.politico.com/rss/politics08.xml"},
+    {id:"ft", name:"Financial Times", region:"Europe", country:"UK", language:"en", topic:"Economy", media:"article", url:"https://www.ft.com/?format=rss"},
+    {id:"epi", name:"Economic Policy Institute", region:"North America", country:"USA", language:"en", topic:"Economy", media:"official", url:"https://www.epi.org/feed/"},
+    {id:"who", name:"World Health Organization", region:"Global", country:"Global", language:"en", topic:"Health", media:"official", url:"https://www.who.int/feeds/entity/csr/don/en/rss.xml"},
+    {id:"cdc", name:"CDC Media", region:"North America", country:"USA", language:"en", topic:"Health", media:"official", url:"https://www.cdc.gov/media/rss.xml"},
+    {id:"climate", name:"Climate.gov", region:"North America", country:"USA", language:"en", topic:"Climate", media:"official", url:"https://www.climate.gov/news-features/feed"},
+    {id:"bbc-env", name:"BBC Science & Environment", region:"Europe", country:"UK", language:"en", topic:"Climate", media:"article", url:"https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"},
+    {id:"scidaily", name:"ScienceDaily", region:"Global", country:"Global", language:"en", topic:"Science", media:"article", url:"https://www.sciencedaily.com/rss/top/science.xml"},
+    {id:"scidaily-tech", name:"ScienceDaily Technology", region:"Global", country:"Global", language:"en", topic:"Technology", media:"article", url:"https://www.sciencedaily.com/rss/top/technology.xml"},
+    {id:"nasa", name:"NASA", region:"North America", country:"USA", language:"en", topic:"Space", media:"official", url:"https://www.nasa.gov/rss/dyn/breaking_news.rss"},
+    {id:"mit", name:"MIT Technology Review", region:"North America", country:"USA", language:"en", topic:"AI & Tech", media:"article", url:"https://www.technologyreview.com/feed/"},
+    {id:"verge", name:"The Verge", region:"North America", country:"USA", language:"en", topic:"AI & Tech", media:"article", url:"https://www.theverge.com/rss/index.xml"},
+    {id:"ars", name:"Ars Technica", region:"North America", country:"USA", language:"en", topic:"Technology", media:"article", url:"https://feeds.arstechnica.com/arstechnica/index"},
+    {id:"nature-ai", name:"Nature AI", region:"Global", country:"Global", language:"en", topic:"AI & Tech", media:"official", url:"https://www.nature.com/subjects/artificial-intelligence.rss"},
+    {id:"ala", name:"American Library Association", region:"North America", country:"USA", language:"en", topic:"Books & Speech", media:"official", url:"https://www.ala.org/news/rss.xml"},
+    {id:"eff", name:"Electronic Frontier Foundation", region:"North America", country:"USA", language:"en", topic:"Rights & Technology", media:"official", url:"https://www.eff.org/rss.xml"},
+    {id:"pew", name:"Pew Research Center", region:"North America", country:"USA", language:"en", topic:"Media & Society", media:"official", url:"https://www.pewresearch.org/feed/"},
+    {id:"france24-en", name:"France 24 English", region:"Europe", country:"France", language:"en", topic:"World", media:"video", url:"https://www.france24.com/en/rss"},
+    {id:"france24-fr", name:"France 24 Français", region:"Europe", country:"France", language:"fr", topic:"World", media:"video", url:"https://www.france24.com/fr/rss"},
+    {id:"france24-es", name:"France 24 Español", region:"Europe", country:"France", language:"es", topic:"World", media:"video", url:"https://www.france24.com/es/rss"}
+  ];
+
+  const RESOURCES = [
+    {cat:"Official Sources", name:"UN News", desc:"United Nations reports and statements.", url:"https://news.un.org/en/"},
+    {cat:"Official Sources", name:"World Health Organization", desc:"Global health alerts and guidance.", url:"https://www.who.int/"},
+    {cat:"Official Sources", name:"IPCC Reports", desc:"Climate science assessment reports.", url:"https://www.ipcc.ch/reports/"},
+    {cat:"Official Sources", name:"UNFCCC", desc:"Climate negotiations, documents, and official updates.", url:"https://unfccc.int/"},
+    {cat:"Official Sources", name:"Congress.gov", desc:"U.S. federal bills, laws, and legislative records.", url:"https://www.congress.gov/"},
+    {cat:"Official Sources", name:"Federal Register", desc:"U.S. agency rules, notices, and public comments.", url:"https://www.federalregister.gov/"},
+    {cat:"Official Sources", name:"GovInfo", desc:"Official U.S. government publications.", url:"https://www.govinfo.gov/"},
+    {cat:"Official Sources", name:"CourtListener", desc:"Legal opinions and court documents.", url:"https://www.courtlistener.com/"},
+    {cat:"Fact Checking", name:"AP Fact Check", desc:"Fact checks from the Associated Press.", url:"https://apnews.com/hub/fact-checking"},
+    {cat:"Fact Checking", name:"Reuters Fact Check", desc:"Reuters verification and fact-checking reports.", url:"https://www.reuters.com/fact-check/"},
+    {cat:"Fact Checking", name:"FactCheck.org", desc:"U.S. political claims and public-policy fact checks.", url:"https://www.factcheck.org/"},
+    {cat:"Fact Checking", name:"PolitiFact", desc:"Truth-O-Meter and claim tracking.", url:"https://www.politifact.com/"},
+    {cat:"Fact Checking", name:"Snopes", desc:"Rumors, misinformation, and viral claims.", url:"https://www.snopes.com/"},
+    {cat:"Fact Checking", name:"Full Fact", desc:"UK fact-checking organization.", url:"https://fullfact.org/"},
+    {cat:"Fact Checking", name:"Africa Check", desc:"Fact checking across African countries.", url:"https://africacheck.org/"},
+    {cat:"Global Outlets", name:"Associated Press", desc:"Global wire service and breaking news.", url:"https://apnews.com/"},
+    {cat:"Global Outlets", name:"Reuters", desc:"Global news and business reporting.", url:"https://www.reuters.com/"},
+    {cat:"Global Outlets", name:"BBC News", desc:"International news coverage.", url:"https://www.bbc.com/news"},
+    {cat:"Global Outlets", name:"Deutsche Welle", desc:"German international broadcaster.", url:"https://www.dw.com/"},
+    {cat:"Global Outlets", name:"Al Jazeera", desc:"International news network.", url:"https://www.aljazeera.com/"},
+    {cat:"Global Outlets", name:"France 24", desc:"International news in multiple languages.", url:"https://www.france24.com/"},
+    {cat:"Global Outlets", name:"NHK WORLD-JAPAN", desc:"Japan international news and culture.", url:"https://www3.nhk.or.jp/nhkworld/"},
+    {cat:"Open Data", name:"World Bank Data", desc:"Global economic and development data.", url:"https://data.worldbank.org/"},
+    {cat:"Open Data", name:"Our World in Data", desc:"Data and research on global change.", url:"https://ourworldindata.org/"},
+    {cat:"Open Data", name:"NOAA", desc:"Weather, ocean, and climate data.", url:"https://www.noaa.gov/"},
+    {cat:"Open Data", name:"NASA", desc:"Space, climate, earth observation, and research.", url:"https://www.nasa.gov/"},
+    {cat:"Media Literacy", name:"News Literacy Project", desc:"Tools for reading and verifying news.", url:"https://newslit.org/"},
+    {cat:"Media Literacy", name:"First Draft Archive", desc:"Misinformation research resources.", url:"https://firstdraftnews.org/"},
+    {cat:"Archives", name:"Internet Archive", desc:"Historical media, books, video, and web snapshots.", url:"https://archive.org/"},
+    {cat:"Archives", name:"American Archive of Public Broadcasting", desc:"Historic public TV and radio.", url:"https://americanarchive.org/"}
+  ];
+
+  const DEMO_ARTICLES = [
+    {title:"Welcome to The Verifier News Engine", link:"https://vervenveda.com/theverifier", description:"This demo card appears when live RSS feeds are unavailable. Use the refresh button to load current stories.", pubDate:new Date().toISOString(), source:"The Verifier", topic:"Top Stories", region:"Global", language:"en", media:"official", image:DEFAULT_IMG, demo:true},
+    {title:"Use Verify to compare coverage before sharing", link:"https://vervenveda.com/theverifier", description:"Open verification tools for any story to compare coverage, check primary records, search fact-checkers, and translate sources.", pubDate:new Date(Date.now()-3600000).toISOString(), source:"The Verifier Guide", topic:"Media Literacy", region:"Global", language:"en", media:"official", image:DEFAULT_IMG, demo:true},
+    {title:"Add your Google Doc editorials to the Editorial Link Desk", link:"https://vervenveda.com/theverifier", description:"The official editorial page can remain your public archive while this engine powers live news discovery.", pubDate:new Date(Date.now()-7200000).toISOString(), source:"VervenVeda", topic:"Editorials", region:"North America", language:"en", media:"official", image:DEFAULT_IMG, demo:true}
+  ];
+
+  let settings = storage.get(LS.settings, {theme:"light", contrast:"normal", font:17, kids:false, compact:false, list:false});
+  let allArticles = storage.get(LS.cache, []);
+  let filteredArticles = [];
+  let currentView = "desk";
+  let lastRefresh = 0;
+
+  function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+  function stripHtml(html){ const d=document.createElement("div"); d.innerHTML=html||""; return (d.textContent||d.innerText||"").replace(/\s+/g," ").trim(); }
+  function domain(url){ try{return new URL(url).hostname.replace(/^www\./,"");}catch(e){return "";} }
+  function dateMs(d){ const n=Date.parse(d||""); return Number.isFinite(n)?n:0; }
+  function fmtDate(d){ try{ return d ? new Date(d).toLocaleString([], {month:"short", day:"2-digit", hour:"numeric", minute:"2-digit"}) : "undated";}catch(e){return "undated";} }
+  function words(text){ return String(text||"").toLowerCase().replace(/https?:\/\/\S+/g," ").replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w.length>2&&!STOP.has(w)); }
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove("show"),2200); }
+  function saveSettings(){ storage.set(LS.settings, settings); }
+  function applySettings(){
+    document.body.dataset.theme=settings.theme||"light"; document.body.dataset.contrast=settings.contrast||"normal";
+    document.documentElement.style.setProperty("--font", (settings.font||17)+"px");
+    $("appShell").classList.toggle("compact", !!settings.compact); $("appShell").classList.toggle("list-view", !!settings.list);
+    $("themeBtn").textContent = settings.theme==="dark" ? "Light" : "Dark"; $("contrastBtn").textContent = settings.contrast==="high" ? "Normal Contrast" : "High Contrast";
+    $("kidsBtn").textContent = `Kid-Safe: ${settings.kids?"ON":"OFF"}`; $("listBtn").textContent = settings.list ? "Grid View" : "List View"; $("compactBtn").textContent = settings.compact ? "Comfort" : "Compact";
+  }
+
+  function getImageFromXml(node){
+    const getAttr = (tag, attr) => { const el = node.getElementsByTagName(tag)[0]; return el ? el.getAttribute(attr) : ""; };
+    return getAttr("media:thumbnail","url") || getAttr("media:content","url") || getAttr("enclosure","url") || extractImage(node.querySelector("description")?.textContent||"") || "";
+  }
+  function extractImage(html){ try{ const d=document.createElement("div"); d.innerHTML=html||""; const img=d.querySelector("img"); return img?img.src||img.getAttribute("src")||"":"";}catch(e){return "";} }
+  function inferMedia(item, src){
+    const text = `${item.link||""} ${item.title||""} ${item.description||""}`.toLowerCase();
+    if(src.media==="official") return "official";
+    if(text.includes("youtube") || text.includes("video") || text.match(/\.(mp4|webm|mov)(\?|$)/)) return "video";
+    if(text.includes("podcast") || text.includes("audio") || text.match(/\.(mp3|wav|m4a)(\?|$)/)) return "audio";
+    return src.media || "article";
+  }
+
+  async function fetchText(url, timeout=12000){
+    const controller = new AbortController(); const timer = setTimeout(()=>controller.abort(), timeout);
+    try{ const res = await fetch(url, {signal:controller.signal, cache:"no-store"}); if(!res.ok) throw new Error("HTTP "+res.status); return await res.text(); }
+    finally{ clearTimeout(timer); }
+  }
+  async function fetchFeed(src){
+    const attempts = [
+      {type:"allorigins", url:"https://api.allorigins.win/get?url=" + encodeURIComponent(src.url)},
+      {type:"rss2json", url:"https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(src.url)}
+    ];
+    for(const at of attempts){
+      try{
+        const raw = await fetchText(at.url);
+        if(at.type==="rss2json"){
+          const data = JSON.parse(raw);
+          if(Array.isArray(data.items)) return data.items.slice(0,10).map(it=>normalizeArticle({title:it.title, link:it.link, description:it.description, pubDate:it.pubDate, image:it.thumbnail || it.enclosure?.link || extractImage(it.description||"")}, src));
+        } else {
+          const data = JSON.parse(raw); const xmlText = data.contents || ""; if(!xmlText) throw new Error("No contents");
+          const doc = new DOMParser().parseFromString(xmlText, "text/xml");
+          let nodes = Array.from(doc.querySelectorAll("item")); let atom=false;
+          if(!nodes.length){ nodes=Array.from(doc.querySelectorAll("entry")); atom=true; }
+          if(!nodes.length) throw new Error("No items");
+          return nodes.slice(0,10).map(n=>{
+            const title=n.querySelector("title")?.textContent?.trim()||"Untitled";
+            let link=""; if(atom){ const l=n.querySelector("link[rel='alternate']") || n.querySelector("link"); link=l?.getAttribute("href")||"";} else link=n.querySelector("link")?.textContent?.trim()||"";
+            const pubDate=n.querySelector("pubDate")?.textContent || n.querySelector("updated")?.textContent || n.querySelector("published")?.textContent || "";
+            const desc=n.querySelector("description")?.textContent || n.querySelector("summary")?.textContent || n.querySelector("content")?.textContent || "";
+            const image=getImageFromXml(n);
+            return normalizeArticle({title, link, description:desc, pubDate, image}, src);
+          });
+        }
+      }catch(e){ console.warn("feed failed", src.name, at.type, e); }
+    }
+    return [];
+  }
+
+  function normalizeArticle(it, src){
+    const desc = stripHtml(it.description||"");
+    return { id: `${it.link||src.id}::${it.title}`.slice(0,650), title: stripHtml(it.title||"Untitled"), link: it.link||src.url, description: desc, pubDate: it.pubDate||"", source: src.name, sourceId:src.id, topic:src.topic, region:src.region, country:src.country, language:src.language, media: inferMedia({...it, description:desc}, src), image: it.image || DEFAULT_IMG, sourceUrl: src.url };
+  }
+
+  async function loadAllFeeds(force=false){
+    $("feedStatus").textContent="Feeds: loading…";
+    const cached = storage.get(LS.cache, []);
+    if(!force && cached.length){ allArticles=cached; renderAll(); }
+    const sources = FEED_SOURCES.slice(0, 28);
+    const chunks = [];
+    let completed = 0;
+    await Promise.allSettled(sources.map(async src=>{
+      const items = await fetchFeed(src); chunks.push(...items); completed++; $("feedStatus").textContent=`Feeds: ${completed}/${sources.length}`;
+    }));
+    if(chunks.length){
+      const seen = new Set();
+      allArticles = chunks.filter(a=>{ const key=(a.link||"")+"::"+(a.title||""); if(seen.has(key)) return false; seen.add(key); return true; }).sort((a,b)=>dateMs(b.pubDate)-dateMs(a.pubDate));
+      storage.set(LS.cache, allArticles); lastRefresh = now();
+      $("feedStatus").textContent=`Feeds: live ${new Date().toLocaleTimeString([], {hour:"numeric", minute:"2-digit"})}`;
+      toast("The Verifier feeds refreshed.");
+    } else {
+      allArticles = cached.length ? cached : DEMO_ARTICLES;
+      $("feedStatus").textContent = cached.length ? "Feeds: cache mode" : "Feeds: demo mode";
+      toast("Live feeds unavailable; showing cache/demo cards.");
+    }
+    renderAll();
+  }
+
+  function initFilters(){
+    const topics=["all",...new Set(FEED_SOURCES.map(s=>s.topic))];
+    const regions=["all",...new Set(FEED_SOURCES.map(s=>s.region))];
+    const langs=["all",...new Set(FEED_SOURCES.map(s=>s.language))];
+    $("topicFilter").innerHTML=topics.map(x=>`<option value="${esc(x)}">${x==="all"?"All topics":esc(x)}</option>`).join("");
+    $("regionFilter").innerHTML=regions.map(x=>`<option value="${esc(x)}">${x==="all"?"All regions":esc(x)}</option>`).join("");
+    $("languageFilter").innerHTML=langs.map(x=>`<option value="${esc(x)}">${x==="all"?"All languages":esc(x)}</option>`).join("");
+  }
+  function matchesWatch(a){ const keys = getWatchlist(); if(!keys.length) return 0; const text=`${a.title} ${a.description} ${a.topic} ${a.source}`.toLowerCase(); return keys.filter(k=>text.includes(k.toLowerCase())).length; }
+  function getWatchlist(){ return String($("watchlistInput")?.value || storage.get(LS.watch, "AI, climate, election, education, local, rights, economy")).split(/[;,\n]/).map(s=>s.trim()).filter(Boolean); }
+  function kidReject(a){ if(!settings.kids) return false; const text=`${a.title} ${a.description}`.toLowerCase(); return KID_BLOCK.some(k=>text.includes(k)); }
+  function applyFilters(){
+    const q=$("searchInput").value.trim().toLowerCase(), topic=$("topicFilter").value, region=$("regionFilter").value, lang=$("languageFilter").value, media=$("mediaFilter").value, sort=$("sortFilter").value;
+    filteredArticles = allArticles.filter(a => {
+      const text=`${a.title} ${a.description} ${a.source} ${a.topic} ${a.region} ${a.country} ${a.language}`.toLowerCase();
+      return (!q || text.includes(q)) && (topic==="all"||a.topic===topic) && (region==="all"||a.region===region) && (lang==="all"||a.language===lang) && (media==="all"||a.media===media) && !kidReject(a);
+    });
+    if(sort==="newest") filteredArticles.sort((a,b)=>dateMs(b.pubDate)-dateMs(a.pubDate));
+    if(sort==="relevance") filteredArticles.sort((a,b)=>score(b,q)-score(a,q));
+    if(sort==="watchlist") filteredArticles.sort((a,b)=>matchesWatch(b)-matchesWatch(a) || dateMs(b.pubDate)-dateMs(a.pubDate));
+    if(sort==="source") filteredArticles.sort((a,b)=>a.source.localeCompare(b.source));
+  }
+  function score(a,q){ let s=0; if(q){ const t=`${a.title} ${a.description}`.toLowerCase(); if(t.includes(q)) s+=10; } s+=matchesWatch(a)*5; s+=Math.max(0, (dateMs(a.pubDate)-Date.now()+7*864e5)/864e5); return s; }
+  function renderAll(){ applyFilters(); renderSpotlight(); renderCards(); renderTicker(); renderTrends(); updateCounts(); renderBriefing(false); }
+  function updateCounts(){ $("storyCount").textContent=`Stories: ${filteredArticles.length}/${allArticles.length}`; const fav=storage.get(LS.fav,[]).length, read=storage.get(LS.read,[]).length; $("savedCounts").textContent=`Favorites: ${fav} · Read Later: ${read}`; }
+  function qHighlight(text){ const q=$("searchInput").value.trim(); if(!q) return esc(text); return esc(text).replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})`,"ig"),"<mark>$1</mark>"); }
+  function renderSpotlight(){
+    const a=filteredArticles[0] || DEMO_ARTICLES[0];
+    $("spotImg").src=a.image||DEFAULT_IMG; $("spotTitle").innerHTML=qHighlight(a.title); $("spotDesc").textContent=a.description||"";
+    $("spotMeta").innerHTML=[a.source,a.topic,a.region,a.language?.toUpperCase(),fmtDate(a.pubDate),a.media].filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join("");
+    $("spotActions").innerHTML = actionButtonsHtml(a, true);
+    bindActionButtons($("spotActions"), a);
+  }
+  function actionButtonsHtml(a, spotlight=false){
+    return `<a class="btn ${spotlight?"primary":"small"}" href="${esc(a.link)}" target="_blank" rel="noopener">Open ↗</a>
+      <button class="${spotlight?"btn":"link-btn"}" data-act="verify">Verify</button>
+      <button class="${spotlight?"btn":"link-btn"}" data-act="fav">⭐</button>
+      <button class="${spotlight?"btn":"link-btn"}" data-act="read">Read Later</button>
+      <button class="${spotlight?"btn":"link-btn"}" data-act="share">Share</button>
+      <button class="${spotlight?"btn":"link-btn"}" data-act="translate">Translate</button>`;
+  }
+  function renderCards(){
+    const grid=$("cardsGrid");
+    if(!filteredArticles.length){ grid.innerHTML=`<div class="panel pad"><b>No stories match this search.</b><p class="note">Try clearing filters, turning off Kid-Safe, or refreshing feeds.</p></div>`; return; }
+    grid.innerHTML=filteredArticles.map((a,i)=>`<article class="card" data-idx="${i}">
+      <div class="thumb"><span class="badge media-badge">${esc(a.media||"article")}</span><img src="${esc(a.image||DEFAULT_IMG)}" alt="" loading="lazy" onerror="this.src='${DEFAULT_IMG}'"></div>
+      <div class="card-body"><div class="meta"><span class="chip">${esc(a.source)}</span><span class="chip">${esc(a.topic)}</span><span class="chip">${esc(a.region)}</span><span class="chip">${fmtDate(a.pubDate)}</span>${matchesWatch(a)?`<span class="chip">Watchlist ×${matchesWatch(a)}</span>`:""}</div>
+      <h3 class="card-title">${qHighlight(a.title)}</h3><p class="card-desc">${esc(a.description||"")}</p><div class="card-actions">${actionButtonsHtml(a,false)}</div></div></article>`).join("");
+    bySel("#cardsGrid .card").forEach(card=>{ const a=filteredArticles[Number(card.dataset.idx)]; bindActionButtons(card,a); });
+  }
+  function renderTicker(){
+    const heads = filteredArticles.slice(0,18).map(a=>`<span>◆ ${esc(a.source)} · ${esc(a.title)}</span>`).join("");
+    $("tickerTrack").innerHTML=(heads+heads) || "<span>No live headlines loaded yet.</span>";
+  }
+  function renderTrends(){
+    const freq=new Map(); filteredArticles.slice(0,80).forEach(a=>words(`${a.title} ${a.description}`).forEach(w=>freq.set(w,(freq.get(w)||0)+1)));
+    const top=[...freq.entries()].sort((a,b)=>b[1]-a[1]).slice(0,18);
+    $("trendCloud").innerHTML=top.map(([w,c])=>`<button class="trend" data-word="${esc(w)}">${esc(w)} · ${c}</button>`).join("") || `<span class="note">Trends appear after feeds load.</span>`;
+    bySel("#trendCloud .trend").forEach(b=>b.onclick=()=>{ $("searchInput").value=b.dataset.word; renderAll(); });
+  }
+
+  function bindActionButtons(root,a){
+    root.querySelectorAll("[data-act]").forEach(btn=>btn.onclick=(e)=>{ e.preventDefault(); const act=btn.dataset.act; if(act==="verify") openVerify(a); if(act==="fav") saveList(LS.fav,a,"Favorite saved."); if(act==="read") saveList(LS.read,a,"Saved to Read Later."); if(act==="share") shareArticle(a); if(act==="translate") openTranslate(a); });
+  }
+  function saveList(key,a,msg){ const arr=storage.get(key,[]); if(!arr.some(x=>x.id===a.id)) arr.unshift(a); storage.set(key,arr.slice(0,300)); updateCounts(); toast(msg); }
+  async function copyText(t,msg="Copied."){ try{ await navigator.clipboard.writeText(t); toast(msg); }catch(e){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast(msg); } }
+  function shareArticle(a){ const text=`${a.title}\n${a.link}\n\nVia The Verifier News Engine`; if(navigator.share){ navigator.share({title:a.title,text:a.description,url:a.link}).catch(()=>{}); } else copyText(text,"Story copied for sharing."); }
+  function openTranslate(a){ window.open(`https://translate.google.com/translate?sl=auto&tl=en&u=${encodeURIComponent(a.link)}`,"_blank","noopener"); }
+  function openVerify(a){
+    const q=encodeURIComponent(`"${a.title}"`); const domainQ=domain(a.link); const sourceQ=encodeURIComponent(domainQ||a.source||"");
+    const html = `<div class="drawer-section"><h3>${esc(a.title)}</h3><p class="note">${esc(a.description||"")}</p><div class="actions"><a class="btn small primary" href="${esc(a.link)}" target="_blank" rel="noopener">Open Original ↗</a><button class="btn small" id="copyStoryLink">Copy Link</button></div></div>
+    <div class="drawer-section"><h3>Compare Coverage</h3><p class="note">Open the headline in multiple search environments to compare wording, timing, and source framing.</p><div class="actions">
+      ${verifyLink("Google News",`https://news.google.com/search?q=${q}`)}${verifyLink("DuckDuckGo",`https://duckduckgo.com/?q=${q}`)}${verifyLink("Google",`https://www.google.com/search?q=${q}`)}${verifyLink("Bing",`https://www.bing.com/search?q=${q}`)}${verifyLink("Source site search",`https://www.google.com/search?q=${q}+site%3A${sourceQ}`)}</div></div>
+    <div class="drawer-section"><h3>Primary-Source Searches</h3><div class="actions">${verifyLink("UN",`https://www.google.com/search?q=${q}+site%3Aun.org`)}${verifyLink("Government",`https://www.google.com/search?q=${q}+site%3Agov`)}${verifyLink("CourtListener",`https://www.courtlistener.com/?q=${q}`)}${verifyLink("Congress.gov",`https://www.congress.gov/search?q=${q}`)}${verifyLink("Federal Register",`https://www.federalregister.gov/documents/search?conditions%5Bterm%5D=${q}`)}${verifyLink("PubMed",`https://pubmed.ncbi.nlm.nih.gov/?term=${q}`)}</div></div>
+    <div class="drawer-section"><h3>Fact-Check & Context</h3><div class="actions">${verifyLink("AP Fact Check",`https://apnews.com/hub/fact-checking`)}${verifyLink("Reuters Fact Check",`https://www.reuters.com/fact-check/`)}${verifyLink("FactCheck.org",`https://www.factcheck.org/search/#gsc.tab=0&gsc.q=${q}`)}${verifyLink("PolitiFact",`https://www.politifact.com/search/?q=${q}`)}${verifyLink("Snopes",`https://www.snopes.com/?s=${q}`)}${verifyLink("Full Fact",`https://fullfact.org/search/?q=${q}`)}</div></div>
+    <div class="drawer-section"><h3>Translate / Archive / Share</h3><div class="actions">${verifyLink("Translate article",`https://translate.google.com/translate?sl=auto&tl=en&u=${encodeURIComponent(a.link)}`)}${verifyLink("Internet Archive",`https://web.archive.org/web/*/${encodeURIComponent(a.link)}`)}${verifyLink("Save to Archive",`https://web.archive.org/save/${encodeURIComponent(a.link)}`)}${verifyLink("X/Twitter",`https://twitter.com/intent/tweet?text=${encodeURIComponent(a.title)}&url=${encodeURIComponent(a.link)}`)}${verifyLink("Facebook",`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(a.link)}`)}${verifyLink("LinkedIn",`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(a.link)}`)}</div></div>`;
+    openDrawer("Verify This Story", "Compare coverage, search primary records, translate, archive, and share.", html);
+    $("copyStoryLink")?.addEventListener("click",()=>copyText(a.link,"Story link copied."));
+  }
+  function verifyLink(label,url){ return `<a class="btn small" href="${url}" target="_blank" rel="noopener">${label} ↗</a>`; }
+  function openDrawer(title,sub,html){ $("drawerTitle").textContent=title; $("drawerSub").textContent=sub; $("drawerContent").innerHTML=html; $("drawer").classList.add("open"); $("drawerBackdrop").classList.add("open"); }
+  function closeDrawer(){ $("drawer").classList.remove("open"); $("drawerBackdrop").classList.remove("open"); }
+
+  function generateBriefingText(){
+    const top=filteredArticles.slice(0,8); const d=new Date().toLocaleDateString([], {weekday:"long", year:"numeric", month:"long", day:"numeric"});
+    let text=`The Verifier Daily Briefing — ${d}\nVervenVeda.com · by Jennifer Pearl\n\n`;
+    if(!top.length) return text+"No matching stories loaded yet. Refresh feeds or adjust filters.";
+    text += "Today I am watching these developing stories and comparing sources before sharing conclusions:\n\n";
+    top.forEach((a,i)=>{ text += `${i+1}. ${a.title}\n   Source: ${a.source} · ${a.topic} · ${fmtDate(a.pubDate)}\n   ${a.link}\n\n`; });
+    text += "Before reacting, verify: compare coverage, look for primary records, check publication time, and separate confirmed facts from commentary.\n\n#TheVerifier #VervenVeda #MediaLiteracy #JenniferPearl";
+    return text;
+  }
+  function renderBriefing(updateEditor=true){ const text=generateBriefingText(); $("dailyBriefing").textContent=text; if(updateEditor && $("briefingEditor")) $("briefingEditor").value=text; return text; }
+  function downloadText(name,text){ const blob=new Blob([text],{type:"text/plain"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},300); }
+
+  function renderResources(){
+    $("resourceGrid").innerHTML = RESOURCES.map(r=>`<div class="resource-card"><span class="badge verify">${esc(r.cat)}</span><b>${esc(r.name)}</b><p>${esc(r.desc)}</p><a class="btn small" href="${esc(r.url)}" target="_blank" rel="noopener">Open ↗</a></div>`).join("");
+  }
+  function renderEditorials(){
+    const arr=storage.get(LS.editorials, [{title:"The Verifier official editorial archive", url:"https://vervenveda.com/theverifier", date:new Date().toISOString()}]);
+    $("editorialList").innerHTML=arr.map((e,i)=>`<div class="saved-item"><b>${esc(e.title)}</b><small>${esc(e.url)}</small><div class="actions" style="margin-top:8px"><a class="btn small" href="${esc(e.url)}" target="_blank" rel="noopener">Open ↗</a><button class="btn small danger" data-del-editorial="${i}">Remove</button></div></div>`).join("");
+    bySel("[data-del-editorial]").forEach(btn=>btn.onclick=()=>{ const next=arr.filter((_,i)=>i!==Number(btn.dataset.delEditorial)); storage.set(LS.editorials,next); renderEditorials(); });
+  }
+  function openSaved(){
+    const fav=storage.get(LS.fav,[]), read=storage.get(LS.read,[]);
+    const section=(title,arr,key)=>`<div class="drawer-section"><h3>${title} (${arr.length})</h3>${arr.length?arr.map((a,i)=>`<div class="saved-item"><b>${esc(a.title)}</b><small>${esc(a.source)} · ${fmtDate(a.pubDate)}</small><p class="note">${esc((a.description||"").slice(0,180))}</p><div class="actions"><a class="btn small" href="${esc(a.link)}" target="_blank" rel="noopener">Open ↗</a><button class="btn small" data-saved-verify="${key}:${i}">Verify</button><button class="btn small danger" data-saved-del="${key}:${i}">Remove</button></div></div>`).join(""):`<p class="note">Nothing saved yet.</p>`}</div>`;
+    openDrawer("Saved Desk", "Favorites and Read Later stored on this device.", section("Favorites",fav,"fav") + section("Read Later",read,"read") + `<div class="actions"><button class="btn danger" id="clearSavedAll">Clear All Saved</button></div>`);
+    bySel("[data-saved-verify]").forEach(btn=>btn.onclick=()=>{ const [k,i]=btn.dataset.savedVerify.split(":"); openVerify((k==="fav"?fav:read)[Number(i)]); });
+    bySel("[data-saved-del]").forEach(btn=>btn.onclick=()=>{ const [k,i]=btn.dataset.savedDel.split(":"); const key=k==="fav"?LS.fav:LS.read; const arr=storage.get(key,[]); arr.splice(Number(i),1); storage.set(key,arr); updateCounts(); openSaved(); });
+    $("clearSavedAll")?.addEventListener("click",()=>{ storage.set(LS.fav,[]); storage.set(LS.read,[]); updateCounts(); openSaved(); });
+  }
+
+  function setView(view){ currentView=view; bySel("#viewTabs .tab").forEach(t=>t.classList.toggle("active",t.dataset.view===view));
+    $("deskView").classList.toggle("hidden", view!=="desk"); $("gridPanel").classList.toggle("hidden", !(view==="desk"||view==="grid")); $("briefingView").classList.toggle("hidden", view!=="briefing"); $("researchView").classList.toggle("hidden", view!=="research"); $("editorialsView").classList.toggle("hidden", view!=="editorials"); if(view==="briefing") { renderBriefing(true); } if(view==="research") renderResources(); if(view==="editorials") renderEditorials(); }
+  function exportData(){ const data={app:"The Verifier News Engine", exportedAt:new Date().toISOString(), settings, watchlist:getWatchlist().join(", "), favorites:storage.get(LS.fav,[]), readLater:storage.get(LS.read,[]), editorials:storage.get(LS.editorials,[]), cache:allArticles}; const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`the-verifier-backup-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},300); }
+  async function importData(file){ try{ const data=JSON.parse(await file.text()); if(data.settings) settings=data.settings; if(data.watchlist) storage.set(LS.watch,data.watchlist); if(data.favorites) storage.set(LS.fav,data.favorites); if(data.readLater) storage.set(LS.read,data.readLater); if(data.editorials) storage.set(LS.editorials,data.editorials); if(data.cache) {allArticles=data.cache; storage.set(LS.cache,allArticles);} applySettings(); initWatchlist(); renderAll(); toast("Verifier backup imported."); }catch(e){ alert("Import failed: invalid JSON."); } }
+  function externalSearch(){ const q=$("searchInput").value.trim() || "latest news"; openDrawer("Deep Search Launchpad", "Open the same search across news, video, archives, and global resources.", `<div class="drawer-section"><h3>${esc(q)}</h3><div class="actions">${verifyLink("Google News",`https://news.google.com/search?q=${encodeURIComponent(q)}`)}${verifyLink("YouTube",`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`)}${verifyLink("Archive.org",`https://archive.org/search?query=${encodeURIComponent(q)}`)}${verifyLink("Reuters",`https://www.reuters.com/site-search/?query=${encodeURIComponent(q)}`)}${verifyLink("AP",`https://apnews.com/search?q=${encodeURIComponent(q)}`)}${verifyLink("BBC",`https://www.bbc.co.uk/search?q=${encodeURIComponent(q)}`)}${verifyLink("UN",`https://www.google.com/search?q=${encodeURIComponent(q)}+site%3Aun.org`)}${verifyLink("Fact checks",`https://www.google.com/search?q=${encodeURIComponent(q)}+fact+check`)}</div></div>`); }
+  function initWatchlist(){ $("watchlistInput").value = storage.get(LS.watch, "AI, climate, election, education, local, rights, economy"); }
+
+  function bindEvents(){
+    ["searchInput","topicFilter","regionFilter","languageFilter","mediaFilter","sortFilter"].forEach(id=>$(id).addEventListener("input", renderAll));
+    $("refreshHeroBtn").onclick=()=>loadAllFeeds(true); $("refreshGridBtn").onclick=()=>loadAllFeeds(true); $("externalSearchBtn").onclick=externalSearch;
+    $("themeBtn").onclick=()=>{ settings.theme=settings.theme==="dark"?"light":"dark"; applySettings(); saveSettings(); };
+    $("contrastBtn").onclick=()=>{ settings.contrast=settings.contrast==="high"?"normal":"high"; applySettings(); saveSettings(); };
+    $("kidsBtn").onclick=()=>{ settings.kids=!settings.kids; applySettings(); saveSettings(); renderAll(); };
+    $("listBtn").onclick=()=>{ settings.list=!settings.list; applySettings(); saveSettings(); };
+    $("compactBtn").onclick=()=>{ settings.compact=!settings.compact; applySettings(); saveSettings(); };
+    $("fontMinus").onclick=()=>{ settings.font=clamp((settings.font||17)-1,14,24); applySettings(); saveSettings(); };
+    $("fontPlus").onclick=()=>{ settings.font=clamp((settings.font||17)+1,14,24); applySettings(); saveSettings(); };
+    bySel("#viewTabs .tab").forEach(t=>t.onclick=()=>setView(t.dataset.view));
+    $("generateBriefingBtn").onclick=()=>{ const t=renderBriefing(true); $("dailyBriefing").textContent=t; toast("Briefing generated."); };
+    $("openBriefingBtn").onclick=()=>setView("briefing"); $("regenBriefingBtn").onclick=()=>renderBriefing(true);
+    $("copyBriefingBtn").onclick=()=>copyText($("dailyBriefing").textContent,"Briefing copied.");
+    $("copyBriefingEditorBtn").onclick=()=>copyText($("briefingEditor").value,"Briefing copied.");
+    $("shareBriefingBtn").onclick=()=>{ const text=$("briefingEditor").value; if(navigator.share) navigator.share({title:"The Verifier Daily Briefing", text}).catch(()=>{}); else copyText(text,"Briefing copied for sharing."); };
+    $("downloadBriefingBtn").onclick=()=>downloadText(`the-verifier-briefing-${new Date().toISOString().slice(0,10)}.txt`, $("dailyBriefing").textContent);
+    $("saveWatchlistBtn").onclick=()=>{ storage.set(LS.watch,$("watchlistInput").value); renderAll(); toast("Watchlist saved."); };
+    $("clearSearchBtn").onclick=()=>{ $("searchInput").value=""; renderAll(); };
+    $("openSavedBtn").onclick=openSaved; $("exportBtn").onclick=exportData; $("importFile").onchange=e=>{ if(e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
+    $("addEditorialBtn").onclick=()=>{ const title=$("editorialTitle").value.trim(), url=$("editorialUrl").value.trim(); if(!title||!/^https?:\/\//i.test(url)) return alert("Add a title and a valid URL."); const arr=storage.get(LS.editorials,[]); arr.unshift({title,url,date:new Date().toISOString()}); storage.set(LS.editorials,arr); $("editorialTitle").value=$("editorialUrl").value=""; renderEditorials(); };
+    $("clearEditorialsBtn").onclick=()=>{ if(confirm("Clear local editorial links?")){ storage.set(LS.editorials,[]); renderEditorials(); } };
+    $("scrollTopBtn").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+    $("drawerClose").onclick=closeDrawer; $("drawerBackdrop").onclick=closeDrawer;
+  }
+
+  function init(){ initFilters(); initWatchlist(); applySettings(); bindEvents(); renderResources(); renderEditorials(); allArticles = allArticles.length ? allArticles : DEMO_ARTICLES; renderAll(); loadAllFeeds(false); setInterval(()=>loadAllFeeds(false), 60*60*1000); }
+  init();
+})();
+</script>
+</body>
+</html>
