@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Research & News Dashboard</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; background:#f7f9fc; color:#333; }
+  header { background:#1f2937; color:#fff; padding:1rem; text-align:center; }
+  main { max-width:1000px; margin:2rem auto; padding:0 1rem; }
+  h1 { margin:0; }
+  .issue { margin-bottom:2rem; border-radius:8px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+  .summary-card { background:#f0f4ff; padding:1rem; border-left:4px solid #1e40af; margin-bottom:1rem; }
+  .summary-card p { margin:0.3rem 0; color:#333; }
+  .read-more { color:#1e40af; cursor:pointer; font-weight:bold; display:inline-block; margin-top:0.5rem; }
+  .issue-content { display:none; padding:1rem; }
+  .feed-item { border-bottom:1px solid #e5e7eb; padding:0.5rem 0; display:flex; align-items:flex-start; }
+  .feed-item:last-child { border-bottom:none; }
+  .feed-item img { width:100px; height:60px; object-fit:cover; margin-right:1rem; border-radius:4px; }
+  .feed-item div { flex:1; }
+  .feed-item h3 { margin:0; font-size:1rem; }
+  .feed-item p { margin:0.2rem 0 0 0; font-size:0.9rem; color:#555; }
+  a { color:#1e40af; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Live Research & News Dashboard</h1>
+  <p>Highlights and live news across 10 major issues</p>
+</header>
+<main id="issues-container">
+  <!-- Issues injected here -->
+</main>
+
+<script>
+const issues = [
+  {
+    title: "Climate Change and Extreme Weather",
+    summary: "Rising global temperatures and extreme weather events demand urgent action from governments and communities worldwide.",
+    sources: [
+      "https://www.ipcc.ch/rss.xml",
+      "https://www.un.org/en/climatechange/news/feed"
+    ]
+  },
+  {
+    title: "AI and Automation Ethics",
+    summary: "The rise of AI poses questions about ethics, job displacement, and societal impact that demand careful policy consideration.",
+    sources: [
+      "https://www.technologyreview.com/feed/",
+      "https://www.weforum.org/rss/"
+    ]
+  },
+  {
+    title: "Global Economic Inequality",
+    summary: "Economic disparities continue to widen globally, highlighting systemic challenges in wealth distribution and access to resources.",
+    sources: [
+      "https://www.worldbank.org/en/news/press-release/rss",
+      "https://www.imf.org/en/News/Feed"
+    ]
+  },
+  {
+    title: "Book Bans and Intellectual Freedom",
+    summary: "Censorship and book bans threaten intellectual freedom, highlighting the tension between social norms and personal liberties.",
+    sources: [
+      "https://www.ala.org/news/rss.xml",
+      "https://pen.org/feed/"
+    ]
+  },
+  {
+    title: "Gene Editing and Human Enhancement",
+    summary: "Advances in CRISPR and gene editing raise ethical questions about human enhancement and the boundaries of scientific intervention.",
+    sources: [
+      "https://www.nationalacademies.org/news/rss.xml",
+      "https://www.nature.com/subjects/genome-editing.rss"
+    ]
+  },
+  {
+    title: "Social Media, Misinformation, and Free Speech",
+    summary: "Misinformation spreads rapidly online, challenging the balance between free expression and societal responsibility.",
+    sources: [
+      "https://www.pewresearch.org/feed/",
+      "https://www.eff.org/rss.xml"
+    ]
+  },
+  {
+    title: "Transgender Athletes and Fairness in Sports",
+    summary: "The inclusion of transgender athletes sparks debates over fairness, rights, and competitive integrity in sports.",
+    sources: [
+      "https://olympics.com/rss.xml",
+      "https://www.nbcnews.com/section/olympics/rss.xml"
+    ]
+  },
+  {
+    title: "Cancel Culture and Public Accountability",
+    summary: "Public shaming and cancel culture raise questions about accountability, justice, and proportionality in the digital age.",
+    sources: [
+      "https://www.theguardian.com/world/rss",
+      "https://www.nytimes.com/svc/collections/rss/"
+    ]
+  },
+  {
+    title: "Labor Rights and the Gig Economy",
+    summary: "Gig economy workers struggle for fair compensation and protections in a rapidly evolving labor market.",
+    sources: [
+      "https://www.economicpolicyinstitute.org/feed",
+      "https://www.ft.com/?format=rss"
+    ]
+  },
+  {
+    title: "Global Health and Pandemic Preparedness",
+    summary: "Ongoing global health threats highlight the need for coordinated pandemic preparedness and rapid response systems.",
+    sources: [
+      "https://www.who.int/feeds/entity/csr/don/en/rss.xml",
+      "https://www.cidrap.umn.edu/rss.xml"
+    ]
+  }
+];
+
+const container = document.getElementById('issues-container');
+
+// --- Create summary + collapsible feed ---
+issues.forEach(issue => {
+  const div = document.createElement('div');
+  div.className = 'issue';
+  div.innerHTML = `
+    <div class="summary-card">
+      <p>${issue.summary}</p>
+      <span class="read-more">View Latest News ▼</span>
+    </div>
+    <div class="issue-content"><p>Loading news...</p></div>
+  `;
+  container.appendChild(div);
+
+  const summaryCard = div.querySelector('.summary-card');
+  const contentDiv = div.querySelector('.issue-content');
+  const readMore = div.querySelector('.read-more');
+
+  readMore.addEventListener('click', () => {
+    const visible = contentDiv.style.display === 'block';
+    contentDiv.style.display = visible ? 'none' : 'block';
+    readMore.textContent = visible ? 'View Latest News ▼' : 'Hide News ▲';
+  });
+});
+
+// --- Fetch RSS to JSON ---
+async function fetchRSS(url) {
+  try {
+    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
+    const data = await response.json();
+    return data.items.slice(0, 5); // latest 5
+  } catch (err) {
+    console.error('RSS fetch error:', err);
+    return [];
+  }
+}
+
+// --- Load all news ---
+async function loadAllNews() {
+  const issueDivs = document.querySelectorAll('.issue');
+  for (let i = 0; i < issues.length; i++) {
+    const issue = issues[i];
+    const contentDiv = issueDivs[i].querySelector('.issue-content');
+    contentDiv.innerHTML = '';
+
+    for (let src of issue.sources) {
+      const items = await fetchRSS(src);
+      if (!items.length) continue;
+
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'feed-item';
+        const img = item.thumbnail || item.enclosure?.link || 'https://via.placeholder.com/100x60?text=No+Image';
+        div.innerHTML = `
+          <img src="${img}" alt="image">
+          <div>
+            <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
+            <p>${item.pubDate ? new Date(item.pubDate).toLocaleDateString() : ''}</p>
+            <p>${item.description ? item.description : ''}</p>
+          </div>
+        `;
+        contentDiv.appendChild(div);
+      });
+    }
+
+    if (!contentDiv.hasChildNodes()) contentDiv.innerHTML = '<p>No news available currently.</p>';
+  }
+}
+
+// --- Auto-refresh daily ---
+function dailyRefresh() {
+  loadAllNews();
+  setInterval(loadAllNews, 24 * 60 * 60 * 1000); // every 24 hours
+}
+
+dailyRefresh();
+</script>
+</body>
+</html>
