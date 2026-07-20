@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Science Daily — News App</title>
+
+<style>
+:root {
+    --bg: #111;
+    --fg: #eee;
+    --card: #1c1c1c;
+    --accent: #7cf;
+}
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+}
+
+header {
+    padding: 16px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    background: #000;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    position: relative;
+}
+
+#toggle {
+    position: absolute;
+    right: 20px;
+    top: 14px;
+    cursor: pointer;
+    font-size: 22px;
+}
+
+.container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.card {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px #0005;
+    animation: fade .4s ease;
+}
+
+.card h2 {
+    margin: 0 0 10px 0;
+    font-size: 20px;
+    color: var(--accent);
+    word-wrap: break-word;
+}
+
+.card p {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 15px;
+    word-wrap: break-word;
+}
+
+.headline {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 10px;
+}
+
+@keyframes fade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+Science Daily
+<div id="toggle">🌙</div>
+</header>
+
+<div class="container" id="news"></div>
+
+<script>
+/* ---------------------------------------
+   THEME TOGGLE
+-----------------------------------------*/
+const toggle = document.getElementById("toggle");
+toggle.addEventListener("click", () => {
+    if (document.body.style.background === "white") {
+        document.body.style.background = "";
+        document.body.style.color = "";
+        toggle.textContent = "🌙";
+    } else {
+        document.body.style.background = "white";
+        document.body.style.color = "black";
+        toggle.textContent = "☀️";
+    }
+});
+
+/* ---------------------------------------
+   FETCH SCIENCE NEWS (RSS → JSON proxy)
+-----------------------------------------*/
+const FEED_URL = "https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/science.xml";
+
+async function loadNews() {
+    try {
+        const res = await fetch(FEED_URL);
+        const data = await res.json();
+        renderNews(data.items.slice(0, 12)); // show 12 headlines
+    } catch (e) {
+        document.getElementById("news").innerHTML =
+            "<div class='card'><p>Error loading news.</p></div>";
+    }
+}
+
+function renderNews(items) {
+    const container = document.getElementById("news");
+    container.innerHTML = "";
+
+    items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+            <h2>${item.title}</h2>
+            <p class="headline">${item.pubDate}</p>
+            <p>${item.description}</p>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+loadNews();
+setInterval(loadNews, 1000 * 60 * 10); // refresh every 10 min
+</script>
+
+</body>
+</html>
