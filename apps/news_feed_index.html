@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live News & Research Feed</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f7f9fc;
+    color: #333;
+  }
+  header {
+    background: #1f2937;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+  }
+  main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  h2 {
+    color: #1f2937;
+    margin-top: 2rem;
+    border-bottom: 2px solid #1e40af;
+    padding-bottom: 0.5rem;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  li {
+    margin: 0.5rem 0;
+  }
+  a {
+    text-decoration: none;
+    color: #1e40af;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  .feed-item {
+    background: #fff;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .feed-item h3 {
+    margin: 0 0 0.5rem 0;
+  }
+  .feed-item p {
+    margin: 0;
+  }
+  .category {
+    margin-top: 3rem;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Live News & Research Feed</h1>
+  <p>Daily updates from trusted research and news sources</p>
+</header>
+<main>
+
+  <h2>Research References</h2>
+  <ul id="reference-list"></ul>
+
+  <div id="news-sections"></div>
+
+</main>
+
+<script>
+  // --- 1. Reference Links ---
+  const references = [
+    { name: "IPCC Assessment Reports", url: "https://www.ipcc.ch/reports/" },
+    { name: "UNFCCC Official Site", url: "https://unfccc.int/" },
+    { name: "World Bank - Climate Change", url: "https://www.worldbank.org/en/topic/climatechange" },
+    { name: "Harvard Law Review", url: "https://harvardlawreview.org/" },
+    { name: "Pew Research Center", url: "https://www.pewresearch.org/" },
+    { name: "American Library Association - Intellectual Freedom", url: "https://www.ala.org/advocacy/intfreedom" },
+    { name: "International Olympic Committee", url: "https://www.olympic.org/" },
+    { name: "Human Rights Campaign", url: "https://www.hrc.org/" },
+    { name: "Electronic Frontier Foundation", url: "https://www.eff.org/" },
+    { name: "National Academies of Sciences - Genome Editing", url: "https://www.nationalacademies.org/topics/human-genome-editing" }
+  ];
+
+  const refList = document.getElementById('reference-list');
+  references.forEach(ref => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="${ref.url}" target="_blank">${ref.name}</a>`;
+    refList.appendChild(li);
+  });
+
+  // --- 2. News Sources by Category ---
+  const sources = [
+    { category: "Climate & Environment", rss: "https://www.ipcc.ch/rss.xml" },
+    { category: "Labor & Economy", rss: "https://www.economicpolicyinstitute.org/feed" },
+    { category: "Education & Culture", rss: "https://www.ala.org/news/rss.xml" },
+    { category: "Science & Genetics", rss: "https://www.nationalacademies.org/news/rss.xml" },
+    { category: "Sports & Inclusion", rss: "https://olympics.com/rss.xml" },
+    { category: "Media & Misinformation", rss: "https://www.pewresearch.org/feed/" },
+    { category: "Rights & Technology", rss: "https://www.eff.org/rss.xml" }
+  ];
+
+  const newsContainer = document.getElementById('news-sections');
+
+  async function fetchRSS(url) {
+    try {
+      // Using free RSS to JSON service
+      const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
+      const data = await response.json();
+      return data.items.slice(0, 5); // Latest 5 stories
+    } catch (err) {
+      console.error("Failed to fetch RSS feed:", err);
+      return [];
+    }
+  }
+
+  async function loadNews() {
+    for (let source of sources) {
+      const section = document.createElement('div');
+      section.className = 'category';
+      section.innerHTML = `<h2>${source.category}</h2><div class="feed-list">Loading...</div>`;
+      newsContainer.appendChild(section);
+
+      const feedList = section.querySelector('.feed-list');
+      const items = await fetchRSS(source.rss);
+
+      if (items.length === 0) {
+        feedList.innerHTML = "<p>No updates available at this time.</p>";
+        continue;
+      }
+
+      feedList.innerHTML = '';
+      items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'feed-item';
+        div.innerHTML = `<h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
+                         <p>${item.pubDate ? new Date(item.pubDate).toLocaleDateString() : ''}</p>
+                         <p>${item.description ? item.description : ''}</p>`;
+        feedList.appendChild(div);
+      });
+    }
+  }
+
+  loadNews();
+</script>
+</body>
+</html>
