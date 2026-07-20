@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor's Choice</title>
+<style>
+  body {
+    background: #FFFEFA;
+    font-family: 'Futura Light', serif;
+    color: #1a1a1a;
+    margin: 7px;
+    padding: 14px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 8px 0 3px;
+    color: #2b2323;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 1.4rem;
+    color: #634d1b;
+    margin-bottom: 14px;
+  }
+  #app {
+    max-width: 666px;
+    margin: auto;
+    background: #f7f7f7;
+    padding: 24px 7vw 14px;
+    border-radius: 7px;
+    box-shadow: 3px 3px 13px #00000018;
+  }
+  .search-row {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-row label {
+    font-size: 0.99em;
+    margin: 3px 7px 11px 0;
+  }
+  .search-row input,
+  .search-row select {
+    font-size: 1em;
+    padding: 2px 24px;
+    border-radius: 7px;
+    border: 2px solid #b9a785;
+    min-width: 0;
+  }
+
+  .comment-list {
+    margin: 9px;
+    padding: 3px;
+    list-style: none;
+  }
+  .comment-list li {
+    background: #E8E8E8;
+    border-radius: 7px;
+    margin-bottom: 4px;
+    padding: 14px 14px 11px;
+    box-shadow: 0 1px 7px #dfd4a012;
+    cursor: pointer;
+    transition: box-shadow 0.13s, background 0.13s;
+  }
+  .comment-list li:hover {
+    box-shadow: 1px 1px 7px #e1cc8415;
+    background: #E8E8E8;
+  }
+  .comment-title {
+    font-size: 1.19em;
+    font-weight: bold;
+    color: #83692e;
+  }
+  .comment-meta {
+    color: #8e753c;
+    font-size: 0.98em;
+    margin-bottom: 11px;
+  }
+  .comment-body {
+    font-size: 1.08em;
+    margin-top: 7px;
+    color: #8e753c;
+  }
+
+  /* We keep this, but the main article now appears in a popup */
+  .comment-detail {
+    display: none;
+  }
+
+  /* ---------- Modal + Overlay ---------- */
+  .hidden {
+    display: none !important;
+  }
+
+  #modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.33);
+    z-index: 777;
+  }
+
+  #articleModal {
+    position: fixed;
+    max-width: 777px;
+    width: calc(100% - 48px);
+    background: #E8E8E8;
+    border-radius: 14px;
+    box-shadow: 0 11px 33px #00000044;
+    padding: 24px;
+    z-index: 778;
+    cursor: default;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 11px;
+    margin-bottom: 11px;
+    cursor: move; /* drag handle */
+  }
+
+  .modal-title {
+    font-size: 1.33rem;
+    font-weight: bold;
+    color: #83692e;
+  }
+
+  .modal-meta {
+    font-size: 0.95rem;
+    color: #8e753c;
+    margin-bottom: 11px;
+  }
+
+  .modal-close-btn {
+    border: none;
+    background: #b99b53;
+    color: #FFFEFA;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .modal-close-btn:hover {
+    background: #8e753c;
+  }
+
+  .modal-body {
+    font-size: 1.02rem;
+    color: #2b2323;
+    white-space: pre-wrap; /* respect your paragraphs */
+    max-height: 66vh;
+    overflow-y: auto;
+  }
+
+  .modal-link-row {
+    margin-top: 14px;
+  }
+
+  .open-link-btn {
+    background: #b99b53;
+    color: #2b2323;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 8px 0 0 0;
+  }
+  .open-link-btn:hover {
+    background: #8e753c;
+    color: #FFFEFA;
+  }
+
+  @media (max-width:555px) {
+    #app {
+      padding: 14px 7vw 14vw;
+    }
+    .comment-list li {
+      padding: 7px 7vw 11px;
+    }
+    #articleModal {
+      width: calc(100% - 28px);
+      padding: 18px;
+    }
+    .modal-body {
+      max-height: 60vh;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>Sports Weekly</h1>
+<div class="subtitle">
+  News Commentary<br>
+  Browse by date, topic, or series.
+</div>
+
+<div id="app">
+  <div class="search-row">
+    <label for="dateSearch">Date:</label>
+    <input type="date" id="dateSearch" onchange="filterComments()" />
+    </div>
+
+    <label for="topicSearch">Topic:</label>
+    <input type="text" id="topicSearch"
+           placeholder="e.g. Football, Soccer, Baseball, Basket Ball, Olympics"
+           oninput="filterComments()"/> 
+    <br>
+    <label for="seriesSearch">Series:</label>
+    <input type="text" id="seriesSearch"
+           placeholder="e.g. Scores, highlights, Headliners"
+           oninput="filterComments()" />
+  </div>
+
+  <ul class="comment-list" id="commentList"></ul>
+  <div id="commentDetail"></div>
+</div>
+
+<!-- Modal + Backdrop -->
+<div id="modalBackdrop" class="hidden"></div>
+<div id="articleModal" class="hidden">
+  <div class="modal-header" id="modalHeader">
+    <div class="modal-title" id="modalTitle"></div>
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+  </div>
+  <div class="modal-meta" id="modalMeta"></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-link-row" id="modalLinkRow"></div>
+</div>
+
+<script>
+// ======================================================
+// 1. HARD-CODED DATA SOURCE
+// ======================================================
+let comments = [
+  {
+    "date": "2026-06-26",
+    "title": "A Weekly Report From the Beautiful Absurdity of Athletics",
+    "topic": "Sports, Chaos, and Ducks in Stadiums",
+    "body": "Every week, sports promise us order: rules, rankings, championships, and statistics carefully arranged to reassure us that the world is still logical, and every week, sports respond with the same message:\n\nNice try.\n\nThis past week was less “global competition” and more “someone dropped the universe’s remote control behind the couch, and now reality is stuck on shuffle.”\n\nLet’s begin.\n\nBoxing vs. the Weather\nIn Madrid, two athletes trained for months, cut weight, studied film, and walked into the ring ready for a championship bout. Then nature showed up like an uninvited referee with authority issues.\n\nLightning cracked, rain poured, and the entire event was stopped mid-fight. Not because of injury, not because of controversy, but because of the weather.\n\nThe match was declared a no-contest.\nSomewhere, a promoter is now researching indoor stadium rentals.\n\n\nActress Karen Gillan, after Scotland’s loss, did what most fans would not recommend: she got on the wrong bus.\n\nThat bus happened to be full of Brazilian fans celebrating.\n\nAt this point, the story could have gone in many directions: confusion, awkward silence, or a quiet exit.\n\nInstead:\n\nShe stayed. She laughed. She joined in.\n\nFor a brief moment, global sports rivalry was defeated by public transportation inefficiency and good humor.\n\n\nAcross the globe, a reporter was hijacked mid-broadcast. Live TV in sports has always been a gamble. You sign up for analysis, interviews, and occasionally someone shouting into your microphone like it owes them money. This time, a Scottish fan grabbed a reporter’s mic mid-broadcast and turned it into an impromptu emotional victory speech for the ages.\n\nWas it professional? No.\n\nWas it chaotic? Absolutely.\n\nWas it more honest than most post-game interviews? yes.\n\n\nFinally a WNBA Reminder: Basketball Is Still Extremely Physical\n\nA hard foul involving Caitlin Clark led to a suspension and, predictably, a week of heated debate.\n\nAt this point, Clark’s games are less “sporting events” and more “national discussion forums that happen to involve dribbling.”\n\nEveryone has an opinion, nobody agrees and somehow, that is also part of the sport now.\n\nThen we have baseball’s quiet attempt to redesign capitalism. \n\nWhile everyone was distracted by ducks and thunderstorms, MLB quietly floated the idea of restructuring contracts and payroll limits.\n\nWhich is baseball’s version of saying:\n\n“What if we rewrote the financial system but with fewer home runs?”\n\nFans responded traditionally\n\nconfusion\nanger\nspreadsheets\nAnd Finally: A Reminder That Legends Are Human\n\nChris Evert’s health announcement reminded everyone that behind every highlight reel is a real person dealing with real life.\n\nSports, for all its chaos and comedy, occasionally pulls us back to something grounding:\n\nNot everything is entertainment. Some things are simply human.\n\nFinal Score: Reality 10, Predictability 0\n\nIf there’s a theme this week, it’s this:\n\nSports are no longer just games.\n\nThey are weather systems, cultural flashpoints, accidental comedy shows, and occasionally health updates.\n\nOne week, you get a championship fight.\n\nThe next week, you get a thunderstorm canceling it, a duck being banned from attendance, and a celebrity joining the wrong victory bus, but it’s all perfectly normal.\n\nOr is it?",
+    "series": "Highlights",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vSBbrfxxAZJ54bgE4gAW3K50deR1c5Pl-8kdpFAiwTz3JVMdbHT6ZHDM0gCw8OTndi4kRKm01p8q4-f/pub"
+  },
+  {
+    "date": "2026-06-15",
+    "title": "Bread, Circuses, and the Summer of Sports",
+    "topic": "Distractions",
+    "body": "If an alien landed on Earth this week and judged humanity solely by its headlines, it would conclude that our species has solved every major problem.\n\nWars? Apparently not important enough for the front page.\n\nDebt crises, climate concerns, political instability, and housing affordability all seem to have misplaced their press credentials somewhere between the World Cup and a UFC title fight on the White House lawn.\n\nInstead, humanity has gathered around its glowing screens to debate whether Germany's seven-goal demolition was a statement victory, whether Scotland's long-awaited World Cup triumph signals a renaissance, and whether Justin Gaethje's latest championship run has permanently altered the lightweight hierarchy.\n\nTo be fair, sports are wonderful. They provide drama without catastrophe, tribalism without armies, and emotional investment without requiring anyone to read a budget report. Compared with most alternatives, arguing about a referee's decision is a remarkably civilized use of human energy.\n\nYet the timing is hard to ignore.\n\nAs world leaders grapple with geopolitical tensions, economic uncertainty, technological disruption, environmental challenges, and mid-term elections approaching, much of the public conversation has become consumed by a tournament bracket, a championship belt, and a goalscorer's race.\n\nThe ancient Romans would recognize the strategy immediately. They called it panem et circenses or bread and circuses. Keep the citizens fed, entertained, and emotionally invested in spectacles, and they may spend less time asking uncomfortable questions.\n\nToday's circuses simply come in high definition and are designed to subdue our minds through consumerism, emotionally triggering symbolism, and overstimulating lighting.\n\nThe arena is global, the athletes are staged icons, the sponsorships are larger than some national economies, and the audience carries the stadium in its pocket.\n\nThis week alone, millions have devoted countless hours to analyzing formations, fantasy teams, title implications, and highlight reels. Meanwhile, the world's more complicated problems continue their stubborn refusal to be solved by instant replay.\n\nPerhaps that's the real genius of sports.\n\nFor ninety minutes, the score matters more than inflation. For five rounds, a championship fight matters more than legislative gridlock. For one glorious tournament run, fans can believe that victory and defeat are determined by effort, talent, and a clear set of rules. An increasingly rare luxury in modern life.\n\nSports do not create society's distractions. They reveal society's appetite for them.\n\nReality can be exhausting, the economy is complicated; a scoreboard is not.\n\nGlobal affairs offer endless ambiguity; a finish line offers certainty.\n\nSo while the world wrestles with problems that have no obvious referee, billions will continue watching football, cricket, basketball, hockey, Formula One, and mixed martial arts. They will cheer, argue, celebrate, and complain.\n\nFor a few hours at a time, they will happily trade the burdens of citizenship for the pleasures of spectatorship.\n\nThe games, after all, are much easier to understand than the world outside the stadium, and most athletes aren't out to rob you blind.",
+    "series": "Bread and Circus",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vSP7JIpD1lXsdXgFVEdPeUJvsHiWsmtkKiw41j09YhhQ9DzWjtbprBVqLCVuFZFLJ12TJxv_MVx7L0L/pub"
+  },
+  {
+    "date": "2026-04-06",
+    "title": "Reality Quietly Checked It's Bags and Left the Building",
+    "topic": "This Week In Sports",
+    "body": "We begin with a German Grand Prix darts match, Dirk van Duijvenbode completely broke physics and maybe etiquette after missing a shot. In the middle of a perfectly normal match, he briefly transformed darts into interpretive dance when he decided that throwing sharp objects at a board was simply too conventional.  Instead he grabbed his own leg mid-throw, balancing on one foot, and posed like a ballerina. \n\nHe later leaned into the absurdity by posting an AI image of himself as a ballerina.\n\nThis wasn’t strategy. This was pure chaotic energy.  Commentators were confused, physics was offended, and yet against all logic he still won. Which raises an important question: have we all been playing sports incorrectly by not adding unnecessary acrobatics?\n\nMeanwhile, somewhere in Florida, UFC lightweight Arman Tsarukyan went viral after taking a deep intellectual look at his career and thinking, “You know what would elevate this? Wrestling a live alligator.\"\nYes, an actual MMA technique vs reptile.\n\nObviously, this wasn’t a sanctioned fight. Just a bizarre stunt that had fans split between legend and this is a terrible idea. He literally attempted a chokehold on a creature who sits at the top of the food chain. It’s unclear who won, but it’s safe to say the alligator did not sign a consent form.\n\nBack in the comparatively civilized world of darts, tensions flared in what can only be described as the most polite feud imaginable. Teenage darts drama turned into a petty rivalry when rising star Luke Littler made a gesture after his opponent missed.\nHis opponent Gian van Veen took it personally.\n\nHe reacted in a very high school cafeteria way. A gesture was made, a glance was exchanged and their awkward handshake was slightly less warm than expected. Just like that, we had ourselves a rivalry. Not since passive-aggressive group chats has conflict been so quietly intense.\n\nOf course, we must also acknowledge that this week included April Fools’ Day, a time when the sports world collectively decides to become an unreliable narrator. Fake trades, fake retirements, fake rule changes; it’s a beautiful reminder that sometimes the most unbelievable sports story is the one that didn’t actually happen. Fans everywhere spent the day asking the same question: “Is this real?” followed immediately by, “I don’t trust anything anymore.”\n\nThen, in a sharp turn from absurd to serious, In NCAA track:\n\nA race winner stood alone on the podium because every other runner walked off.\nThe protest was tied to doping concerns and fairness issues.\nThe moment went viral with millions of views.\n\nThis wasn't funny, more like “sports just turned into a protest movement” weird. The group of athletes turned a podium ceremony into a protest, leaving their questionable competitor standing alone in a moment that felt less like victory and more like a statement. It was a reminder that, beneath the chaos and comedy, sports still carry weight and sometimes that weight shows up in unexpected ways.\n\nSo what have we learned from this week?\n\nThat sports are no longer just about skill or competition. They are about moments: strange, hilarious, uncomfortable, unforgettable moments. A missed throw becomes a dance routine. A training session becomes a reptile encounter. A minor slight becomes a saga. Somewhere in between, the line between sport and spectacle continues to blur.\n\nAt this point, the only safe prediction is this: whatever happens next week will somehow be even weirder and honestly, we wouldn’t have it any other way.",
+    "series": "Not April Fools Anymore"
+  },
+  {
+    "date": "2026-03-16",
+    "title": "Chaos, Court Drama, and Kerry’s Scary Domination",
+    "topic": "March Madness Anyone?",
+    "body": "Ladies and gentlemen, grab your nachos, spill your soda (preferably on someone else’s bracket), and buckle up, because sports this week are doing their best impression of a blender on high.\n\nFirst, let’s tiptoe into the hallowed halls of March Madness, where brackets go to die, and coaches pray for mercy. The men’s No. 1 seeds, Duke, Arizona, Michigan, and Florida, are strutting around like peacocks in sneakers, while underdogs sharpen their claws and dream of upsets. Meanwhile, St. John’s Red Storm is whispering sweet nothings to the Sweet 16 gods: “We may not be ideal, but we are caffeinated and furious.” On the women’s side, Illinois faces Colorado, proving that women’s hoops is here to kick butt and take names, all while looking fabulous in matching socks.\n\nSwitching fields, the Florida State Seminoles are on a multi-sport rampage worthy of a superhero montage. Track, field, volleyball, softball, baseball, FSU is basically collecting victories like Pokémon cards. Vegas set the football win total at 6.5, which means fans are doing complicated mental gymnastics to figure out if that is “just right” or “why even bother?”\n\nMeanwhile, across the Atlantic, Kerry’s Gaelic football team gave Mayo a performance so frightening it could have doubled as a horror movie trailer. The pundits called it “scary,” the players probably called it “Tuesday,” and the rest of the league called it “please stop, we’re trying to play too.”\n\nDon’t think the week is all sweat, strategy, and scoreboard anxiety. Flag football staged a casual invasion in Los Angeles, bringing former NFL stars and budding pros to the Fanatics Flag Football Classic, proving that even grown-ups can throw a ball, run in circles, and pretend it’s the Olympics. In the adorable sports department, college baseball teams hosted “Pups and Pucks” nights, where dachshunds dash across the field faster than any outfielder could, leaving fans in stitches and mascots questioning their life choices.\n\nMeanwhile, Formula 1 zoomed into Shanghai, leaving tires, egos, and a few shattered pit-stop timing boards in its wake, while the Women’s Super League turned soccer into a gladiator spectacle of skill, sweat, and occasional dramatic hair flips. Let’s not forget the Six Nations Rugby clashes, which were essentially men in shorts tackling each other in slow motion for national pride, with fans screaming like it’s the Super Bowl and no one is stopping them.\n\nIn short, sports this week are a glorious, chaotic circus: brackets are busted, mascots are confused, dogs are faster than midfielders, and somewhere, a pundit is still yelling “Scary!” into a microphone. If you’re a fan, enjoy it. If you’re a casual observer, grab popcorn, and if you’re St. John’s, Duke, or Kerry, remember: chaos loves company, and March is just getting started.\n\nJennifer Pearl",
+    "series": "Sports This Week"
+  },
+  {
+    "date": "2026-03-03",
+    "title": "When Heroes Aren’t Just in Fiction",
+    "topic": "Lessons from the Week in Sports",
+    "body": "Sports are, at their best, a masterclass in human possibility. This week reminded us why we watch, why we cheer, and why we sometimes feel inspired enough to run a mile, or at least get off the couch.\n\nLet’s start with a man who doesn’t need an introduction: LeBron James. Still dunking, still dishing, still defying the calendar, LeBron proves that greatness isn’t a flash in the pan, it’s a lifestyle. Age isn’t a limit; it’s just another stat to crush. For all of us who occasionally forget to stretch before lifting a coffee mug, that’s a reminder: longevity in your craft comes from discipline, adaptation, and a refusal to accept the status quo.\n\nAfter battling injuries that sidelined her for months, Naomi Osaka notched a hard-fought victory that signaled resilience over adversity. Her return has been about more than ranking points; it’s been about mental health advocacy. Fans weren’t just cheering forehands; they were cheering perseverance. Naomi Osaka’s return from injury was more than a match won. It takes courage to step away, heal, and return stronger when the spotlight is blinding, and even more courage to come back swinging stronger than ever. Her story whispers to every professional, student, and dreamer: healing isn’t quitting, it’s refueling.\n\nIn the English football pyramid, few stories capture imagination like a smaller club battling giants. Luton Town continues to defy expectations, competing with grit against far wealthier opponents. Their story reminds us that belief and unity can narrow even the widest financial gap.  Luton Town F.C. continues to punch well above its weight, showing that underdogs don’t just compete; they inspire. Their grit reminds us that belief, unity, and stubborn perseverance often outweigh deep pockets. If you’ve ever been underestimated, take note: Luton Town is your pep talk in cleats.\n\nIn college football, a player who had previously faced public criticism delivered a game-saving performance this weekend, then used his postgame interview to thank his critics for motivating him. He faced public criticism, turned doubt into fuel, performing when it mattered most, then publicly thanking those who doubted him. It’s a simple, powerful truth. Adversity doesn’t build resentment; it builds character.\n\nIn the NHL, players across multiple teams participated in a league-wide initiative raising funds for youth mental health programs. It was a reminder that professional athletes are increasingly leveraging their platforms for something larger than trophies. The NHL reminded us that heroes don’t always wear jerseys with numbers; sometimes, they wear them with purpose. Players championing awareness prove that influence isn’t just measured in goals or points, it’s measured in lives touched.\n\nSo what binds these stories together? They’re more than wins, more than stats. They are narratives of resilience, adaptation, and audacious belief. They teach us that setbacks aren’t stop signs, criticism isn’t a verdict, and age is just a number in the ledger of possibility.\n\nInspiration is everywhere this week, if you’re willing to watch closely. Whether it’s a legendary career refusing to fade, a comeback fueled by courage, an underdog defying the odds, or an athlete turning scrutiny into gratitude, sports deliver a timeless message: your limits exist only until you decide otherwise.\n\nSo lace up, show up, fight through, and leave the doubters cheering for you. The week’s champions aren’t just on the court or field; they’re anyone willing to play the game of life with heart, grit, and a little audacity.",
+    "series": "The Weeks Champions"
+  },
+  {
+    "date": "2026-02-22",
+    "title": "Undercurrents:",
+    "topic": "The Week’s Quiet Sports Revolutions",
+    "body": "If sports news were a restaurant, you’d get highlights: the steak, the flashy dessert, and none of the simmering stock that makes the gravy sing. This week, the broth is doing the heavy lifting, and it smells suspiciously like change.\n\nFirst off, compliance quietly put on a suit and started asking awkward questions at the party. That isn’t gossip about a bad haircut, that’s the sort of polite, officious knock that makes recruiting directors check their handbags. When the likes of LSU get prodded over shadowy NIL arrangements, it’s not just a PR blip; it’s the opening salvo in a rules game where the referees have finally remembered their whistles. Expect more audits, more lawyers, and a whole new vocabulary for athletic directors trying to explain “third-party consideration” without crying.\n\nMeanwhile, the transfer portal is behaving like a hotel with a massive cancellation policy: no loyalty, all chaos. Mid-major basketball programs are the ones left sweeping confetti off their empty benches. The headline transfers make good tweets, the systemic unravelling does not. If small programs don’t find new business models fast, we’ll lose the dust-and-grit stories that make March truly magical.\n\nOver on the court of public opinion, the tennis calendar is doing its best impression of a relentless elevator: up, down, and cramped. The players aren’t just asking for better money, they’re complaining about being treated like coin-operated gym equipment. When voices like Stefanos Tsitsipas start calling foul, the conversation moves from prize pools to player health, and that’s a rulebook rewrite waiting to happen.\n\nElsewhere, a stealthy migration of capital is happening toward the sports you didn’t study in high school. The National Lacrosse League and niche competitions are no longer hobby acts; buyers are sniffing around like venture capitalists at a street taco stand. Smaller leagues have the advantage of novelty and narrative, and in today’s attention economy, that can be worth more than a bloated franchise tax bill.\n\nFinally, spring is coming, diamonds are thawing, and the traditional slow burn of prospect development is now a B-movie with a fast turnaround. MLB camps are bloated with talent pushing to become roster headaches, the sort of delightful problem GMs pretend they love.\n\nIf you want an easy moral: major headlines are entertainment; the under-reported stuff is the policy memo, investment thesis, and soul of sport. Watch the auditors, the mid-majors, the players who speak up, the tiny leagues with big ideas, and the prospects who break the old calendar. That’s where the future is being argued; quietly, and with dangerously good timing.",
+    "series": "The Under-reported Stuff"
+  },
+  {
+    "date": "2026-02-16",
+    "title": "The Day Sports Woke Up and Chose Chaos",
+    "topic": "Chaos is undefeated.",
+    "body": "If you ever needed proof that sports are just theater with better lighting and more ice packs, today delivered like a mascot tripping over a t-shirt cannon.\n\nLet’s begin in the NFL, where the Miami Dolphins decided that the best way to prepare for the future was to politely escort Tyreek Hill out the door. Rebuilding is such a gentle word. It sounds like you’re restoring a charming cottage. In reality, it’s more like tossing the couch out the window because you’ve decided to “reimagine the living space.”\n\nHill, one of the fastest humans legally allowed to wear shoulder pads, is now free-range. Somewhere, defensive coordinators are cautiously unclenching.\n\nMeanwhile, over at the Winter Olympics, where the air is crisp, and the judging is never controversial, Ilia Malinin finished eighth and then had to defend himself not from gravity, but from Wi-Fi. The internet, humanity’s greatest invention for sharing cat photos, once again pivoted to Olympic-level criticism.\n\nFinishing eighth in the world at anything is extraordinary. Eighth at the Olympics? That’s slightly worse than immortal. But the modern spectator believes they, too, could have nailed the quad Axel had they not been busy watching someone else do it that day.\n\nOver in Olympic hockey, things escalated from skating to “let’s test the structural integrity of each other’s helmets.” A spirited disagreement involving Tom Wilson and France’s Pierre Crinon resulted in a suspension, because nothing says international harmony like sanctioned ice combat.\n\nThe Olympics: bringing nations together.\n\nIn combat sports, where subtlety goes to retire, Nate Diaz has teased a return to the Ultimate Fighting Championship. He floated potential opponents the way one casually mentions exes at a wedding. Among them, of course, is Conor McGregor, because no sports storyline is ever truly finished. It just waits in a drawer labeled “In Case of Slow News Cycle.”\n\nFinally, in a move that feels refreshingly normal, the Las Vegas Raiders hired a defensive line coach. No drama, no viral outrage; just a man, a whistle, and the eternal hope that this will finally be the year everything works.\n\nIt will not be that simple.\n\nSports, at its core, is a beautifully irrational enterprise. We release stars, we crucify eighth place, we fight on ice, we hint at trilogies that may or may not happen, and somewhere, a defensive line coach studies film like he’s decoding ancient scripture.\n\nYet, we watch, we argue, and we refresh our feeds.\n\nSports aren’t just about who wins; they are about spectacle and redemption.\nThey are about controlled chaos with sponsorship logos.\n\nToday, Chaos is undefeated.",
+    "series": "Sports Theater"
+  },
+  {
+    "date": "2026-02-03",
+    "title": "Hold Onto Your Jerseys!",
+    "topic": "Politics, Paychecks, and Brain Safety",
+    "body": "Sports, the world’s favorite pastime, where nations unite, fans scream, and occasionally, chaos reigns supreme. In 2026, the playing field isn’t just about goals, runs, or touchdowns; it’s a swirling mix of politics, money, health, and pure human drama. Strap in.\n\nFIFA’s “Can We Forgive Russia?” Fumble\n\nFIFA President Gianni Infantino suggested lifting Russia’s ban from international football, four years after the invasion of Ukraine. The response? A global collective gasp. Fans, officials, and diplomats alike are asking: Should football be a playground, or a moral compass? Infantino seems to think it’s the former. Ukraine disagrees. In the world of soccer politics, it’s clear: even a perfectly timed free kick can’t outrun controversy.\n\nCricket and the Politics Bowled Over\n\nPakistan’s government boycotted a match against India, turning the T20 World Cup into a geopolitical chessboard. Cricket, long thought to be just a bat, ball, and tea breaks, now comes with international consequences. Millions of fans are left staring at empty stands while billion-dollar sponsorships twitch nervously. Lesson learned: when politics enters the crease, everyone’s out.\n\nSoccer Heads Get a Timeout\n\nThe UK’s football association is limiting headers: none for kids under 12 and just 10 per week for pros. Suddenly, heading the ball feels like playing Jenga with your brain. It’s a bold move for player safety, proving that in modern sports, winning is great, but a long-term concussion-free career is even better. Imagine Sergio Ramos or Robert Lewandowski politely saying, “No thanks, I’ll just pass it.”\n\nWomen’s Sports Cash Explosion\n\nA $250 million investment fund is pouring money into women’s sports, the largest capital injection in history. Finally, female athletes are getting the recognition, resources, and respect long overdue. The stakes? Bigger audiences, professional leagues that thrive, and a sports world where gender pay gaps start sweating in the locker room.\n\nTrack and Field Financial Foul Play\n\nThe Grand Slam Track league faces bankruptcy, yet still plans future events while owing millions to athletes and vendors. World Athletics called it “unconscionable,” and honestly, it sounds like your high school gym teacher trying to schedule another marathon after losing the track. In sports finance, as in real life, you can’t sprint ahead while skipping debt.\n\nThe Common Playbook\n\nAcross these stories, a few themes sprint repeatedly down the field:\n\nPolitics is everywhere: From soccer stadiums to cricket pitches, geopolitics throws yellow cards at the unsuspecting.\n\nHealth matters more than glory: Brain safety is no joke, headers are now high-stakes decisions.\n\nMoney talks through massive funds in women’s sports, and commercial pressures in cricket show that cash isn’t just the icing, it’s the entire cake.\n\nAccountability is trending as Leagues and federations are being watched more closely than VAR cameras. One misstep can make headlines faster than a slam dunk.\n\nThe Final Whistle\n\n2026 is a year where sports are more than just games: they’re political battlegrounds, financial thrill rides, and health experiments in motion. Fans can cheer, groan, or shake their heads, but one thing’s clear: the world of sports is exhilarating, unpredictable, and just a little bit chaotic.\n\nSo grab your jersey, put on your referee whistle, and hold onto your popcorn. The game isn’t just on the field anymore; it’s everywhere.",
+    "series": "Global Sports February 2026",
+    "link": "www.vervenveda.com/health"
+  },
+  {
+    "date": "2026-01-29",
+    "title": "From Bale Banter to Celtics Chaos",
+    "topic": "Binge-Worthy",
+    "body": "If sports were a soap opera, this week would be its most binge-worthy episode yet. From cheeky digs on the golf course to Celtics heartbreak and potential transfers, fans have been riding a rollercoaster without leaving their couches.\n\nLet’s start with European football, where Tottenham Hotspur are apparently flirting with Moussa Diaby like he’s the last slice of pizza at a team dinner. Spurs are desperate for pace and creativity, and Diaby seems to fit the bill, or at least that’s what the rumor mill insists. Meanwhile, Manchester United and Arsenal treated fans to a 3–2 thriller, proving that in football, glory and heartbreak come in equal doses, and social media traffic jams are guaranteed.\n\nAcross the Atlantic, the Boston Celtics are auditioning for the drama category. Jayson Tatum’s possible return from an Achilles injury has fans on the edge of their seats, while the team’s recent defensive lapses make you wonder if the Celtics have been secretly moonlighting as amateur contortionists, bending over backwards to lose games. Trade rumors are flying faster than a fast-break dunk, and every Celtics fan is clutching their lucky socks tighter than ever.\n\nMeanwhile, in the world of golf, TPC Scottsdale is getting a glow-up. The 16th hole, famous for chaos, rowdy crowds, and more selfies than a Hollywood premiere, is undergoing major upgrades. Fans can look forward to better views of the action, and players can hopefully focus on their swing instead of dodging the waves of screaming humans. It’s the perfect reminder that golf can be both a test of skill and a carnival of absurdity.\n\nNot to be outdone on the personality front, Gareth Bale reminded us that retirement doesn’t mean maturity. With a cheeky dig at former Arsenal star Theo Walcott, Bale reignited a North London rivalry, and Twitter erupted like a champagne cork at a victory parade. If nothing else, Bale proves that even legends can still throw shade and make the world laugh in equal measure.\n\nAnd finally, in a heartwarming twist, Luke Littler and Jonny Wilkinson teamed up to fight male loneliness through sport. It’s the kind of story that restores faith in athletics, reminding us that beneath the drama, rivalry, and occasional chaos, sport still has the power to bring people together, even if it’s just to make someone smile while throwing darts.\n\nSo whether you’re cheering, groaning, or shaking your head at the headlines, one thing is clear: sports continue to be humanity’s most unpredictable theater, where triumph, heartbreak, mischief, and inspiration all share the same stage. Strap in, because next week, the drama is already waiting.",
+    "series": "World of Sports"
+  },
+  {
+    "date": "2026-01-18",
+    "title": "A World Cup Built on Public Money, Private Power, and Public Silence",
+    "topic": "A Call for a World Boycott of the World Cup",
+    "body": "The World Cup is marketed as a celebration of unity, joy, and global connection. In 2026, it is being sold to us as a triumph for North America, a month-long festival of football stretching across the United States, Canada, and Mexico. Behind the branding and the spectacle lies a harder truth. This World Cup is being underwritten by taxpayers, enforced by expanded policing and surveillance, and staged at a moment when civil liberties are eroding at home and mass atrocities are unfolding abroad.\n\nThat contradiction should give us pause. It should also give us resolve.\n\nThe 2026 FIFA World Cup will run from June 11 to July 19, 2026, across 16 host cities. In the United States, matches will be played in existing stadiums, but “existing” does not mean free. Cities and states are committing tens of millions of public dollars each for stadium upgrades, security operations, transportation, emergency services, and FIFA-mandated requirements. Miami-Dade County alone has approved roughly $46 million in public spending. Seattle has committed $45 million. Other host regions are quietly allocating millions more through budgets that rarely receive national attention.\n\nOn top of local spending, the federal government is expected to shoulder hundreds of millions of dollars in security costs, with additional public funds tied to transportation and infrastructure adjustments. FIFA, meanwhile, a multibillion dollar private organization, retains the bulk of broadcasting, sponsorship, and ticket revenue. The risk is public, the profit is private.\n\nThis is not speculation, it is the established pattern of mega-events.\n\nSupporters insist the World Cup will deliver economic growth, tourism windfalls, and global prestige. Yet decades of research on large sporting events show that promised benefits are often overstated, while long-term costs, maintenance, policing, debt, and opportunity loss, remain with local communities. Public money that could fund housing, healthcare, education, or transit is instead redirected toward a one-month spectacle whose gains are unevenly distributed and whose burdens are widely shared.\n\nAll of this is happening at a moment when Americans are being asked to accept shrinking civil liberties as normalalicy.\n\nImmigration enforcement has turned into a miltarized Policing catastrophy in scope and visibility. Communities live under heightened fear of raids, detention, and family separation. Constitutional rights  are increasingly constrained. Surveillance and policing are normalized under the banner of “security.” Major international events like the World Cup accelerate these trends, justifying extraordinary measures that rarely disappear once the final whistle blows.\n\nThe stadiums will empty. The infrastructure of control often remains.\n\nWhile public money is mobilized to ensure seamless entertainment, the world is watching, and enduring something else entirely. Gaza and Palestine continue to experience catastrophic loss of life. The Congo faces one of the deadliest and most ignored humanitarian crises on the planet. Venezuela’s people remain crushed under economic warfare and political pressure. Greenland’s struggle for self-determination is sidelined. These are not distant abstractions; they are active human catastrophes unfolding while the global community is invited to look away.\n\nThis is where the World Cup ceases to be “just sport.”\n\nGovernments use these types of events to introduce hightened homeland security and restrict rights at home. While enabling and funding human suffering abroad these politicians want to be rewarded with the prestige of hosting the world’s largest sporting event.  The tournament becomes a form of political validation. It sends a message that power will not be questioned, that profit will outrank principle, and that celebration can proceed without accountability.\n\nA boycott is not an attack on football. It is a defense of its meaning.\n\nFootball has always been intertwined with politics, from anti-apartheid boycotts to athlete protests that reshaped public conscience. The idea that sport should remain “neutral” has historically served those already in power. Neutrality, in moments of injustice, is not impartiality. It is endorsement.\n\nBoycotting this World Cup is a refusal to allow public money to subsidize private power while communities are policed, rights are curtailed, and global suffering is ignored. It is a statement that taxpayers are not obligated to fund pageantry while their voices are sidelined. It is a reminder that the world’s game belongs to the people.  Not to governing bodies, not to politicians, and not to systems that demand silence in exchange for entertainment.\n\nIf the world can stop for football, then football can stop for humanity.\n\nUntil civil liberties are protected, until public money is spent transparently and responsibly, and until sport is no longer used to launder injustice, this World Cup deserves resistance, not applause.\n\nHistory will not remember the matches alone.\nIt will remember who chose dignity over distraction.",
+    "series": "The 2026 FIFA World Cup Boycott",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTN-nCJtZY30r_0doPcEZmL5s8QCflw7RYsgrQHQ_HuZxemOuCj7reLV1J1gxTc2oM40kWNwa0b4LMh/pub"
+  },
+  {
+    "date": "2026-01-14",
+    "title": "Chaos, Records, and the Unstoppable Pulse of the Game",
+    "topic": "Sports are a Whirlwind Right Now",
+    "body": "Ladies and gentlemen, fasten your helmets and tighten your sneakers: the world of sports just threw a Hail Mary, a buzzer-beater, and a 100-point game all at once.\n\nLet’s start with the NFL: the Pittsburgh Steelers are officially on the market, and not because of a scandal or a losing streak, because Mike Tomlin, the man who somehow made a nearly two-decade-long career look like a cheat code, has decided to step aside. Yes, the coach with no losing seasons in 18 years, the benchmark of consistency in a league that eats coordinators for breakfast, is leaving. That’s right: for the first time since 1969, the Steelers are conducting a coaching search, and suddenly, the most stable franchise in modern sports history looks like a soap opera casting call.\n\nTomlin’s departure comes on the heels of a “wild” playoff loss to the Houston Texans, a game so chaotic it may also have been Aaron Rodgers’ swan song. Rodgers, the quarterback who joined Pittsburgh late in his career, may now be trading the field for the broadcast booth, adding another layer of intrigue to the coaching vacancy. Will Tomlin join him on TV? Will Rodgers ride off into the sunset? Only time and ESPN analysts’ hot takes will tell.\n\nMeanwhile, across the country, the chaos doesn’t stop. Over in high school hoops, Adrian Stubbs of Maryvale High just redefined scoring, dropping 100 points in three quarters, yes, seventy in the first half alone. If you’re trying to tell your kids about the pinnacle of talent, forget Steph Curry or LeBron: show them Stubbs’ stat sheet.\n\nCollege football is no less dramatic. Quarterback Dante Moore stunned the world by bypassing the 2026 NFL Draft to return to Oregon, proving that even in a world of million-dollar buyouts and revenue-sharing chaos, some athletes still play for love of the game. Other stars are navigating contracts so complex they make Wall Street derivatives look simple. Welcome to the new era of college athletics, where chaos and cash coexist in glorious, confusing harmony.\n\nIn short, sports are a whirlwind right now. Records are falling, dynasties are wobbling, and careers are pivoting in real time. Coaches are leaving, quarterbacks are retiring or transferring, and teenagers are rewriting the definition of “unstoppable.” If you blink, you’ll miss the next headline. One thing’s for sure, whether it’s football, hoops, or the transfer portal circus, the only constant in sports is that nothing is constant.\n\nSo strap in, fans. The ride has just begun.",
+    "series": "Sports Pulse"
+  },
+  {
+    "date": "2026-01-11",
+    "title": "From Stadium Courtrooms to Alligator Golf",
+    "topic": "The Glorious Madness of Modern Sports",
+    "body": "Sports are no longer just about athleticism, strategy, or even glory. No, ladies and gentlemen, we have officially entered the era of the utterly bewildering and slightly terrifying. \n\nAnd why not? If you thought holding a football was simple, try holding a full one-liter beer stein with a straight arm for 21 minutes. Welcome to the Steinholding Championships, the ultimate test of patience, forearm strength, and sheer stubbornness.\n\nMeanwhile, in Philadelphia, the Eagles have gone full “law-and-order meets halftime show,” installing an actual courtroom inside the stadium. Yes, folks: if your tailgate turns into a petty theft, domestic dispute, or questionable chant, you don’t have to leave the 50-yard line. Justice is served between the nachos and the nosebleeds. It’s efficiency, really. Who needs a courthouse downtown when you can get a bench trial with the mascot cheering in the background?\n\nAcross the Atlantic, Manchester United is apparently playing chess while the rest of us play checkers. They’ve floated a transfer deal for Mason Greenwood to the south of France so labyrinthine that it makes quantum physics look simple. There’s a 50% sell-on clause, a handshake agreement with the pigeon population of Marseille, and maybe a secret clause involving croissants. This isn’t just soccer; it’s legal origami.\n\nAnd speaking of meticulous legalism, the NFL continues its “Third-Foot Obsession. Officials are now so fixated on measuring the microscopic placement of your toes during a catch that fans are developing permanent squint lines, just trying to follow the replay. Forget touchdowns, it’s about millimeters of morality. Did the third foot touch? Was it morally upright? Are we sure we’re not actually measuring their socks?  Are they wearing the correct shoe size? \n\nOf course, sports wouldn’t be complete without a little danger. On the golf course, one brave soul recently performed the dual miracle of saving par and his hands during a close encounter with an alligator. If this isn’t the perfect metaphor for life and sports, I don’t know what is: balance, courage, and a hint of sheer terror can lead to triumph. Or a lawsuit. Possibly both.\n\nAnd finally, back in the Windy City, the Chicago Bears have ignited the “Good, Better, Best!” craze, a team and fan culture so contagious that comebacks now feel mandatory. Mediocrity is out; drama is in. Fans chant, players rise, and somewhere in the stands, someone is probably trying to hold a stein for 21 minutes while simultaneously questioning the morality of the third-foot rule.\n\nSports in 2026 are chaotic, confusing, hilarious, and occasionally life-threatening. They are part courtroom drama, part existential crisis, part international legal negotiation, part arm endurance test, and part alligator wrestling. And honestly? They are a distraction from the reality of our world. \n\nBecause at the end of the day, whether you’re measuring the exact location of a toe, drafting a Martian-level contract, or holding a liter of beer for 21 minutes straight, sports remain the ultimate human spectacle: equal parts obsession, skill, absurdity, and sheer entertaining, diverting, occupying madness.",
+    "series": "Sports in 2026"
+  },
+  {
+    "date": "2026-01-03",
+    "title": "Still About Joy",
+    "topic": "Sports, at Its Best",
+    "body": "In a world where headlines often feel heavy, sports continues to do what it has always done best: surprise us, amuse us, and occasionally remind us why we fell in love with the games in the first place.\n\nTake the World Darts Championship, for example. The action on the oche was intense, but social media lit up for a different reason when Sky Sports presenters appeared in coordinated, bold outfits that instantly became part of the spectacle. It was playful, unexpected, and perfectly in tune with darts’ growing reputation as a sport that doesn’t take itself too seriously, even on its biggest stage. In a championship defined by pressure and precision, a moment of visual fun stole just as many headlines.\n\nThen there was the New York Jets superfan who captured hearts during a halftime $100,000 kicking challenge. Invited after controversy over fan access, she stepped onto the field with nerves, hope, and the support of an entire stadium. She missed the kick, but won something arguably better: a moment of shared humanity. In a league dominated by contracts and stats, her attempt reminded fans that sports still belong to the people who love them most.\n\nAcross the Atlantic, teenage darts sensation Luke Littler delivered another viral moment.  Not with a throw, but with his mouth. Booed by sections of the crowd, Littler coolly brushed it off in a post-match interview, joking that the noise was only helping grow the prize money. Confident, witty, and completely unbothered, the teenager turned pressure into a punchline and instantly became meme royalty.\n\nThese moments don’t decide championships or rewrite record books. But they matter. They are reminders that sports aren’t only about trophies; personality, spectacle, and connection matter. It’s about fans daring to dream for one kick, athletes laughing in the face of pressure, and broadcasters accidentally becoming part of the show.\n\nAt a time when sports discourse is often dominated by controversy, contracts, and conflict, these lighter stories cut through. They remind us that joy still lives in stadiums, arenas, and even darts halls. And sometimes, the most memorable moments are the ones no one planned at all.",
+    "series": "Fun and Games"
+  },
+  {
+    "date": "2025-12-31",
+    "title": "More Than Just a Hobby",
+    "topic": "Trading Baseball Cards in 2025",
+    "body": "If you think baseball cards are a relic of the 1980s or 1990s, think again. The trading card scene isn’t just alive, it’s thriving. From teenagers swapping packs at the local shop to serious collectors dropping six figures on rare rookie cards, baseball cards have evolved into a vibrant mix of hobby, sport, and investment.\n\nLet’s break it down.\n\nHow Much Are Typical Cards Trading For Today?\n\nYou might imagine the market is dominated by million-dollar Mickey Mantles, and yes, those cards still make headlines, but the reality is that most everyday cards are far more accessible.\n\nModern rookie cards or popular stars: These typically sell in the $5–$50 range, depending on condition.\n\nGraded cards with high PSA or Beckett ratings: A common rookie card in mint condition might fetch $100–$300.\n\nVintage cards: Depending on rarity, they can range from $50 to thousands, with top-tier, one-of-a-kind cards hitting the multi-million dollar level.\n\nThere’s a card for almost every budget, whether you’re a casual collector or looking for investment potential.\n\nGone are the days when you had to drive to a single hobby shop to find your next trade. Today, collectors have a world of options:\n\nOnline Marketplaces:\n\neBay remains a powerhouse for casual and serious collectors alike.\n\nSpecialized platforms like COMC, Beckett Marketplace, and StockX allow buyers to shop graded and raw cards with confidence.\n\nReddit communities like r/baseballcards and r/BaseballCardsForSale are hubs for trades, selling, and advice.\n\nInstagram and Discord also host active trading communities where collectors post deals and negotiate swaps.\n\nHobby shops and card shows remain crucial for face-to-face trades. They’re not just about buying; they’re a place to connect, learn, and discover cards you won’t find online.\n\nFor high-end, rare cards, auction houses like Goldin Auctions, Heritage Auctions, and PWCC are the go-to. Big ticket cards can skyrocket into six or seven figures.\n\nIf you’ve ever thought about opening a pack of baseball cards and seeing where it takes you, here’s a practical starter guide:\n\nStart Small:\nBegin with cards in your budget. Modern rookies, current stars, or affordable vintage cards give you a feel for collecting without breaking the bank.\n\nCondition Matters:\nLearn the basics of grading. Even a small crease or bent corner can drastically reduce a card’s value. PSA, Beckett, and SGC are the main grading companies to know.\n\nLearn the Market:\nSpend time browsing online marketplaces to understand typical pricing. Check completed eBay listings or trade threads to see what cards are actually selling for.\n\nTrade Smart:\nDon’t just buy, trade. Local shops, shows, and online forums are perfect for swapping duplicates and building a collection that excites you.\n\nConnect With the Community:\nCollecting is social. Whether it’s online groups, Discord servers, or local shops, talking to other collectors teaches you trends, insider tips, and sometimes, hidden gems.\n\nUltimately, collecting is about enjoyment. Sure, some cards are investments, but the thrill of finding a card you’ve been chasing, swapping with a fellow fan, or uncovering a hidden treasure is the heart of the hobby.\n\nBaseball cards aren’t just nostalgia; they’re a hobby that combines strategy, investment, and community. Whether you’re looking for a fun weekend pastime, a way to connect with other fans, or even a potential investment, the market is alive, accessible, and full of opportunity.\n\nAnd the best part? You don’t need a million dollars to play. With a little knowledge, a careful eye, and some curiosity, anyone can step into the world of baseball card collecting and find something exciting waiting in the next pack.",
+    "series": "Baseball Cards",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTT1HmJQ-qWmxmJXm4VhDOOXovvqcnfpobMlT-7WSv62tYzeW8rIcwO6fyLUPM8dHtIN8GJlJHDBgrn/pub"
+  },
+  {
+    "date": "2025-12-29",
+    "title": "From Glory to Glitz",
+    "topic": "The Ultimate Symbol of Human Achievement",
+    "body": "Once, the Olympics were the ultimate symbol of human achievement, a celebration of grit, talent, and the relentless pursuit of excellence. Athletes trained in obscurity, fueled by nothing more than ambition, pride, and the dream of representing their countries. Every medal carried a story, every race a drama, and every competition a shared sense of global wonder.\n\nToday, the Olympics feel different. Somewhere along the way, the games became less about athleticism and more about profit, politics, and pageantry. Sponsors dominate the conversation, ticket prices soar beyond reach, and corporate branding crowds out the raw emotion of competition. Athletes are often pawns in geopolitical messaging, national prestige campaigns, and advertising deals that prioritize visibility over veracity.\n\nThe thrill of pure sport is diluted. Scandals over doping, bribery in host city selections, and exorbitant spending on facilities that often go unused after the games leave a bitter aftertaste. Meanwhile, ordinary citizens whose taxes fund these extravaganzas see little lasting benefit. Stadiums rise and fall, but communities are left with debt and empty promises.\n\nEven the spirit of competition has been compromised. Qualification rules are manipulated, judging controversies dominate headlines, and athletes are sometimes forced into political statements or symbolic gestures that overshadow their actual performances. The Olympics, once a pure test of ability, now resemble a carefully choreographed global media show, polished, packaged, and profitable, but hollow at its core.\n\nThe Olympics today are a showcase of corruption disguised as celebration. Host cities are lured by promises of glory, only to be buried under debt, unfinished infrastructure, and abandoned stadiums once the cameras leave. \n\nBid processes have been repeatedly tainted by bribery scandals, with decision-makers favoring political connections and corporate interests over fairness, sustainability, or the well-being of local communities. Meanwhile, athletes are caught in the crossfire, their dedication exploited for political posturing and sponsorship profits rather than genuine recognition of achievement.\n\nJudging controversies and opaque rules further erode trust in the games. Competitions that should hinge on skill and preparation are often decided by subjective panels or influenced by behind-the-scenes lobbying. When victories are questioned or overturned, the Olympic ideal of meritocracy, where effort meets reward, is shattered, leaving audiences disillusioned and athletes betrayed. The very credibility of the games, once unshakable, now hangs by a thread.\n\nThe question isn’t merely whether the Olympics can survive, it’s whether they can reclaim their soul. Corruption, commercialization, and political manipulation have turned a global celebration of human potential into a spectacle of spectacle itself. To defend the Olympics today is to defend a system that prioritizes power and profit over principle and performance. True revival will require transparency, accountability, and a radical shift back to the ideals that once made the games the pinnacle of human achievement. Until then, the Olympic torch may shine brightly, but its light illuminates more greed than greatness.\n\nAnd yet, we still watch. We still cheer. Because deep down, we long for the original vision: excellence, perseverance, and unity through sport. But that vision is increasingly buried under the weight of money, politics, and spectacle. The Olympics, in their modern form, are not a celebration of human potential; they are a reminder of what happens when glory is commodified, ideals are compromised, and traditions are bent to serve the interests of the powerful.\n\nThe games can be great again, but only if we remember what made them great in the first place. Only when athletes demand a more transparent and fair playing ground.  Until then, the Olympic torch lights more corporate logos than human achievement.",
+    "series": "Olympics"
+  },
+  {
+    "date": "2025-12-27",
+    "title": "Biology vs. Policy",
+    "topic": "The Debate Over Men, Women, and Competitive Sports",
+    "body": "In sports, effort, dedication, and talent are celebrated. But there’s a fact that cannot be ignored: biology matters. No matter how hard a woman trains, the average male body is built differently. Men have more muscle mass, denser bones, larger hearts and lungs, and higher testosterone levels. This isn’t about ability, skill, or determination. It’s about physiology.\n\nThis reality has become a lightning rod in debates over transgender athletes in women’s sports. Advocates for inclusion argue that fairness shouldn’t be used as a barrier to participation. Critics point to competitive integrity, arguing that biological differences create unavoidable advantages. And that’s the crux: in sports, even the most disciplined training cannot erase the physiological gap between most men and most women.\n\nConsider the numbers. Male athletes generally have 30–50% more upper-body strength than females. VO₂ max, a measure of endurance capacity, tends to be higher in men. Even elite female athletes, pushing the limits of human performance, rarely match the raw power output of male athletes. It’s a simple matter of biology, not of effort or talent.\n\nThis raises ethical and practical questions for schools, leagues, and international competitions. Should the drive for inclusion outweigh competitive fairness? Can sports remain meaningful if outcomes are determined not just by skill, but by an unchangeable physiological advantage? And how do we respect both transgender athletes’ identities and the hard-earned achievements of female competitors?\n\nIt’s a debate without easy answers, but one thing is clear: training, determination, and passion are not enough to erase biology. Ignoring this reality doesn’t make it go away; it only creates conflict, frustration, and controversy on the field, in the stands, and in the rulebooks.\n\nSports are meant to challenge the limits of human ability, but fairness matters. If competition is to remain meaningful, we must face biology honestly, while still respecting the humanity of every athlete.",
+    "series": "Transgender Athletes"
+  },
+  {
+    "date": "2025-12-23",
+    "title": "Beyond the Scoreboard",
+    "topic": "Lessons From Athletes Who Refuse to Quit",
+    "body": "The stadium lights dim, the final whistle blows, and the scoreboard tells one story: a loss. But for many athletes, the numbers never tell the full story. True victory is measured not in points or medals, but in courage, resilience, and the will to rise again.\n\nTake Maya, a young track athlete from a small town. She grew up running barefoot through cracked sidewalks, in a neighborhood where opportunities were scarce and dreams often faded before they could even form. At 16, she broke her ankle during a crucial regional meet, an injury that could have ended her career. But Maya didn’t quit. She spent months in physical therapy, waking at 4 a.m. every day to strengthen her body, and mentoring younger runners along the way. By the next season, she returned to the track, not just to compete, but to inspire her entire community.\n\nMaya’s story is not unique. Across the world, athletes are turning challenges into lessons that reach far beyond the playing field. In the world of sports, failure is not final, it is a teacher, a catalyst, a call to grow.\n\nAthletes face a type of pressure few can understand. They endure grueling training, injuries, and moments when everything seems stacked against them. Yet it is the ability to persist, even in the face of repeated failure, that defines greatness.\n\nConsider the story of a high school basketball team in a town devastated by flooding. After losing their gym and equipment, many players considered quitting. Instead, they organized makeshift practices in parking lots, fundraised for new gear, and motivated one another through relentless optimism. Their efforts transformed more than a team, they restored community pride and hope.\n\nSports teach resilience in the most visceral way: you fall, you rise, you fall again, and each time, you grow stronger. That growth is what transfers to life outside the field; perseverance, discipline, and courage become habits, not just skills.\n\nThe most inspiring athletes are often those who defy expectations. Women, para-athletes, and underrepresented minorities are rewriting the narrative of what’s possible. They are not only winning competitions; they are dismantling systemic barriers, mentoring others, and proving that success is about impact, not just recognition.\n\nSports become a platform for justice, equality, and empowerment. They show young people that determination matters as much as talent, and that leadership is measured by the positive influence you have on others.\n\nAthletes remind us that life is rarely linear. Setbacks are inevitable, and challenges are universal. The key is not to avoid failure, but to embrace it as part of the journey. Whether it’s studying for an exam, pursuing a career, or supporting your community, the lessons from the track, the court, or the field are clear:\n\nPersevere - Strength grows in moments of struggle.\n\nLift Others Up - True success includes helping others rise.\n\nRedefine Victory - Impact, resilience, and growth matter more than medals.\n\nKeep Showing Up - Every day you try, you rewrite the story of what is possible.\n\nMaya’s barefoot runs, the basketball team’s improvised practice, and countless other untold stories remind us of the human spirit that refuses to be measured by a scoreboard. Sports are not only about competition; they are a reflection of our capacity to endure, to inspire, and to lead by example.\n\nThe next time you watch a game or pass a local athlete running through the rain, remember this: true victory is not given, it is fought for, lived, shared and earned.",
+    "series": "perseverance, resilience, growth, positive influence",
+    "link": "https:https://docs.google.com/document/d/e/2PACX-1vROtSoAXVAKD4pok5XqpT9Spx_Sev3M3Uj_-7WBEzPU4t1l6dUbsPf9kFOBH_CtGTwVP5fM1XBxLcmT/pub/docs.google.com/document/d/e/2PACX-1vTXB-HVBRXmNwAcldw-6WABTpa_OrWZqMU0mZBEIjz5y8tFU79Nnyjt-DuQIwSR9Z5YnV969bhsAwvb/pub"
+  },
+  {
+    "date": "2025-12-17",
+    "title": "The Embodiment of Courage, and Persistence",
+    "topic": "Paige Calendine",
+    "body": "Long before headlines chase the latest superstar or Olympic medalist, there are athletes whose journeys defy expectation and redefine what’s possible. One such figure emerging from the shadows of mainstream sports media is Paige Calendine, a gymnast whose story embodies perseverance in its purest form. Born without legs, Calendine refused to let physical absence define her presence on the floor, turning what many would see as a limitation into a source of strength and inspiration. Growing up in Zanesville, Ohio, she found her way into gymnastics at a young age, pursuing the sport not as a compromise but as a passion. Overcoming societal expectations and physical barriers, she has since become a recognized gymnast, using her platform to advocate for athletes with disabilities and to push conversations about inclusion and representation in sports. Her story is about more than athleticism: it’s about showing the world that the boundaries we believe exist are often the ones we build ourselves. \n\nIn a world where athletic achievement is frequently measured in medals and records, stories like Calendine’s remind us that the true measure of success often lies in the courage to participate, to persist, and to inspire others along the way. Her journey challenges conventional narratives about ability and competition, offering a powerful example for young athletes everywhere—especially those who may feel overlooked or underestimated.\n\nCalendine’s impact goes beyond her own routines and competitions; she has become a symbol of resilience and advocacy, using her voice to broaden how we think about physical challenge and athletic identity. Through her efforts, gymnastics and sport more broadly become richer, more inclusive, and a more accurate reflection of human diversity. \n\nThis is the kind of story that deserves wider recognition, not just for its emotional inspiration but for what it says about the evolving face of athletic achievement: that greatness isn’t only about perfection or conventional ability, but about the resilience of the human spirit. If you’d like, I can help craft a fuller profile of Paige Calendine’s journey, including interviews, quotes, and how her story connects to broader movements for inclusion in sport.",
+    "series": "Gymnast, Athletics, Overcoming Adversity in Sports"
+  },
+  {
+    "date": "2025-12-15",
+    "title": "Mindset: The Secret",
+    "topic": "The Mentality Behind Elite Sports Performance",
+    "body": "When it comes to elite athletic performance, raw talent and physical training tell only part of the story. The real difference often lies in the mind. Athletes who master their mental game, controlling stress, visualizing success, and making split-second decisions, can turn small advantages into championship victories.\n\nTop competitors don’t just train their bodies; they rehearse their success mentally. Olympic swimmer Michael Phelps famously visualized every stroke, turn, and even potential mistakes before each race. This mental blueprint allowed him to stay calm and execute perfectly under extreme pressure.\n\nHigh-stakes competition triggers stress responses that can disrupt coordination and timing. Elite athletes employ techniques like meditation, controlled breathing, and biofeedback to remain composed. Managing emotions under pressure often separates the podium finishers from the also-rans.\n\nPhysical skill matters, but so does the ability to anticipate an opponent’s moves and adapt instantly. Tennis legends Roger Federer and Novak Djokovic, for instance, read opponents’ patterns, maintain psychological momentum, and adjust strategies mid-match, often turning games with a single well-timed decision.\n\nConfidence and belief in one’s abilities affect every move. Athletes who doubt themselves are more prone to errors, regardless of technique. Confidence fuels boldness, execution, and resilience under pressure.\n\nSports psychologists estimate that mental preparation can account for up to half the difference in elite performance. That means two athletes with nearly identical physical abilities can perform worlds apart simply because of focus, mindset, and composure under pressure.\n\nPhysical training builds the body, but mental training builds champions. In the world of sports, the brain is often the most powerful muscle, stronger than biceps or quadriceps combined. Athletes who harness it fully don’t just play the game; they redefine it.",
+    "series": "Athlets, Sports, Competition"
+  },
+  {
+    "date": "2025-12-12",
+    "title": "The Snow Whisperer",
+    "topic": "Jessie Diggins’ Journey Beyond Medals",
+    "body": "In the hush of dawn, when the world still sleeps beneath winter’s quilt, Jessie Diggins glides. Each stride cuts through the frost like a heartbeat, steady and unyielding. The snow whispers beneath her skis, and in that silence, a story unfolds, not just of victories or medals, but of courage, resilience, and the quiet defiance of limits.\n\nJessie did not arrive at greatness by chance. She arrived by hours unseen, miles uncounted, muscles aching, lungs burning, by the discipline of someone who understands that the summit is never a moment but a journey. And yet, it is not the medals that define her, though they gleam on her chest like frozen sunlight. It is the courage to rise when the world doubts, the generosity to lift others even as she climbs, the wisdom to know that legacy is built in the heart as much as on the podium.\n\nShe has inspired a generation not only to ski faster or train harder, but to imagine bigger. To speak openly about struggles, to champion causes beyond the track, to find purpose beyond applause. Jessie reminds us that strength is not only in the muscles or in the medals, but in the willingness to persist, to care, and to leave the world better than we found it.\n\nAnd now, as she prepares for what may be her final Olympic race, she carries more than skis. She carries the hopes of those who dream quietly, the voices of those who feel unseen, the truth that excellence is not only in what you conquer, but in how you carry yourself along the way.\n\nJessie Diggins does not merely ski. She illuminates a path, a testament to perseverance, a hymn to human spirit, a whisper across frozen fields that the race is never just about the finish line, but about the courage to keep moving when the world feels cold.\n\nFor those who watch her, we see more than a champion. We see possibility. We see resilience. We see a life lived in motion, guided by purpose, and brightened by heart.\n\nIn every glide, every stride, every breath into the biting air, Jessie reminds us: greatness is forged not in the medals, but in the fire that refuses to fade.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTL2nVhIQqMch80wMi91CWeuE3_wKKOhKMu-pL_p0UOymw6Ye9DUB3P8qAfIgPxV0B2VSDtETbojAUa/pub",
+    "series": "Skiing, Olympics, Snow, Winter, Medals"
+  },
+  {
+    "date": "2025-12-11",
+    "title": "Play, Thrive, Connect",
+    "topic": "The Future of Sports",
+    "body": "Imagine a world where sports aren’t just games, but bridges, connecting communities, cultures, and generations. For the next generation, the field of play extends far beyond the local gym or stadium. Technology empowers young athletes to train smarter, prevent injuries, and push their limits safely. Virtual reality, AI coaching, and immersive fan experiences create a universe where physical skill, strategy, and creativity merge seamlessly.\n\nYet the true promise of this future isn’t just tech, it’s inclusion and opportunity. Kids from every corner of the globe can join leagues, challenge themselves, and experience the joy of play, regardless of geography or resources. Sports become a platform for wellness, teamwork, and holistic growth, nurturing both body and mind.\n\nOf course, there are crossroads ahead. Sports could become overly digital, commercialized, or fragmented. Or they could flourish, keeping the essence of physical connection, shared triumph, and the thrill of competition alive. The path we choose now, how we balance innovation with fairness, accessibility with tradition, will shape a world where the next generation doesn’t just watch sports, they live them, learn from them, and grow through them.\n\nThe future of sports is a canvas. With vision, care, and imagination, we can ensure it’s vibrant, inclusive, and unforgettable.",
+    "series": "Inclusivity, Sportsmanship, Team"
+  },
+  {
+    "date": "2025-12-11",
+    "title": "Play, Thrive, Connect",
+    "topic": "The Future of Sports",
+    "body": "Imagine a world where sports aren’t just games, but bridges, connecting communities, cultures, and generations. For the next generation, the field of play extends far beyond the local gym or stadium. Technology empowers young athletes to train smarter, prevent injuries, and push their limits safely. Virtual reality, AI coaching, and immersive fan experiences create a universe where physical skill, strategy, and creativity merge seamlessly.\n\nYet the true promise of this future isn’t just tech, it’s inclusion and opportunity. Kids from every corner of the globe can join leagues, challenge themselves, and experience the joy of play, regardless of geography or resources. Sports become a platform for wellness, teamwork, and holistic growth, nurturing both body and mind.\n\nOf course, there are crossroads ahead. Sports could become overly digital, commercialized, or fragmented. Or they could flourish, keeping the essence of physical connection, shared triumph, and the thrill of competition alive. The path we choose now, how we balance innovation with fairness, accessibility with tradition, will shape a world where the next generation doesn’t just watch sports, they live them, learn from them, and grow through them.\n\nThe future of sports is a canvas. With vision, care, and imagination, we can ensure it’s vibrant, inclusive, and unforgettable.",
+    "series": "Inclusivity, Sportsmanship, Team"
+  },
+  {
+    "date": "2025-12-10",
+    "title": "Plastic Wins in Sports",
+    "topic": "Environment",
+    "body": "When Sports Go Plastic… And Not in a Good Way\n\nAh, sports. The roar of the crowd, the thrill of a last-minute goal, the smell of hot dogs and… microplastics? Yes, you read that right. While we cheer for our favorite teams, an invisible opponent is quietly scoring points against the planet.\n\nTake a look around a stadium. Thousands of fans clutching plastic bottles, waving disposable foam clappers, and munching food wrapped in single-use plastic. That’s a lot of cheering and a lot of trash. By halftime, the stadium has produced more plastic than a tiny island in the Pacific.\n\nThen there’s the field. Artificial turf, beloved for never getting muddy, sheds microplastics every time a player slides into a tackle. That turf isn’t just staying on the field; it’s hitching a ride in storm drains, rivers, and eventually oceans. Even your favorite soccer ball, made from synthetic materials, contributes tiny fibers to the problem every time it’s used.\n\nAnd don’t forget the merchandise. Jerseys, hats, foam fingers, novelty snacks;  all wrapped in more plastic than you can shake a foam finger at. Fans buy, wear, and toss, sometimes without thinking about where it ends up.\n\nEven the mascots aren’t innocent. Giant foam costumes, glittery plastics, and balloons all have a lifespan of fun, and then a very long afterlife in landfills.\n\nBut here’s the fun twist: sports can also be part of the solution. Imagine reusable water bottles at every concession stand. Stadiums powered by clean energy. Jerseys made from recycled materials. Microfiber filters on washing machines for synthetic turf. Fans walking, biking, or taking transit instead of driving miles for the big game. Suddenly, cheering for your team doesn’t mean cheering for pollution.\n\nSports teach us teamwork, perseverance, and strategy. Maybe it’s time we apply the same lessons to the environment. Let’s tackle single-use plastics, block microplastic pollution, and score a win for the planet. Because the only thing better than a game-winning goal? A world where our oceans, rivers, and stadiums stay clean enough to cheer in for generations to come.",
+    "series": "Polution, Earth, Plastic"
+  },
+  {
+    "date": "2025-11-28",
+    "title": "Athlete Welfare and Integrity",
+    "topic": "Mental Health and Burnout",
+    "body": "🏅 The Pressing Crisis in Sports: Athlete Welfare and Integrity\n\nWhile fans cheer and sponsors invest billions, a quieter crisis continues behind the scenes: the physical, mental, and financial well-being of athletes is increasingly at risk. From youth leagues to professional arenas, sports face challenges that threaten both performance and the integrity of the games themselves.\n\n1. Mental Health and Burnout\n\nAthletes, especially in high-stakes leagues, endure grueling schedules, relentless public scrutiny, and high-performance pressure. Burnout, anxiety, and depression are widespread, yet often stigmatized or overlooked. The recent focus on stars stepping away from competition due to mental health (e.g., Naomi Osaka, Simone Biles) illustrates how urgent this issue is; performance is inseparable from mental wellness.\n\n2. Corruption and Doping\n\nFrom match-fixing scandals in football leagues to performance-enhancing drug abuse in athletics, integrity is constantly challenged. These incidents erode public trust and jeopardize the core principle of fair competition. Governance and oversight are improving, but the global system remains fragmented, leaving gaps that can be exploited.\n\n3. Financial Inequality\n\nElite athletes may earn millions, but minor leagues, youth sports, and women’s competitions often struggle for basic funding. Inequities in pay, facilities, and exposure highlight systemic flaws in the sporting ecosystem. Financial instability also affects access: talented athletes may never reach their potential due to resource constraints.\n\n4. Safety and Long-Term Health\n\nFrom concussions in football to overuse injuries in gymnastics, athletes face long-term health risks that are often underreported. Advances in sports medicine help, but regulatory standards vary, leaving many players vulnerable.\n\n5. Technology, AI, and Data Ethics\n\nThe rise of AI and wearables has transformed training and scouting, but privacy and consent are emerging concerns. Athletes’ biometric data could be misused by teams, sponsors, or governing bodies, adding a new layer of ethical complexity.\n\nEditorial Angle\n\nThe sports world stands at a crossroads. Spectators, sponsors, and governing bodies must balance performance, entertainment, and profit with human dignity, fairness, and health. Ignoring these issues risks losing not just athletes’ trust but the integrity and long-term sustainability of the games themselves.\n\nSports are more than scores and trophies; they are cultural touchstones, pathways to social mobility, and inspirations for millions. Protecting the players, ensuring fairness, and building sustainable systems is not just desirable; it’s imperative.",
+    "series": "professional arenas"
+  },
+  {
+    "date": "2025-11-27",
+    "title": "Holiday Sports Frenzy",
+    "topic": "The holidays",
+    "body": "🏈 Holiday Sports Frenzy: When Football, Basketball, and Chaos Collide\n\nThe holidays are a season of lights, food, family, and sports mania. For millions, Thanksgiving, Christmas, and New Year’s aren’t just about turkey, presents, or resolutions—they’re about games, scores, and bracket predictions. Somewhere between the mashed potatoes and dessert, stadiums fill, living rooms roar, and the world collectively loses itself in the frenzy of holiday sports.\n\nThe Tradition of Football and Beyond\n\nIn the United States, the Thanksgiving Day football games are almost as sacred as the feast itself. Families gather around TVs, streaming apps, and sometimes slightly argumentative cousins, cheering for teams while the turkey cools. From the NFL to local high school matchups, football dominates the landscape, creating rituals that span generations.\n\nChristmas and New Year’s, meanwhile, bring basketball and bowl games, often turning quiet holiday afternoons into arenas of tension, excitement, and intense snack management. Suddenly, your living room is a stadium: jerseys, snacks, commentary, and the occasional fan yelling at the TV like the players can hear them.\n\nThe Frenzy Beyond the Field\n\nIt’s not just about the games themselves. Holiday sports have sparked:\n\nFamily rivalries: Uncle Joe’s Patriots vs. Cousin Lisa’s Cowboys, complete with playful taunts and overly competitive scorekeeping.\n\nFantasy leagues: Making the smallest points matter as everyone monitors stats like a stock ticker.\n\nSocial media chaos: Memes, highlights, and commentary that don’t let the holiday go quietly.\n\nSports become a shared cultural heartbeat, connecting fans across generations and even continents. They’re also a unifying force: grandparents reminisce about old games, kids argue over their favorite players, and someone, usually a teenager, streams the match on a tablet under the dinner table.\n\nThe Joy (and Chaos) of Holiday Sports\n\nFor fans, holiday sports bring joy, excitement, and tradition. For hosts, they bring noise, tension, and strategic furniture placement. The reality is a delicate balance:\n\nSnacks must be plentiful, or you risk mutiny.\n\nSeating arrangements matter more than ever (TV visibility is king).\n\nEveryone’s competitive streak comes out—sometimes leaving tempers flared, sometimes leading to unforgettable laughter.\n\nAnd yet, the frenzy is part of the magic. Sports turn a regular holiday gathering into an event that feels bigger than the sum of its parts. Even those who “aren’t into sports” often get swept up in the energy, because it’s as much about connection as it is about points.\n\nWhy We Love the Holiday Sports Frenzy\n\nTradition: Games are as ritualistic as carving the turkey.\n\nCommunity: Even rivals at the same table share a collective excitement.\n\nStorytelling: Plays become anecdotes, rivalries become family lore.\n\nEscape: Sports offer a pause from shopping lists, wrapping paper, and relentless holiday stress.\n\nIn short, holiday sports are the ultimate cultural mixer: competition, bonding, nostalgia, and spectacle, all rolled into a festive frenzy.\n\nFinal Whistle\n\nSo this holiday season, whether you’re cheering, groaning, or secretly scrolling through scores, embrace the frenzy. It’s messy, loud, chaotic, and totally part of the magic. After all, when else can you have mashed potatoes in one hand and a touchdown in the other?\n\nPro tip: Stock snacks, claim a comfy chair, and remember: it’s okay to yell at the TV. Just maybe not at Grandma.",
+    "series": "Thanksgiving, Christmas, and New Year’s"
+  },
+  {
+    "date": "2025-11-26",
+    "title": "Cooper’s Hill Cheese‑Rolling",
+    "topic": "Cheese Sports",
+    "body": "🧀 Cooper’s Hill Cheese‑Rolling — Quick Summary\n\nIn Gloucestershire, England, once a year, brave (or slightly crazy) people chase a 7–9 pound wheel of cheese down a steep, rocky hill. The first to reach the bottom wins the cheese if they survive the tumble!\n\nKey Points:\n\nOrigins: The tradition goes back at least to the early 1800s.\n\nThe Race: Competitors sprint (and often roll or tumble) down a 200-yard slope after the cheese. Catching it is nearly impossible.\n\nRisks: Sprains, broken bones, and general chaos are common; ambulances are on standby.\n\nWho Competes: Locals and tourists alike thrill-seekers love it.\n\nWhy It’s Weird: The prize is literally a wheel of cheese, and the event is part spectacle, part festival, part daredevil sport.\n\nIn short: it’s a centuries-old, high-speed, slightly dangerous, utterly bizarre tradition where cheese rules the hill and humans chase it for glory (and dairy).",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vQZVDpxvGzbGkL5pvuPWIaeuTwKMsjPGAkvMWWT-SF-5B-fMwiVDo8rL1iuypsiSR2K7gFI-MNW2nnJ/pub",
+    "series": "wheel of cheese"
+  },
+  {
+    "date": "2025-11-25",
+    "title": "Gridiron Drama, Glory, and Game-Changers",
+    "topic": "Football",
+    "body": "Football 2025: Gridiron Drama, Glory, and Game-Changers\n\nThe NFL and college football are in full swing, and things are shaking up fast. In the pros, veteran legends like Aaron Rodgers are on what might be their final dance, while rising stars like Travis Hunter are making waves. Teams like the Kansas City Chiefs and Cincinnati Bengals are jockeying for dominance, and new tech think virtual first downs and global games in Berlin is giving the sport a futuristic twist.\n\nCollege football is reinventing itself, too. With a 12-team playoff, conference realignments, and longer seasons, it’s a high-stakes game of strategy and endurance. Big names like Notre Dame and USC are rewriting rivalries, while media deals with ESPN and TNT are making every matchup a must-watch spectacle.\n\nIn short: whether you bleed NFL red or root for your college alma mater, 2025 is shaping up to be a season of legends, surprises, and gridiron glory all under the bright lights of evolving rules, global expansion, and next-level athleticism.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vQZVDpxvGzbGkL5pvuPWIaeuTwKMsjPGAkvMWWT-SF-5B-fMwiVDo8rL1iuypsiSR2K7gFI-MNW2nnJ/pub",
+    "series": "The NFL and college football"
+  },
+  {
+    "date": "2025-11-24",
+    "title": "U.S. Sports 2025",
+    "topic": "US Sports Scene",
+    "body": "U.S. sports today are marked by major broadcasting moves, international expansion, notable games across professional and college levels, and rising programs in college football.\n\nNBCUniversal has relaunched its cable sports network, reviving NBCSN, which will broadcast major events such as NBA games, Premier League soccer, and Olympic content. This demonstrates that traditional cable television still plays a key role in sports media, despite the increasing popularity of streaming platforms.\n\nThe NFL continues its international growth, with the Washington Commanders designated as a home team for a 2026 international game. The league’s upcoming schedule may include games in countries such as Australia, Brazil, Mexico, Germany, and the UK, reflecting its strategy to broaden global engagement.\n\nIn professional NFL action, standout performances include Emanuel Wilson of the Green Bay Packers rushing for over 100 yards and two touchdowns in his first start. Dak Prescott led the Dallas Cowboys to a last-second win over the Philadelphia Eagles, and the Los Angeles Rams dominated the Tampa Bay Buccaneers with a 34–7 victory.\n\nCollege basketball is active with tournaments including the ESPN Events Invitational, the Players Era Festival, and the Maui Invitational. Key games include Rhode Island vs. Towson, Tennessee vs. Rutgers, Kansas vs. Notre Dame, and Seton Hall vs. NC State. The University of South Dakota men’s team improved to 4–1, while the women’s team remains undefeated at 6–0.\n\nIn college football, the North Texas Mean Green football program has achieved a breakthrough 10–1 record under head coach Eric Morris, earning an AP Poll ranking for the first time since 1959. This milestone highlights the increasing competitiveness of mid-tier programs.\n\nFinally, weekly sports highlights continue to celebrate both professional and grassroots athletes, with top plays from high school competitions in Texas and the Texoma region receiving national recognition.\n\nOverall, the current sports environment demonstrates a balance between traditional media and global expansion, strong performances in professional leagues, active college competitions, and recognition of rising talent at all levels.",
+    "series": "NBA games, Premier League soccer, and Olympic content"
+  },
+  {
+    "date": "2025-11-23",
+    "title": "Feverish Sports Events in 2025",
+    "topic": "Sports Highlights",
+    "body": "Most Feverish Sports Events in 2025\n\nThe sports world in 2025 is buzzing with high-profile competitions, historic tournaments, and cultural milestones across traditional sports, winter sports, and esports. These events are exciting not only for their athletic spectacle but also for their cultural, social, and technological significance.\n\n1. Major Multi-Sport Events\n\n2025 Islamic Solidarity Games (Riyadh, Saudi Arabia)\nThis multi-sport event brings together athletes from 56 countries across 21 sports. It’s a celebration of athletic skill, cultural unity, and international cooperation in the Islamic world. Its location in Riyadh also highlights sports diplomacy and regional engagement.\n\n2025 Summer Deaflympics (Tokyo, Japan, Nov 15–26)\nOne of the largest sporting events for Deaf athletes, the Deaflympics emphasizes inclusivity and accessibility. It showcases top-level competition while promoting visibility for communities often overlooked in mainstream sports.\n\nImpact: These events highlight the global, unifying power of sports and the growing emphasis on inclusivity and cultural representation.\n\n2. Football & Cricket Highlights\n\nSuper Bowl 2025\nThe NFL’s flagship event is a spectacle combining elite football, entertainment, celebrity appearances, and high stakes media coverage. It is a cultural phenomenon as much as a sports contest.\n\nUEFA Women’s Euro 2025 (Switzerland)\nThe European women’s football championship is a high-profile tournament reflecting the growing popularity and professionalism of women’s football.\n\n2025 ICC Cricket World Cup\nOne of cricket’s most-watched tournaments, played in traditional cricket powerhouses. It’s a global celebration of skill, strategy, and fan passion.\n\nImpact: These events combine sport with culture and media, drawing massive international audiences and influencing trends in fan engagement.\n\n3. High-Adrenaline Winter & Individual Sports\n\nAlpine World Ski Championships\nFeaturing downhill, slalom, and alpine events, this competition is celebrated for speed, precision, and daring performance. Ski fans and casual viewers alike are drawn to the thrill and beauty of mountain sports.\n\nWorld Athletics Championships\nA premier track and field event featuring the fastest, strongest, and most agile athletes in the world. This is a showcase of human physical potential across running, jumping, and throwing disciplines.\n\nRyder Cup 2025 (Golf)\nA team golf competition between Europe and the U.S., known for its intense, high-pressure format. Fans are drawn to regional pride, strategic play, and dramatic matchups.\n\nImpact: These competitions highlight athletic excellence, risk-taking, and precision sportsmanship, creating tension and excitement for fans worldwide.\n\n4. Esports Spotlight\n\n2025 League of Legends Mid-Season Invitational (Vancouver)\nOne of the biggest esports events on the global calendar, this tournament draws massive online audiences. Esports now rivals traditional sports in energy, spectacle, and fan engagement.\n\nImpact: The prominence of esports illustrates the evolution of competitive entertainment, blending technology, skill, and global participation.\n\nWhy These Events Are “Feverish”\n\nGlobal Reach & Diversity: Many events feature athletes and audiences from around the world, making them culturally and internationally significant.\n\nCultural & Political Importance: Hosting locations and events like the Islamic Solidarity Games highlight sports’ role in diplomacy and societal influence.\n\nInclusivity & Representation: Events like the Deaflympics and women’s football tournaments are raising visibility for historically underrepresented athletes.\n\nMedia and Commercial Influence: The Super Bowl, Ryder Cup, and major cricket tournaments generate enormous media coverage, sponsorship, and fan engagement.\n\nRising Digital Competitions: Esports events demonstrate that digital platforms are now central to the global sports landscape.\n\nAthletic Prestige: Competitions like World Athletics or Alpine Ski Championships represent peak performance in their respective disciplines, delivering unmatched excitement for enthusiasts.",
+    "series": "sports, winter sports, and esports"
+  },
+  {
+    "date": "2025-11-22",
+    "title": "Key Matches, Records, and Rising Stars",
+    "topic": "Sports Update",
+    "body": "Sports Update: Key Matches, Records, and Rising Stars\nIn soccer, Major League Soccer (MLS) announced plans to shift its calendar to align with European leagues by 2027, moving playoffs into May. Officials say this change will enhance competitiveness, reduce conflicts with international events, and better align with the global transfer market. European football saw dramatic results in the UEFA Champions League, with surprise victories from underdog clubs shaking up group stage rankings.\nIn ice hockey, the NHL spotlight was on the Florida Panthers, who secured a narrow 1‑0 victory over the New Jersey Devils. Analysts praised the team’s defensive structure and goaltending, which have become pivotal as they navigate a highly competitive Eastern Conference. The league continues to see intense rivalry games that could shape playoff seeding in the months ahead.\nIn other sports, darts fans celebrated as Luke Littler became the youngest ever winner of the 2025 Grand Slam of Darts, simultaneously rising to the top of the Professional Darts Corporation (PDC) Order of Merit. His performance highlights a generational shift in the sport, as new talent begins to challenge established champions. Meanwhile, various tennis, track and field, and swimming competitions around the world are producing notable performances, indicating a busy and competitive sports season ahead.",
+    "series": "competitive sports season"
+  },
+  {}
+];
+
+// ======================================================
+// 2. STATE
+// ======================================================
+let filtered = comments.slice();
+let showingDetail = null;
+
+// ======================================================
+// 3. FILTERING
+// ======================================================
+function filterComments() {
+  const dateVal   = document.getElementById("dateSearch").value;
+  const topicVal  = document.getElementById("topicSearch").value.trim().toLowerCase();
+  const seriesVal = document.getElementById("seriesSearch").value.trim().toLowerCase();
+
+  filtered = comments.filter(c => {
+    if (!c || !c.title) return false;
+
+    const dateMatch = !dateVal || c.date === dateVal;
+
+    const topicMatch = !topicVal || (
+      (c.topic  && c.topic.toLowerCase().includes(topicVal)) ||
+      (c.title  && c.title.toLowerCase().includes(topicVal)) ||
+      (c.body   && c.body.toLowerCase().includes(topicVal))
+    );
+
+    const seriesMatch = !seriesVal || (
+      c.series && c.series.toLowerCase().includes(seriesVal)
+    );
+
+    return dateMatch && topicMatch && seriesMatch;
+  });
+
+  showingDetail = null;
+  renderList();
+}
+
+// ======================================================
+// 4. LIST RENDER
+// ======================================================
+function renderList() {
+  const list   = document.getElementById("commentList");
+  const detail = document.getElementById("commentDetail");
+  if (!list || !detail) return;
+
+  detail.innerHTML = "";
+  list.innerHTML = "";
+
+  if (!filtered.length) {
+    list.innerHTML = `<li><span class="comment-title">No entries found.</span></li>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const li = document.createElement("li");
+    li.onclick = () => showDetail(c);
+
+    const snippet = c.body
+      ? c.body.slice(0, 120) + (c.body.length > 120 ? "…" : "")
+      : "";
+
+    const topic  = c.topic  || "";
+    const series = c.series || "";
+    const date   = c.date   || "";
+
+    const metaText = [topic, series ? `Series: ${series}` : "", date]
+      .filter(Boolean).join(" • ");
+
+    li.innerHTML = `
+      <div class="comment-title">${escapeHtml(c.title || "")}</div>
+      <div class="comment-meta">${escapeHtml(metaText)}</div>
+      <div class="comment-body">${escapeHtml(snippet)}</div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// ======================================================
+// 5. DETAIL VIEW → POPUP MODAL
+// ======================================================
+function showDetail(c) {
+  showingDetail = c;
+
+  const backdrop = document.getElementById("modalBackdrop");
+  const modal    = document.getElementById("articleModal");
+  const titleEl  = document.getElementById("modalTitle");
+  const metaEl   = document.getElementById("modalMeta");
+  const bodyEl   = document.getElementById("modalBody");
+  const linkRow  = document.getElementById("modalLinkRow");
+
+  const topic  = c.topic  || "";
+  const series = c.series || "";
+  const date   = c.date   || "";
+
+  const metaText = [topic, series ? `Series: ${series}` : "", date]
+    .filter(Boolean).join(" • ");
+
+  titleEl.textContent = c.title || "";
+  metaEl.textContent  = metaText;
+  bodyEl.textContent  = c.body || "";
+  linkRow.innerHTML   = "";
+
+  if (c.link) {
+    const btn = document.createElement("button");
+    btn.className = "open-link-btn";
+    btn.textContent = "Open Full Article";
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      window.open(c.link, "_blank");
+    });
+    linkRow.appendChild(btn);
+  }
+
+  backdrop.classList.remove("hidden");
+  modal.classList.remove("hidden");
+
+  // Center the modal initially
+  const rect = modal.getBoundingClientRect();
+  const left = Math.max(14, (window.innerWidth - rect.width) / 2);
+  const top  = Math.max(24, (window.innerHeight - rect.height) / 4);
+  modal.style.left = left + "px";
+  modal.style.top  = top  + "px";
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.add("hidden");
+  document.getElementById("articleModal").classList.add("hidden");
+}
+
+// ======================================================
+// 6. DRAGGABLE MODAL
+// ======================================================
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+function initDrag() {
+  const modal  = document.getElementById("articleModal");
+  const header = document.getElementById("modalHeader");
+  if (!modal || !header) return;
+
+  header.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    const rect = modal.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", function(e) {
+    if (!isDragging) return;
+    const modal = document.getElementById("articleModal");
+    if (!modal) return;
+
+    let left = e.clientX - dragOffsetX;
+    let top  = e.clientY - dragOffsetY;
+
+    const maxLeft = window.innerWidth  - modal.offsetWidth;
+    const maxTop  = window.innerHeight - modal.offsetHeight;
+
+    if (left < 7) left = 7;
+    if (top  < 7) top  = 7;
+    if (left > maxLeft - 7) left = maxLeft - 7;
+    if (top  > maxTop  - 7) top  = maxTop  - 7;
+
+    modal.style.left = left + "px";
+    modal.style.top  = top  + "px";
+  });
+
+  window.addEventListener("mouseup", function() {
+    isDragging = false;
+  });
+}
+
+// ======================================================
+// 7. UTILS
+// ======================================================
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ======================================================
+// 8. INIT
+// ======================================================
+filterComments();
+initDrag();
+</script>
+</body>
+</html>
