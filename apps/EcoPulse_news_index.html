@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoPulse Daily News</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+  }
+  header {
+    background-color: #2d6a4f;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    font-size: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0.5rem;
+    background: #95d5b2;
+  }
+  .controls button {
+    margin: 0.25rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    background-color: #52b788;
+    color: white;
+    cursor: pointer;
+  }
+  .controls input {
+    margin: 0.25rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 200px;
+  }
+  .news-feed {
+    padding: 1rem;
+  }
+  .news-card {
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .news-card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+  }
+  .news-card p {
+    margin: 0 0 0.5rem 0;
+    color: #555;
+  }
+  .news-card a {
+    color: #2d6a4f;
+    text-decoration: none;
+  }
+  footer {
+    text-align: center;
+    padding: 1rem;
+    background: #2d6a4f;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<header>The Verifier Daily News</header>
+
+<div class="controls">
+  <button onclick="filterCategory('All')">All</button>
+  <button onclick="filterCategory('Environment')">Environment</button>
+  <button onclick="filterCategory('Health')">Health</button>
+  <button onclick="filterCategory('Science')">Science</button>
+  <button onclick="filterCategory('Global')">Global</button>
+  <input type="text" id="searchBox" placeholder="Search news..." oninput="filterSearch()">
+</div>
+
+<div class="news-feed" id="newsFeed">
+  <p>Loading news...</p>
+</div>
+
+<footer>&copy; 2025 EcoPulse News</footer>
+
+<script>
+const newsFeed = document.getElementById('newsFeed');
+const searchBox = document.getElementById('searchBox');
+
+// RSS feeds mapped to categories
+const feeds = [
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/environment.xml', category: 'Environment' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/health.xml', category: 'Health' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/science.xml', category: 'Science' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/science_and_environment/rss.xml', category: 'Global' },
+  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.npr.org/rss/rss.php?id=1007', category: 'Environment' }
+];
+
+let allArticles = [];
+let filteredArticles = [];
+
+// Fetch RSS feed and return items
+async function fetchFeed(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data.items.map(item => ({ ...item, category: feeds.find(f => f.url === url).category }));
+  } catch (err) {
+    console.error('Feed fetch error:', err);
+    return [];
+  }
+}
+
+// Deduplicate articles by link
+function deduplicateArticles(articles) {
+  const unique = [];
+  const seenLinks = new Set();
+  articles.forEach(article => {
+    if (!seenLinks.has(article.link)) {
+      seenLinks.add(article.link);
+      unique.push(article);
+    }
+  });
+  return unique;
+}
+
+// Load news with caching
+async function loadNews(forceRefresh=false) {
+  newsFeed.innerHTML = '<p>Loading news...</p>';
+
+  const cached = localStorage.getItem('ecoNews');
+  const cacheTime = localStorage.getItem('ecoNewsTime');
+  const now = Date.now();
+
+  if(cached && cacheTime && !forceRefresh && (now - cacheTime < 10800000)) {
+    allArticles = JSON.parse(cached);
+    displayNews(allArticles);
+    return;
+  }
+
+  allArticles = [];
+  for (const feed of feeds) {
+    const items = await fetchFeed(feed.url);
+    allArticles = allArticles.concat(items);
+  }
+
+  allArticles = deduplicateArticles(allArticles);
+  allArticles.sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  localStorage.setItem('ecoNews', JSON.stringify(allArticles));
+  localStorage.setItem('ecoNewsTime', now);
+  displayNews(allArticles);
+}
+
+// Display articles
+function displayNews(articles) {
+  if (!articles.length) {
+    newsFeed.innerHTML = '<p>No news available.</p>';
+    return;
+  }
+
+  newsFeed.innerHTML = '';
+  articles.forEach(article => {
+    const card = document.createElement('div');
+    card.className = 'news-card';
+    card.style.backgroundColor = getCategoryColor(article.category);
+    card.innerHTML = `
+      <h3>${article.title}</h3>
+      <p>${article.description || ''}</p>
+      <a href="${article.link}" target="_blank">Read more</a>
+    `;
+    newsFeed.appendChild(card);
+  });
+}
+
+// Category colors
+function getCategoryColor(category) {
+  switch(category) {
+    case 'Environment': return '#d0f0c0';
+    case 'Health': return '#f0d0c0';
+    case 'Science': return '#c0d0f0';
+    case 'Global': return '#f0f0c0';
+    default: return 'white';
+  }
+}
+
+// Filter by category
+function filterCategory(category) {
+  if(category === 'All') filteredArticles = [];
+  else filteredArticles = allArticles.filter(a => a.category === category);
+  filterSearch();
+}
+
+// Search filter
+function filterSearch() {
+  const term = searchBox.value.toLowerCase();
+  const articles = (filteredArticles.length ? filteredArticles : allArticles).filter(a =>
+    a.title.toLowerCase().includes(term) || (a.description && a.description.toLowerCase().includes(term))
+  );
+  displayNews(articles);
+}
+
+// Pull-to-refresh support
+let startY = 0;
+document.addEventListener('touchstart', e => { startY = e.touches[0].clientY; });
+document.addEventListener('touchend', e => {
+  const endY = e.changedTouches[0].clientY;
+  if(endY - startY > 100) { // pull down threshold
+    loadNews(true);
+  }
+});
+
+// Initial load
+loadNews();
+
+// Auto-refresh every 3 hours
+setInterval(() => loadNews(true), 10800000);
+</script>
+
+</body>
+</html>
