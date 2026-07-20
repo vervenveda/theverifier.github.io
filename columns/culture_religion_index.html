@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor's Choice</title>
+<style>
+  body {
+    background: #FFFEFA;
+    font-family: 'Futura Light', serif;
+    color: #1a1a1a;
+    margin: 7px;
+    padding: 14px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 8px 0 3px;
+    color: #2b2323;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 1.4rem;
+    color: #634d1b;
+    margin-bottom: 14px;
+  }
+  #app {
+    max-width: 666px;
+    margin: auto;
+    background: #f7f7f7;
+    padding: 24px 7vw 14px;
+    border-radius: 7px;
+    box-shadow: 3px 3px 13px #00000018;
+  }
+  .search-row {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-row label {
+    font-size: 0.99em;
+    margin: 3px 7px 11px 0;
+  }
+  .search-row input,
+  .search-row select {
+    font-size: 1em;
+    padding: 2px 24px;
+    border-radius: 7px;
+    border: 2px solid #b9a785;
+    min-width: 0;
+  }
+
+  .comment-list {
+    margin: 9px;
+    padding: 3px;
+    list-style: none;
+  }
+  .comment-list li {
+    background: #E8E8E8;
+    border-radius: 7px;
+    margin-bottom: 4px;
+    padding: 14px 14px 11px;
+    box-shadow: 0 1px 7px #dfd4a012;
+    cursor: pointer;
+    transition: box-shadow 0.13s, background 0.13s;
+  }
+  .comment-list li:hover {
+    box-shadow: 1px 1px 7px #e1cc8415;
+    background: #E8E8E8;
+  }
+  .comment-title {
+    font-size: 1.19em;
+    font-weight: bold;
+    color: #83692e;
+  }
+  .comment-meta {
+    color: #8e753c;
+    font-size: 0.98em;
+    margin-bottom: 11px;
+  }
+  .comment-body {
+    font-size: 1.08em;
+    margin-top: 7px;
+    color: #8e753c;
+  }
+
+  /* We keep this, but the main article now appears in a popup */
+  .comment-detail {
+    display: none;
+  }
+
+  /* ---------- Modal + Overlay ---------- */
+  .hidden {
+    display: none !important;
+  }
+
+  #modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.33);
+    z-index: 777;
+  }
+
+  #articleModal {
+    position: fixed;
+    max-width: 777px;
+    width: calc(100% - 48px);
+    background: #E8E8E8;
+    border-radius: 14px;
+    box-shadow: 0 11px 33px #00000044;
+    padding: 24px;
+    z-index: 778;
+    cursor: default;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 11px;
+    margin-bottom: 11px;
+    cursor: move; /* drag handle */
+  }
+
+  .modal-title {
+    font-size: 1.33rem;
+    font-weight: bold;
+    color: #83692e;
+  }
+
+  .modal-meta {
+    font-size: 0.95rem;
+    color: #8e753c;
+    margin-bottom: 11px;
+  }
+
+  .modal-close-btn {
+    border: none;
+    background: #b99b53;
+    color: #FFFEFA;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .modal-close-btn:hover {
+    background: #8e753c;
+  }
+
+  .modal-body {
+    font-size: 1.02rem;
+    color: #2b2323;
+    white-space: pre-wrap; /* respect your paragraphs */
+    max-height: 66vh;
+    overflow-y: auto;
+  }
+
+  .modal-link-row {
+    margin-top: 14px;
+  }
+
+  .open-link-btn {
+    background: #b99b53;
+    color: #2b2323;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 8px 0 0 0;
+  }
+  .open-link-btn:hover {
+    background: #8e753c;
+    color: #FFFEFA;
+  }
+
+  @media (max-width:555px) {
+    #app {
+      padding: 14px 7vw 14vw;
+    }
+    .comment-list li {
+      padding: 7px 7vw 11px;
+    }
+    #articleModal {
+      width: calc(100% - 28px);
+      padding: 18px;
+    }
+    .modal-body {
+      max-height: 60vh;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>Culture & Religion</h1>
+<div class="subtitle">
+  Daily News Commentary<br>
+  Browse by date, topic, or series.
+</div>
+
+<div id="app">
+  <div class="search-row">
+    <label for="dateSearch">Date:</label>
+    <input type="date" id="dateSearch" onchange="filterComments()" />
+    </div>
+
+    <label for="topicSearch">Topic:</label>
+    <input type="text" id="topicSearch"
+           placeholder="e.g. Themes, Beliefs, Festivals, Holidays, Outreach"
+           oninput="filterComments()"/> 
+    <br>
+    <label for="seriesSearch">Series:</label>
+    <input type="text" id="seriesSearch"
+           placeholder="e.g. Catholicism, Islam, Christianity"
+           oninput="filterComments()" />
+  </div>
+
+  <ul class="comment-list" id="commentList"></ul>
+  <div id="commentDetail"></div>
+</div>
+
+<!-- Modal + Backdrop -->
+<div id="modalBackdrop" class="hidden"></div>
+<div id="articleModal" class="hidden">
+  <div class="modal-header" id="modalHeader">
+    <div class="modal-title" id="modalTitle"></div>
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+  </div>
+  <div class="modal-meta" id="modalMeta"></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-link-row" id="modalLinkRow"></div>
+</div>
+
+<script>
+// ======================================================
+// 1. HARD-CODED DATA SOURCE
+// ======================================================
+let comments = [
+  {
+    "date": "2026-06-28",
+    "title": "When God Seems Silent",
+    "topic": "Why Habakkuk's Ancient Questions Still Matter",
+    "body": "There are few books in the Bible as refreshingly honest as Habakkuk.\n\nUnlike many prophets who spoke primarily to the people on God's behalf, Habakkuk begins by speaking to God on behalf of the people. He doesn't arrive with confidence or certainty. He arrives with questions.\n\n\"How long, Lord, must I call for help, but you do not listen?\"\n\nThat cry echoes across generations because it is the cry of every person who has watched injustice flourish, prayed through unanswered circumstances, or struggled to reconcile faith with the realities of a broken world.\n\nHabakkuk looked around his nation and saw violence replacing peace, corruption replacing justice, and wickedness overpowering righteousness. Sound familiar?\n\nOur headlines tell similar stories: wars continue, communities struggle with violence, and families are fractured. While corruption dominates conversations, social media amplifies outrage, and many quietly wonder whether anyone is truly listening. Not just those in positions of authority, but God Himself.\n\nHabakkuk dared to ask the question many believers are hesitant to voice:\n\n\"God, where are You?\"\n\nPerhaps one of the greatest misconceptions about faith is the belief that sincere Christians never wrestle with difficult questions. Yet the pages of Scripture tell a different story. God preserved Habakkuk's questions for future generations, suggesting that honest faith and honest questions are not enemies.\n\nWhat makes the book even more remarkable is God's response.\n\nGod does not say, \"Stop asking.\"\n\nHe does not condemn Habakkuk for doubting.\n\nInstead, He reveals that He is already at work in ways Habakkuk cannot yet understand.\n\nThat answer introduces another challenge. God's methods are unexpected. He announces that He will use the Babylonians, an empire known for its violence and pride, as an instrument of judgment against Judah. Habakkuk cannot reconcile this with what he knows about God's holiness.\n\nHis questions deepen.\n\nHow can a holy God use an unholy nation?\n\nHow can justice come through those who seem unjust?\n\nThese are not merely ancient theological debates. They reflect questions people still ask today. Why do evil people seem to prosper? Why do corrupt leaders gain influence? Why do difficult circumstances sometimes become the very tools that shape our lives?\n\nHabakkuk reminds us that God's sovereignty does not always unfold according to human expectations. His purposes often extend beyond what we can immediately see.\n\nThat does not eliminate the tension. In fact, Habakkuk refuses to pretend the tension isn't there.\n\nHis faith is not built on having every answer.\n\nIt is built on continuing the conversation with God.\n\nPerhaps that is the lesson modern readers need most.\n\nIn an age that often demands immediate explanations and instant solutions, Habakkuk invites us into something deeper, a faith that trusts God's character even when His timing is difficult to understand.\n\nFaith is not the absence of questions.\n\nFaith is choosing to bring those questions to God instead of allowing them to pull us away from Him.\n\nThe story of Habakkuk does not begin with certainty.\n\nIt begins with a prayer.\n\nPerhaps that is exactly where many of us need to begin again.\n\nThe next time you find yourself asking, \"God, where are You?\" remember that you are not the first person to ask the question. More importantly, Scripture reminds us that God is not offended by sincere questions. He invites us to bring them into His presence, trusting that even when we cannot see His hand at work, He has not abandoned His purpose or His people.",
+    "series": "Religion"
+  },
+  {
+    "date": "2026-06-24",
+    "title": "The Question Every Generation Asks",
+    "topic": "Revelation 2026",
+    "body": "Are we living in the end times or simply living through another turning point in history?\n\nOpen a news app on any given morning in 2026, and the headlines seem almost tailor-made for a discussion of the Book of Revelation.\n\nArtificial intelligence is reshaping economies and societies. Nations are engaged in geopolitical rivalries that stretch across continents. Digital currencies are being explored around the world. Surveillance capabilities are more sophisticated than at any point in human history. Conflict in the Middle East continues to command global attention. Social divisions appear to be widening, and technological change is accelerating faster than many people can process.\n\nAgainst this backdrop, a growing number of people, religious and nonreligious alike, are asking a question that has echoed through centuries:\n\nAre we witnessing the events foretold in the Book of Revelation?\n\nIt is a question as old as Christianity itself, and perhaps one of the most misunderstood.\n\nFor many people, Revelation is associated with beasts, plagues, mysterious numbers, apocalyptic battles, and predictions about the end of the world. Popular books, movies, sermons, and internet discussions have often presented Revelation as a coded blueprint of future events waiting to be deciphered.\n\nYet the reality is far more complex.\n\nWritten near the end of the first century, Revelation emerged during a period when early Christians faced pressure, persecution, and uncertainty. Its author, John, wrote in a style known as apocalyptic literature, a genre rich in symbolism, imagery, and dramatic visions.\n\nTo modern readers, Revelation often feels like a puzzle. To its original audience, it was also a message of hope.\n\nThe book was not merely about catastrophe; it was about perseverance. It was not simply a warning about future judgment. It was an assurance that evil, regardless of how powerful it appears, would not ultimately prevail.\n\nRevelation feels so relevant today. Every generation tends to discover itself somewhere in Revelation's pages.\n\nWhen Rome fell, Christians believed the end had arrived.\n\nDuring the Black Death, many saw Revelation unfolding before their eyes.\n\nThe world wars of the twentieth century convinced countless observers that humanity had entered its final chapter.\n\nThe Cold War, with its ever-present threat of nuclear annihilation, inspired another wave of prophetic speculation.\n\nNow, in 2026, a new generation is asking similar questions.\n\nWhat makes today's discussion unique is not necessarily the existence of war, famine, disease, or political turmoil. Humanity has endured those realities throughout history.\n\nWhat is unique is the infrastructure of the modern world.\n\nFor the first time, humanity possesses technologies capable of connecting, monitoring, influencing, and coordinating billions of people simultaneously. Digital financial systems can process transactions across continents in seconds. Artificial intelligence can analyze information at scales unimaginable even a decade ago. Global communication occurs instantly.\n\nFor many students of prophecy, these developments make certain passages in Revelation appear more plausible than ever before. The question is no longer whether such systems could exist. The question is whether they are related to the visions described nearly two thousand years ago.\n\nFew passages have generated more modern speculation than Revelation's reference to a system in which people cannot buy or sell without receiving a mark of the Beast, and the Digital Age.\n\nIn previous centuries, such a scenario seemed impossible. Today, conversations about digital identity, biometric verification, centralized payment systems, and programmable currencies have given new life to old interpretations. These developments are evidence that Revelation's warnings are becoming technologically feasible.\n\nHistory offers a valuable lesson here. Previous generations linked the \"mark\" to everything from imperial seals and national identification cards to barcodes and credit cards. Those predictions largely faded as new technologies emerged. The challenge for modern interpreters is distinguishing between genuine prophetic fulfillment and the temptation to fit ancient symbols into contemporary anxieties.\n\nNo modern prophetic discussion is complete without addressing Israel. For many Christians, the existence of a modern Jewish state in the biblical homeland represents one of the most significant developments in prophetic history.\n\nTo those who hold a futurist interpretation of Revelation, Israel's central role in global affairs appears deeply significant.\n\nOthers argue that biblical prophecy should be understood more symbolically or spiritually, and therefore should not be mapped directly onto modern political realities.\n\nRegardless of one's theological position, it is difficult to deny that Israel and Jerusalem continue to occupy a remarkable place in world affairs, far exceeding what their geographic size alone would suggest.\n\nIf Revelation were being discussed around dinner tables a century ago, artificial intelligence, the new wild card, would not have entered the conversation. AI has become a fascinating lens through which some observers view prophecy. Not because Revelation explicitly mentions intelligent machines, but because AI introduces possibilities that previous generations could hardly imagine.\n\nInformation can now be generated, distributed, filtered, and personalized on a global scale. Public opinion can be influenced in ways that blur the lines between human and machine communication. Whether AI ultimately becomes a force for tremendous human advancement or a source of new societal risks remains an open question.\n\nWhat is certain is that it has added a new dimension to discussions about power, control, truth, and authority, themes that are featured throughout Revelation.\n\nEvery generation has found convincing reasons to conclude that the end was near. Many of those conclusions proved premature. This historical reality does not disprove biblical prophecy. It does, however, encourage humility. A healthy respect for Revelation requires acknowledging both its enduring relevance and the long record of failed predictions attached to it.\n\nPerhaps the most important lesson from Revelation is not a timeline but a warning. The book consistently challenges systems that demand ultimate allegiance: it questions concentrations of power, it exposes corruption, and it warns against the seduction of wealth, empire, and unquestioned authority.\n\nIn that sense, Revelation speaks as powerfully to the twenty-first century as it did to the first. The beasts may take different forms, the empires may change names, and the technologies may evolve, but the underlying questions remain remarkably consistent.\n\nWho deserves our loyalty and what happens when power becomes absolute?\n\nHow should people respond when truth collides with convenience?\n\nCan hope survive in times of uncertainty?\n\nSo, are we living in the end times?\n\nThe honest answer depends largely on how one understands Revelation. Some believe the signs are converging in unprecedented ways. Others see recurring historical patterns that have appeared many times before. Still others argue that Revelation was never intended to function as a detailed forecast of modern events.\n\nWhat cannot be denied is that the questions raised by Revelation feel increasingly relevant in a world defined by rapid technological change, global interconnectedness, and growing uncertainty.\n\nTwo thousand years after it was written, Revelation continues to do exactly what great books do: it forces us to confront the future.\n\nMore importantly, it forces us to examine the present.",
+    "series": "End Times Prophecy",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTml9pxkjRX1zbyX9GSu24YiJoiP-kDbNbX7gKjBt11QK7Px5LSrwoe3HGhCQ7l07jzKLl83-ZIisR0/pub"
+  },
+  {
+    "date": "2026-06-16",
+    "title": "A Historical and Theological Examination",
+    "topic": "Replacement Theology and the Israel Church Debate",
+    "body": "The relationship between Israel and the Church has been one of the most enduring and consequential debates in Christian theology. At the center of this discussion is a doctrine commonly known as \"replacement theology,\" or supersessionism, which holds that the Christian Church has inherited or fulfilled the role that ancient Israel occupied in God's covenantal plan. While the concept has deep historical roots, it remains controversial among Christians today and continues to influence religious thought, biblical interpretation, and even modern political attitudes.\n\nUnderstanding this debate requires careful examination of history, theology, and scripture. It also requires setting aside assumptions and recognizing that sincere believers have arrived at different conclusions while drawing from the same biblical texts.\n\nReplacement theology, also known as supersessionism, is the belief that the Church has superseded Israel as the primary people of God. In its traditional form, it teaches that the promises, blessings, and covenantal privileges once associated with Israel are now fulfilled in the Church through Jesus Christ.\n\nSupporters of this view generally argue that the coming of Christ inaugurated a new covenant in which faith, rather than ethnic lineage or national identity, determines membership in God's covenant community. They often point to New Testament passages that emphasize unity among believers and the fulfillment of Old Testament promises in Christ.\n\nHowever, supersessionism exists in several forms. Some theologians maintain that Israel's role was fulfilled rather than replaced, while others argue that the Church is the continuation of faithful Israel rather than a separate entity that displaced it. These distinctions are important because the term \"replacement theology\" can sometimes oversimplify a range of theological positions.\n\nHistorical Development\n\nThe roots of supersessionist thought can be traced to the earliest centuries of Christianity. As Christianity gradually emerged from its Jewish origins and became increasingly Gentile in composition, Christian thinkers sought to explain the relationship between the new faith and the people of Israel.\n\nEarly Christian writers often interpreted biblical promises through a Christ-centered lens. They argued that the covenant reached its fulfillment in Jesus and that the Church represented the continuation of God's redemptive plan. By the fourth and fifth centuries, supersessionist interpretations had become widespread within mainstream Christianity.\n\nFor much of Christian history, some form of supersessionism remained the dominant view among Roman Catholic, Eastern Orthodox, and Protestant traditions. This consensus persisted for centuries and shaped Christian theology, preaching, and biblical interpretation throughout Europe and beyond.\n\nAdvocates of supersessionism frequently cite New Testament passages that emphasize the universality of the gospel and the inclusion of Gentiles within God's covenant people.\n\nParticular attention is often given to passages in Galatians, Romans, Ephesians, and First Peter. These texts speak of believers as heirs of God's promises, members of a unified people, and participants in a covenant that transcends ethnic distinctions.\n\nFrom this perspective, the Church does not replace Israel in a hostile sense but fulfills the purpose toward which Israel's covenant history pointed. The emphasis is placed on continuity through Christ rather than on national or ethnic identity.\n\nCritics, however, argue that such interpretations overlook passages that appear to affirm an ongoing role for Israel. Romans chapters 9 through 11 are especially significant in this regard. The Apostle Paul speaks of God's continuing faithfulness to Israel and describes a future hope that many interpreters believe points to a distinct role for the Jewish people in God's plan.\n\nThe debate, therefore, hinges not merely on individual verses but on broader questions of biblical interpretation, covenant theology, prophecy, and the nature of God's promises.\n\nThe nineteenth century witnessed the rise of dispensationalism, a theological system that challenged traditional supersessionism. Dispensational theologians argued that God maintains distinct purposes for Israel and the Church.\n\nAccording to this view, biblical prophecies concerning Israel should generally be understood in a literal sense and await future fulfillment. The Church and Israel are viewed as related but distinct entities within God's overall plan.\n\nThis perspective gained considerable influence through Bible conferences, theological institutions, and widely distributed study Bibles. During the twentieth century, it became particularly influential among evangelical Christians in the United States.\n\nAs a result, many modern Christians, especially within evangelical traditions, reject replacement theology and instead affirm the continuing significance of Israel in biblical prophecy and covenant theology.\n\nReassessment After the Holocaust\n\nThe twentieth century brought renewed scrutiny to supersessionist theology, particularly in the aftermath of the Holocaust. Many scholars and religious leaders questioned whether certain theological assumptions had contributed, directly or indirectly, to negative attitudes toward Jewish communities.\n\nIn response, numerous Christian denominations revisited traditional teachings about Judaism and the Jewish people. This process led to significant developments in Jewish-Christian relations and encouraged greater appreciation for Christianity's Jewish roots.\n\nMany contemporary theologians now seek formulations that affirm Christian convictions while avoiding language that could imply divine rejection of the Jewish people.\n\nThis reassessment has not resulted in universal agreement.\n\nToday, Christians generally fall into several broad categories regarding the Israel–Church relationship.\n\nSome continue to embrace traditional supersessionism, viewing the Church as the fulfillment of Israel's covenant role.\n\nOthers reject supersessionism entirely, maintaining that God's covenant with Israel remains active and distinct.\n\nA third group seeks a middle position, often described as fulfillment theology. These theologians argue that God's promises are fulfilled in Christ and the Church while still affirming a continuing place for the Jewish people within God's redemptive purposes.\n\nThese differing perspectives demonstrate that the debate is not simply a choice between two opposing camps but rather a spectrum of theological interpretations.\n\nAlthough the debate is fundamentally theological, it has broader cultural and political implications. Beliefs about Israel, biblical prophecy, covenant theology, and the interpretation of scripture often influence attitudes toward the modern State of Israel and the Middle East.\n\nHowever, it is important to distinguish between theological doctrines and political positions. Not all Christians who support Israel politically do so because of theological convictions, and not all Christians who reject replacement theology support the same political policies.\n\nLikewise, Christians who affirm some form of supersessionism may hold a wide variety of political views regarding modern Israel.\n\nConflating theological doctrines with contemporary political positions can obscure important distinctions and oversimplify a complex subject.\n\nThe debate over replacement theology remains one of the most significant discussions in Christian thought. It raises profound questions about covenant, prophecy, identity, and the continuity of God's purposes throughout scripture.\n\nFor nearly two thousand years, theologians have wrestled with how the Church relates to Israel and how biblical promises should be understood. While consensus remains elusive, the ongoing conversation reflects a shared commitment to interpreting scripture faithfully and understanding the relationship between Christianity and its Jewish heritage.\n\nWhether one ultimately embraces supersessionism, rejects it, or adopts a mediating position, the discussion serves as a reminder that theology is often shaped not only by scripture itself but also by history, tradition, culture, and the interpretive frameworks through which believers read sacred texts.",
+    "series": "Beyond Theology: Cultural and Political Implications"
+  },
+  {
+    "date": "2026-06-15",
+    "title": "Distraction, Division, and the Politics of Attention",
+    "topic": "Culture of Communism",
+    "body": "In today's political debates, the word \"communism\" is often used more as a label than a description. Supporters invoke it as a vision of economic equality. Critics describe it as a pathway to authoritarian control. Social media reduces it to slogans, conspiracy theories, and lists of rules.\n\nCommunist culture begins with the ideas of Karl Marx and Friedrich Engels, particularly in The Communist Manifesto.\nAt its core, communism argues that society is shaped primarily by economic relationships. Rather than viewing history as a story of great leaders or nations, communist theory sees history as a struggle between social classes: those who own productive assets and those who work for them.\n\nFrom this perspective, inequality is not an accident but a structural feature of capitalism.\nCommunist culture tends to emphasize:\nCollective interests over individual interests.\nEconomic equality over wealth accumulation.\nCooperation over competition.\nShared ownership over private ownership of major industries.\nClass identity over individual economic success.\n\nThe Ideal vs. The Reality\nOne of the most important distinctions is the difference between communist theory and communist governments.\nIn theory, communism envisions a society without economic classes, where productive resources are commonly owned, and the state eventually becomes unnecessary.\n\nIn practice, countries that identified as communist, including the former Soviet Union and the People's Republic of China under Mao Zedong, developed powerful centralized governments.\n\nThis gap between theory and practice remains one of the central debates surrounding communism.\n\nEvery generation believes it is living through uniquely turbulent times.\nPolitical polarization deepens, trust in institutions declines, and public discourse grows more emotional and less thoughtful. Citizens increasingly find themselves arguing over cultural controversies while larger questions of governance, economics, foreign policy, and public accountability receive less attention.\n\nAgainst this backdrop, an old document periodically resurfaces.\nKnown as the \"Communist Rules for Revolution,\" it allegedly originated in Germany in 1919 and was later circulated throughout the United States during the Cold War. Many people read it and feel as though it describes aspects of modern life.\n\nOne particular passage stands out:\n\"Get people's minds off their government by focusing their attention on athletics, sexy books, and other trivialities.\"\n\nWhether those words were written by communist strategists, anti-communist activists, or someone else entirely may ultimately be less important than the reason they continue to resonate.\nThe concern itself is ancient.\n\nNearly two thousand years before the Cold War, the Roman satirist Juvenal warned of \"bread and circuses,\" the tendency of citizens to exchange civic engagement for entertainment. According to Juvenal, a population preoccupied with spectacles and diversions was less likely to concern itself with the actions of those in power.\n\nToday, the arenas are larger than Rome ever imagined.\nProfessional sports command global audiences measured in billions. Celebrity scandals dominate headlines, and social media platforms compete relentlessly for attention. News cycles refresh by the minute, rewarding outrage and emotional reaction while discouraging reflection.\nCitizens can spend hours debating a referee's decision, a viral controversy, a celebrity's opinion, or the latest online feud.\nMeanwhile, inflation, national debt, military conflicts, government spending, infrastructure, education, healthcare, and constitutional questions often struggle to command sustained public attention.\nThe issue is not that sports are bad.\n\nSports can unite communities, inspire excellence, and provide healthy forms of competition and entertainment. The issue is not movies, music, books, or popular culture; the issue is proportion.\n\nHow much attention do we devote to matters that affect our lives compared to matters that merely entertain us?\nThis question becomes particularly important when examining modern political life.\n\nAmericans increasingly divide themselves into opposing camps. Political opponents are portrayed not as fellow citizens with differing views but as existential threats. Every controversy becomes a crisis, and every disagreement becomes a battle. Ironically, another point from the disputed \"Communist Rules\" reflects a similar concern:\n\"Divide the people into hostile groups by constantly harping on controversial matters.\"\n\nThe phenomenon is real.\n\nPolitical consultants, media organizations, activist groups, corporations, and social media algorithms all benefit from attention. Outrage, conflict, and fear generate attention.\nThe result is a culture in which citizens are constantly stimulated but rarely informed.\n\nWe know more about what angers us than what governs us.\nWe know more about the latest controversy than the latest legislation.\nWe know more about personalities than policies.\n\nThis dynamic should concern people across the political spectrum.\nThose on the left often argue that consumer culture, corporate media, and entertainment industries distract citizens from economic inequality and concentrated wealth.\n\nThose on the right often argue that cultural controversies, identity politics, and media narratives distract citizens from governmental overreach and declining civic values.\n\nPublic attention is being diverted from deeper issues.\nPerhaps the greatest lesson from the enduring popularity of the so-called \"Communist Rules for Revolution\" is that many people instinctively recognize a problem in modern society: the battle for attention.\n\nThe modern citizen is bombarded by more information than any human being in history. Yet being informed and being inundated are not the same thing.\n\nA society can drown in information while starving for wisdom.\n\nThe challenge before us is not merely to reject propaganda from one side or another. It is to resist becoming so consumed by spectacle that we neglect citizenship itself.\n\nThe future of any free society depends on its people's ability to distinguish between what is urgent and what is important.\nA healthy republic requires citizens who can tell the difference.\nThe idea that governments use entertainment to divert public attention is much older than communism itself. The concept originates from ancient Rome's famous idea of \"Bread and Circuses,\" a phrase coined by Juvenal nearly two thousand years ago.\n\nThe criticism has been applied to monarchies, democracies, dictatorships, capitalist societies, and communist societies alike.\nIn other words, the debate is less about communism and more about human nature and mass culture.",
+    "series": "Communist Rules for Revolution"
+  },
+  {
+    "date": "2026-03-27",
+    "title": "Cancel Culture, No Closing Hours",
+    "topic": "The Court of Public Opinion",
+    "body": "There was a time when being publicly shamed required a town square, a loud voice, and a reasonably sized crowd. Now it requires Wi-Fi and a moment of boredom.\n\nWelcome to the modern spectacle: a world where outrage travels faster than reflection, where judgment is crowdsourced, and where the jury never quite agrees on the rules.\n\nWe call it “cancel culture,” though the term itself has become as slippery as the behavior it describes. To some, it’s justice. A long overdue accountability is finally catching up with people who once operated above consequence. To others, it’s a digital guillotine, dropping swiftly and often indiscriminately, severing careers from context.\nWhat we’re really witnessing isn’t a cultural anomaly; it’s human nature, supercharged.\n\nAt its best, people who were once untouchable now face consequences. Harm that was once dismissed is now named, amplified, and taken seriously. Entire movements have emerged from collective voices refusing to stay quiet. \n\nAt its worst, the same mechanism becomes something else entirely. Nuance evaporates, intent is irrelevant, and the timeline collapses.  Something said ten years ago is judged by today’s standards, with no allowance for growth in between. A person becomes a symbol, and once that transformation happens, they are no longer treated as human. They are treated as a lesson.\n\nCancel culture lessons in the age of the internet are rarely gentle.\n\nWhat makes this especially complicated is that everyone involved believes they are acting morally. The person calling for accountability sees themselves as defending what’s right. The person resisting cancellation sees themselves as defending freedom. Neither wakes up thinking, “Today I will be unreasonable.” Yet here we are, locked in cycles of escalation, each side convinced the other is the greater threat.\n\nSocial media doesn’t just enable this, it refines it, and escalates it. It rewards speed over accuracy, certainty over curiosity, and performance over sincerity. Outrage is not just expressed; it is optimized. The louder the reaction, the wider it spreads. Once something spreads, it can destroy, whether or not it deserves to.\n\nThe result is a society that struggles to answer a basic question: what do we actually want from people who mess up?\n\nDo we want punishment, an apology, transformation, exile, or can we offer redemption?\n\nThe answer seems to change depending on who the person is, what they said, and perhaps most tellingly, whether we liked them before we found out.\n\nThat inconsistency is not a flaw in the system; it is the system.\n\n\"Cancel culture” isn’t governed by laws; it’s governed by emotion, identity, and momentum. It is less like a courtroom and more like the weather, shifting, unpredictable, and occasionally destructive.\n\nYet, despite all this, people do change and grow. Not always, and not equally, but enough to reveal something important: cancellation is rarely permanent. Attention moves on, narratives shift, and audiences forgive. Selectively, sometimes quietly, sometimes without admitting they ever condemned in the first place.\n\nWhich raises an uncomfortable possibility: perhaps the fear of being canceled is, in many cases, more powerful than cancellation itself.\n\nThat fear changes how people speak, what they share, and sometimes whether they speak at all. It creates a culture of preemptive caution, where the safest opinion is often silence. However, silence has consequences also. A society that cannot tolerate disagreement doesn’t eliminate ideas; it drives them underground, where they grow unchecked.\n\nIf there is a way forward.  It’s in resisting the instinct to turn every mistake into a referendum on someone’s entire character.\n\nA society that only knows how to punish will eventually run out of people to cancel.\n\nA culture that forgets how to forgive may find itself with nothing left worth defending.",
+    "series": "Culture"
+  },
+  {
+    "date": "2026-03-07",
+    "title": "The Psychology of Being “Chosen”",
+    "topic": "Trump and Armageddon",
+    "body": "Imagine sitting in a U.S. military briefing. You expect maps, strategy, maybe a pep talk. Instead, according to recent complaints described in news reports, some service members say they were told the war with Iran was part of a divine plan, with Trump cast in apocalyptic or prophetic terms. That claim has not been publicly verified through an official transcript or statement from Trump himself, but the allegation alone is revealing.\n\nThe theological backdrop is the Book of Revelation, a text famous for fire, judgment, and symbolic end-times imagery. For people inclined to see current events through that lens, modern conflict can quickly become prophecy in motion. Every strike, every escalation, every headline starts to look like a signpost.\n\nTrump himself has not publicly claimed to be Christ returned or the literal bringer of the apocalypse. But he did famously look to the sky in August 2019 and say, “I am the chosen one,” later insisting he meant it jokingly in reference to trade with China. Even so, that kind of rhetoric does not simply vanish once spoken. It enters the culture, where supporters, critics, and power structures can all load it with larger meaning.\n\nTaken together, these moments reveal a familiar human pattern. Psychologists might describe it as a feedback loop between grandiose rhetoric and social reinforcement. A leader uses inflated language. Admirers interpret it as destiny. Opponents amplify it as a danger. Over time, the idea of being “chosen” can take on a life of its own, not necessarily as formal doctrine, but as a psychologically potent narrative.\n\nThis is not just politics. It is a study in cognition, authority, and myth. Human beings are wired to search for meaning in chaos. Add war, religion, and a charismatic political figure, and the temptation to turn events into a cosmic script becomes very strong.\n\nThat does not mean every apocalyptic interpretation is delusional, nor does it mean every grandiose statement signals mental illness. But when rhetoric about destiny begins to shape how people justify power, violence, or history itself, it deserves scrutiny. The danger is not merely the language. The danger is what people may permit themselves to do once they believe they are actors in a sacred drama.\n\nThe result is a surreal tableau: a leader, a nation, and thousands of interpreters weaving metaphor, belief, grievance, and mythology into a single story. In that sense, the real lesson may be less about prophecy than about projection. People do not just respond to events. They narrate them. They crown them with purpose.\n\nSo is Trump truly destined to start the end of the world? That is a theological question, not a political one. But psychologically, the more revealing issue is how quickly rhetoric, fear, and social reinforcement can create the feeling of chosenness around a leader, whether or not the facts support it.\n\nWhat we can say with confidence is narrower: Trump publicly used “chosen one” language in 2019, and recent reports say complaints were made alleging that some military commanders framed the Iran conflict in biblical, end-times terms. Beyond that, caution matters. The human mind is fully capable of turning ambiguity into destiny.\n\nAnd that may be the most unsettling part of all.",
+    "series": "Trump Psychology"
+  },
+  {
+    "date": "2026-02-17",
+    "title": "A Rare Convergence of Calendars and Cosmos",
+    "topic": "When the Skies Align",
+    "body": "Today, the universe decided to throw a celestial party, and we were all invited.\n\nA solar eclipse darkened the sky, reminding us that the Sun and Moon, those eternal dance partners, occasionally like to show off their choreography. But the cosmic show didn’t stop there. Across the globe, human calendars, some thousands of years old, are also aligned in near-perfect synchrony:\n\n✝ Christian Lent continued its season of reflection and fasting\n☪ Ramadan ushered in a month of spiritual focus for Muslims\n🧧 The Chinese and Tibetan New Year's celebrated renewal and rebirth\n🪷 Nichiren Buddhism honored the birthday of its founder\n🌀 Mayan 13 Kame added its own sacred symbolism\n🌙 Jewish New Moon marked a fresh beginning in the lunar month\n\nIt’s not every day that the skies and human tradition conspire to create such a layered tapestry. A solar eclipse makes this moment even rarer. After all, an eclipse is the ultimate reminder that human timekeeping is anchored in celestial mechanics: the Sun, the Moon, and the Earth lining up precisely in a new moon dance.\n\nIt reminds us that, across continents and centuries, humans have consistently turned to the sky to structure life, mark milestones, and imbue meaning. Spring and the new moon have always symbolized:\nRenewal\nReflection\nPurification\nGrowth\n\nToday’s eclipse amplifies that symbolism: literally darkening the old to make space for the new.\n\nThere’s a perfectly logical astronomical explanation: a solar eclipse only occurs during a new moon. Calendars that track lunar cycles will inevitably see overlapping dates every few years. Yet the intersection of so many traditions at once, combined with a celestial spectacle, creates a rare moment where science, spirituality, and culture meet.\nIt’s like a cosmic reminder that while our human systems are different, they often arrive at the same lessons: pay attention, pause, and honor cycles bigger than ourselves.\n\nIt’s an opportunity to marvel at astronomical precision.\nIt’s a chance to reflect on our shared humanity, across religions and cultures.\n\nIt reminds us that nature’s rhythms, the orbit of the Moon, and the tilt of the Earth, continue regardless of our calendars.\nAnd, frankly, it’s just really cool to have the Sun and Moon steal the show while we’re all keeping track of Lent, Ramadan, and New Year celebrations simultaneously.\n\nSo whether you were staring at the sky, marking your faith calendar, or simply wondering why your friends across the world were also celebrating something today, remember this: sometimes, the cosmos likes to synchronize human timekeeping with celestial artistry.\n\nAnd if that isn’t enough to make you pause, look up tonight. Somewhere above, the Moon has already started its slow, graceful retreat until the next cosmic convergence reminds us, once again, that the universe has a sense of timing, humor, and poetry that we humans are just beginning to appreciate.",
+    "series": "Celestial Party"
+  },
+  {
+    "date": "2026-01-23",
+    "title": "A Human Practice We Refuse to See Clearly",
+    "topic": "Cannibalism",
+    "body": "Cannibalism occupies a unique place in the modern imagination. It is treated as the ultimate taboo.  An act so transgressive that it appears to sit outside history, culture, and rational explanation. In popular narratives, cannibalism is framed as either the desperate last resort of doomed survivors or the defining feature of irredeemable monsters. What is missing from this framing is complexity. When examined historically and comparatively, cannibalism is neither anomalous nor incomprehensible. It has appeared repeatedly across time, geography, and social organization, shaped by survival pressures, belief systems, medical theory, and power.\n\nMore unsettling still is the possibility that cannibalism has not disappeared at all. Rather, it has undergone a change in form, becoming diffuse, indirect, and bureaucratically obscured. Modern society may not practice cannibalism in the ways it recognizes, but it continues to consume human bodies in ways it prefers not to name.\n\nCannibalism in History: Not One Act, but Many\n\nThe word cannibalism collapses radically different behaviors into a single moral category. Historically, these distinctions mattered.\n\nSurvival Cannibalism\n\nIn extreme conditions, shipwrecks, sieges, famines, and polar expeditions, human flesh has been consumed not out of desire, belief, or cruelty, but calculation. These cases often followed internal rules: bodies were consumed only after death; selection processes were formalized; and the act was framed as a tragic necessity rather than a transgression.\n\nImportantly, societies that practiced survival cannibalism rarely celebrated it. Participants recorded shame, grief, and moral injury. The taboo was not absent; it was overridden.\n\nRitual and Cultural Cannibalism\n\nIn some societies, cannibalism was not about sustenance but meaning. Endocannibalism (consuming members of one’s own group, often the dead) functioned as a form of remembrance or spiritual continuity. Exocannibalism (consuming enemies) could symbolize dominance, revenge, or the absorption of power.\n\nThese practices were governed by rules, symbolism, and limits. They were not acts of chaos but embedded social rituals, often far more structured than the violence of modern warfare.\n\nMedicinal Cannibalism in Europe\n\nOne of the most overlooked chapters in cannibalism’s history is that of early modern Europe. For centuries, human remains were prescribed as medicine. Powdered skulls, human fat, blood, and mummified flesh were sold openly by apothecaries and used by elites and physicians alike.\n\nThis was not fringe behavior. It was institutional, commercial, and normalized.  It challenges the idea that cannibalism belongs exclusively to societies labeled “primitive” by colonial observers.\n\nBiology, Science, and the Decline of Open Cannibalism\n\nCannibalism did not fade solely because of moral progress. Scientific understanding played a decisive role.\n\nThe discovery of prion diseases, particularly in populations that practiced ritual cannibalism involving the brain, revealed biological risks previously unknown. Cannibalism became not only taboo, but dangerous in a new, medicalized sense. The practice was reframed from cultural behavior to pathological risk.\n\nThis shift mattered. Once cannibalism was classified as a health threat rather than a cultural act, it became easier to suppress through institutions, law, and public health narratives.\n\nModern Cannibalism: Pathology, Not Culture\n\nWhen cannibalism appears today, it is almost always framed as evidence of individual abnormality. Modern cases are overwhelmingly associated with:\n\nSevere mental illness\n\nExtreme social isolation\n\nSexualized violence or power fixation\n\nUnlike historical or ritual cannibalism, these cases lack communal meaning. They are not shared practices but solitary acts, often hidden and episodic. The legal system struggles to categorize them, torn between criminal intent and psychiatric incapacity.\n\nMedia coverage amplifies the horror, turning perpetrators into symbols rather than subjects of analysis.  Cannibalism becomes a spectacle that reassures the public: this is rare, this is monstrous, this is not us.\n\nThat reassurance may be false.\n\nCannibalism Horrifies More Than Murder\n\nCannibalism provokes a deeper visceral reaction than killing alone. It violates not only life, but boundaries between self and other, inside and outside, person and object. To consume a human body is to deny its social meaning even after death.\n\nYet this moral clarity erodes under scrutiny. Modern societies routinely dismember, commodify, and repurpose human bodies, just under different names.\n\nThe Cannibalism We Cannot See\n\nIf cannibalism is defined narrowly as eating human flesh, then modern society appears free of it. However, if it is defined more broadly as the systematic consumption of human bodies for benefit, the picture becomes less comfortable.\n\nConsider:\n\nThe global trade in human organs often sourced from the poor and coerced.\n\nBiomedical industries are built on harvested tissues and cells.\n\nFor-profit systems that extract labor, health, and longevity until bodies are depleted\n\nHistorical practices, such as grave robbing for medical schools, that persisted well into the modern era\n\nThese systems are sanitized by language. Bodies become resources. People become donors, inputs, units of productivity. Consumption still occurs, it is merely indirect, regulated, and socially approved.\n\nWhat once required ritual or desperation now requires paperwork.\n\nCannibalism has never been a singular act, nor a relic of humanity’s past. It has been a response to hunger, a vehicle for meaning, a medical theory, a pathology, and a tool of power. What has changed is not humanity’s relationship to consumption, but its visibility.\n\nModern society condemns cannibalism precisely because it insists the practice is immoral. Yet the continued extraction of value from human bodies: biological, economic, and symbolic, suggests otherwise. We no longer consume flesh at the fire. We consume through systems, markets, and institutions that allow distance and denial.\n\nThe taboo remains intact only because we insist on looking for teeth marks instead of fingerprints.",
+    "series": "Culture"
+  },
+  {
+    "date": "2026-01-17",
+    "title": "Flood Myths throughout many Cultures",
+    "topic": "Flood Myths",
+    "body": "If you’ve ever heard the story of Noah’s Ark or read about the Epic of Gilgamesh, you’re already familiar with one of humanity’s most enduring and widespread myths: the great flood. It’s a story told and retold across continents, cultures, and centuries, popping up in ancient Mesopotamia, India, Greece, China, and even among Indigenous peoples in the Americas. But why does this watery tale seem to have such universal appeal? And what can it possibly mean?\n\nFirst, let’s splash into the basics. Flood myths typically tell of a catastrophic deluge that wipes out most life, usually as divine punishment or a cosmic reset, followed by a hero or group who survives to repopulate or restart civilization. Sound familiar? That’s because it’s a compelling story, full of drama, destruction, survival, and rebirth, that resonates with fundamental human experiences.\n\nOne of the earliest and most famous flood stories comes from Mesopotamia, roughly 4,000 years ago. The Epic of Gilgamesh recounts how Utnapishtim survived a god-sent flood by building a boat, much like Noah centuries later. This suggests that these myths didn’t pop out of nowhere; they are reflections of historical events.\n\nWhich leads us to the science bit: ancient civilizations around the world lived close to rivers.  Fertile but sometimes dangerous places prone to flooding. The Tigris and Euphrates in Mesopotamia, the Nile in Egypt, the Indus in South Asia, and the Yellow River in China are just a few examples. Seasonal floods could be devastating, wiping out homes and crops and forcing people to rebuild from scratch. These real floods left a powerful impression on the collective memory, giving rise to stories that were passed down, adapted, and shared.\n\nHere’s the kicker, the flood myth goes beyond just a natural disaster. It’s a story of moral reckoning and renewal. Whether it’s the gods punishing humanity for wickedness, or nature cleansing the world to allow a fresh start, the flood symbolizes both an end and a beginning, destruction mixed with hope. That universal theme strikes a chord with the human need to make sense of chaos and find meaning in suffering.\n\nInterestingly, flood stories often carry cultural fingerprints that reflect local values and beliefs. For example, in some Native American flood tales, the hero is an animal or trickster figure rather than a human. In Hindu mythology, the god Vishnu takes the form of a fish to warn the righteous king of an impending flood. These variations reveal the rich tapestry of human imagination and spirituality.\n\nSo, when you hear about the “great flood” in one culture or another, it’s not just a coincidence or a recycled Hollywood script. It’s a window into how different people, separated by time and geography, grappled with the same elemental forces of nature and human existence. Flood myths remind us that while cultures may be diverse, our stories, and our questions about life, survival, and morality, are profoundly connected.\n\nNext time you’re watching a dramatic movie about the apocalypse or hearing a flood story, remember: it’s not just entertainment. It’s an ancient echo of the tides that shaped humanity’s past, swept through our collective imagination, and still ripples in our cultural consciousness today.",
+    "series": "Culture and Religion"
+  },
+  {
+    "date": "2026-01-11",
+    "title": "Christian Zionism Fails the Test of Christianity",
+    "topic": "Zionism < Christianity",
+    "body": "Christian Zionism is often presented as an expression of deep faith, an unwavering commitment to biblical truth and moral clarity in a complicated world. \n\nWhen examined closely, the movement collapses under the weight of its own contradictions. It is not simply a controversial interpretation of scripture; it is a framework that conflicts with the core teachings, ethics, and theology of Christianity itself.\n\nOne can be a Christian. One can support Israel’s right to exist. But to be a Christian Zionist requires reconciling a series of contradictions that Christianity, at its heart, does not allow.\n\nChristianity Is Not a Tribal Faith\n\nChristianity emerged as a radical departure from ethnic and territorial definitions of God’s people. The New Testament is explicit: faith, not lineage, land, or nationality, defines belonging. Jesus consistently rejected tribal supremacy, choosing instead to center on the poor, the displaced, and the outsider.\n\nChristian Zionism reverses this foundation. It elevates ethnicity and geography as spiritually decisive, re-centering biblical promises around land claims and national power. In doing so, it resurrects a framework the Gospel explicitly transcends. What Christianity universalizes, Christian Zionism re-tribalizes.\n\nThat is not continuity; it is a contradiction.\n\nThe Abandonment of Fellow Christians\n\nPerhaps the most damning inconsistency is the movement’s treatment of Middle Eastern Christians, especially Palestinian Christians whose communities trace back to the earliest centuries of the faith.\n\nThese Christians live under occupation, face restrictions on worship, endure displacement, and watch ancient churches damaged or destroyed. Yet many Christian Zionist organizations either ignore their suffering or justify it as collateral damage in a prophetic narrative.\n\nChristianity does not permit such selectivity. A faith that claims unity in Christ cannot prioritize ideology over the survival of fellow believers. When Christians are rendered invisible because they complicate a political theology, something essential has gone wrong.\n\n\n\nChristian Zionism has a selective moral lens. Its leaders often speak passionately about religious freedom and persecution, except when violations are committed by the state it supports. Restrictions on access to Bethlehem, harassment at checkpoints, and military violence impacting Christian civilians.   These realities are frequently met with silence.\n\nThis is not moral consistency. It is moral convenience.\n\nChristian ethics demand the same concern for human dignity regardless of who holds power. When justice is conditional, it ceases to be justice at all.\n\nMany supporters believe they are donating to humanitarian or faith-based causes. Yet documented cases show funds flowing into settlement expansion and projects that exacerbate displacement and violence.\n\nThis is intended, and the result is the same: Christian money sustaining systems that harm civilians, including Christians. A faith rooted in peace cannot excuse material participation in oppression by appealing to prophecy or politics.\n\nChristian Zionism also carries a theological contradiction that troubles many Jewish observers. While it claims staunch support for Jewish people, its end-times theology often envisions a future in which Jews must either convert or be destroyed upon Christ’s return.\n\nSupport that hinges on someone else’s role in a prophetic script is not solidarity; it is instrumentalization. Genuine respect does not require a theological expiration date.\n\nAt its core, Christianity is a faith of self-giving love, humility, and moral accountability. It rejects domination, excuses for violence, and the use of suffering as a means to an end.\n\nChristian Zionism, by contrast, often aligns Christianity with state power, military force, and absolutist narratives that leave no room for compassion or critique. In doing so, it trades the moral authority of the Gospel for the influence of empire.\n\nThat trade may be politically useful. \n\nIt is NOT Christian.\n\nThe issue is not disagreement over foreign policy. It is coherence.\nChristian Zionism asks Christians to:\nprioritize land over people,\nprophecy over ethics,\npower over humility,\nand allegiance over compassion.\n\nThese are not secondary matters. They strike at the heart of what Christianity claims to be.\n\nOne can follow Jesus.\nOne can seek peace in the Middle East.\nOne can advocate for Jewish safety and dignity.\n\nBut to merge Christianity with a political ideology that requires overlooking suffering, redefining theology, and excusing injustice is to abandon Christianity’s moral center.\n\nFor these reasons, Christian Zionism is not merely controversial; it is incompatible with the faith it claims to represent.",
+    "series": "Religion - Politics"
+  },
+  {
+    "date": "2026-01-04",
+    "title": "A Mosaic of Culture, Creativity, and Community",
+    "topic": "Celebrating Canada",
+    "body": "When most people think of Canada, images of maple syrup, majestic landscapes, and hockey may come to mind, but Canadian culture is far richer and more diverse than any stereotype. From art and music to food and language, Canada’s culture is a living mosaic, shaped by Indigenous peoples, French and British heritage, immigrant communities, and modern innovation.\n\nCanada is officially bilingual, with English and French recognized at the federal level, but hundreds of other languages thrive across the country. Indigenous languages, such as Cree, Ojibwe, and Inuktitut, preserve centuries of tradition and knowledge. Immigrant communities bring vibrant contributions in Punjabi, Mandarin, Arabic, Tagalog, and more. This linguistic diversity isn’t just functional; it colors literature, media, and daily life.\n\nCanada has produced some of the world’s most influential artists and performers. Musicians like Leonard Cohen, Joni Mitchell, Drake, and The Weeknd have left global footprints. Canadian cinema, from the groundbreaking work of Denis Villeneuve to the indie successes of Xavier Dolan, reflects the country’s unique perspectives, storytelling, and sense of place. Meanwhile, cities like Montreal and Vancouver pulse with street art, galleries, and festivals that celebrate both tradition and avant-garde experimentation.\n\nCanadian cuisine is as diverse as its people. Poutine, butter tarts, and Nanaimo bars sit alongside global flavors brought by immigrants, Indian curries, Chinese dim sum, and Middle Eastern shawarma, all harmonizing in multicultural cities. Seasonal harvests, local seafood, and Indigenous ingredients also feature prominently, highlighting the deep connection to land and environment.\n\nSports and Community Spirit\n\nSports are a cornerstone of Canadian culture, from ice hockey and lacrosse to curling and skiing. But beyond competition, they foster community, teamwork, and pride, shaping local and national identities. Festivals and public celebrations, like Canada Day, the Calgary Stampede, and Montreal’s Jazz Festival. These showcase the playful, inclusive side of Canadian life, where people from all walks of life come together to celebrate shared experiences.\n\nModern Canadian culture thrives alongside a deep respect for Indigenous traditions. Powwows, storytelling, and art honor the first peoples of the land, while innovation hubs in Toronto, Vancouver, and Montreal show Canada’s forward-looking creativity. The country blends respect for heritage with a drive for progress, resulting in a culture that is both rooted and aspirational.\n\nPerhaps Canada’s defining cultural trait is its commitment to multiculturalism and inclusion. Whether through policies, public events, or everyday interactions, Canadians celebrate differences, learning from each other while building a shared identity. This openness fuels creativity, encourages collaboration, and strengthens communities.\n\nCanadian culture is not just about the landscapes or the weather; it’s about people, stories, and creativity. It’s a dynamic, evolving mix of traditions, innovation, and community, making Canada a global beacon of cultural diversity and resilience.\n\nI haven't been myself, but I hope to visit soon.  I'm sure that if you’re visiting a festival in Montreal, listening to Indigenous storytelling in Saskatchewan, or enjoying multicultural cuisine in Toronto, you’ll be experiencing the heart of Canada itself: inclusive, creative, and proudly alive.",
+    "series": "Culture"
+  },
+  {
+    "date": "2026-01-01",
+    "title": "The Greatest Suffering on Earth",
+    "topic": "The collapse of corrupt authority.",
+    "body": "Across history, the greatest suffering on earth has rarely been caused by ordinary people. War, genocide, mass displacement, and extreme inequality almost always originate from concentrated power: political, economic, and ideological. This reality is not a matter of controversy; it is observable. Entire populations are drawn into violence not by their own choosing, but by decisions made far above them.\n\nBecause of this, many people searching for meaning, especially through scripture, ask hard questions: Why does peace seem impossible? Is humanity itself the problem? Do certain people need to be removed for the world to heal?\n\nThese questions are understandable. But how they are answered matters enormously.\n\nWhen scrutinized, especially through the Ethiopian biblical tradition, the answer is clear and consistent: peace does not come from removing people; it comes from judging and dismantling corrupt power.\nThe Ethiopian Bible, one of the oldest and most expansive biblical canons, speaks with unusual clarity about corrupt rulers. Books such as 1 Enoch, Jubilees, and 1 Meqabyan are unsparing in their criticism of kings, elites, and wealthy authorities who enrich themselves through violence, deception, and exploitation.\nWhat is striking is who is held responsible.\nJudgment consistently falls on:\nRulers who wage unjust wars\n\n\nLeaders who shed innocent blood\n\n\nElites who hoard wealth while societies collapse\n\n\nAuthorities who present themselves as benefactors while causing widespread harm\n\n\nThe text does not describe humanity as a surplus to be reduced. It describes corruption as a moral disease that spreads downward from power.\n\nPeace is tied to humility, accountability, and justice, not domination or population loss.\n\nIn 1 Meqabyan, the message is unmistakable:\n A ruler who destroys their people ultimately destroys themselves (1 Meqabyan 6).\n Judgment falls first on those who wield power and lead others into violence (1 Meqabyan 9), especially when they cloak domination in claims of righteousness or necessity (1 Meqabyan 12).\nPeace is consistently tied to humility, accountability, and justice, not to fear, force, or the reduction of human life (1 Meqabyan 13–14).\n The text offers no vision of peace achieved through population loss—only peace restored through the collapse of corrupt authority.",
+    "series": "Corruption",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vQ-sUVeOmW0CQ-DZ-pn2h1ggijVtpIphUUupjSw7-CF4k4r0PuO4nMziTLMZ1HC7SDLgZUQBghZJyGp/pub"
+  },
+  {
+    "date": "2025-12-29",
+    "title": "Zionism: Religion, Politics and Identity",
+    "topic": "Zionism =Terrorism",
+    "body": "When people discuss Zionism, confusion often arises about what it truly represents.  It is a religious, political, and nationalist movement that emerged in the late 19th century to establish a Jewish homeland in Palestine. Jewish culture, faith, and historical identity form the foundation of its ideology, despite most Zionists not being Semitic or from the region now called Israel, unjustly. \n\nThis blending of nationalism and religious identity is part of what makes discussions about Zionism so charged. To critics, Zionism has often taken on the trappings of a quasi-religious ideology, with unwavering political loyalty demanded of the United States, the hijacking of symbolic names and rituals tied to sacred land and history, and the deplorable nature of catastrophic political goals.\n\nThe problem arises when political nationalism cloaked in religious symbolism becomes untouchable, immune to critique, or used to justify actions in the present day. Religious and cultural identity can be co-opted to defend policies, erase dissenting voices, or even normalize territorial expansion and oppression. Understanding the distinction and the interplay is critical to meaningful debate. Zionism is not Judaism, Zionists are not G-d's People, israel the stolen landmass, is not legal, just as patriotism is not inherently the faith of a nation. It is a political movement that uses elements of identity, tradition, and history to motivate, justify, and mobilize people.\n\nIn modern discourse, clarity matters. Debates about Zionism must separate faith from politics, belief from policy, and people from ideology. Misunderstanding these lines can allow political power to claim moral immunity under the guise of divine sanction. The conversation about Zionism isn’t just about israel, but about how nationalism, religion, and identity intertwine, and how societies can hold power accountable without demonizing an entire faith.\n\nZionism has crossed boundaries far beyond politics, seeping into the beliefs of multiple religions and becoming a potent, sometimes dangerous, ideology cloaked in faith.\n\nChristian Zionists, for example, view the establishment and expansion of israel as a fulfillment of biblical prophecy. Their support is framed in divine terms, transforming policy decisions into sacred duty. Meanwhile, elements within Judaism and other faith communities increasingly fuse nationalism with religious identity, presenting political loyalty as an almost holy imperative. When political ideology dons the robe of religion, questioning policy or holding leaders accountable is painted as sacrilege rather than civic responsibility.\n\nThis blending is more than symbolic; it is mobilizing, blinding, and polarizing. Religious devotion becomes a justification for political conquest, territorial expansion, and even military action. Critique is dismissed as heresy, dissent as betrayal, and moral consequences fade beneath the banner of destiny. When nationalism masquerades as divinity, policies are shielded from debate, and ordinary citizens, regardless of faith, bear the cost of ideology elevated to dogma.\n\nDifferent religions adopting aspects of Zionist thinking are reshaping global faith politics. It creates an echo chamber where belief and policy are inseparable, where spiritual conviction is weaponized to defend agendas that may have little to do with justice or human rights. Faith, once a guide for compassion, becomes a tool to sanctify power, territorial ambition, and political control.\n\nThe danger is clear: when politics becomes religion, it stops being accountable. When ideology cloaks itself in divine authority, debate turns into heresy, dissent into blasphemy. Zionism is not inherently a religion, but its fusion with religious conviction across faiths has made it feel untouchable, sacred, and immune to scrutiny. And that is when faith becomes complicit in the erosion of justice, reason, and humanity.",
+    "series": "Israel the Terrorist Club"
+  },
+  {
+    "date": "2025-12-28",
+    "title": "A Promise Lost and Unfulfilled?",
+    "topic": "Freedom of Religion in the U.S.",
+    "body": "The United States is often held up as a global model for freedom of religion, a core part of the First Amendment and human rights traditions. But a growing number of recent events and legal battles suggest that in practice, religious freedom in America isn’t equally protected for all beliefs and communities.\n\nA 2025 report documented over 430 hostile acts against churches in the U.S. in 2023 alone, including vandalism, arson, gun‑related incidents, and bomb threats. This marks a dramatic increase from past years and suggests that religious institutions themselves are being targeted with violence and hostility.\n\nA federal “Religious Liberty Commission” hearing under the Trump administration was widely criticized by the Freedom From Religion Foundation as promoting Christian nationalist privilege, not protecting genuine religious freedom. Critics argue that the hearing was focused on advancing one religious ideology in public institutions and excluded the voices of religious minorities or non‑religious citizens. \n\nThis reflects a deeper debate: when religious freedom becomes a political tool rather than a protective right, it can end up privileging some faiths over others or faith over non‑belief, rather than ensuring true neutrality.\n\nA recent case at the University of Oklahoma highlighted ongoing tensions on campuses: a graduate teaching assistant was removed from instructional duties after a controversial grade dispute involving a Bible‑based gender identity essay. The dispute sparked national debate about whether religious viewpoints are being ridiculed or disciplined in academic settings, and raised questions about how colleges balance academic standards with religious expression.\n\nU.S. civil rights law prohibits discrimination and harassment based on religion, including dress, prayer practices, and observances. Yet documented cases, such as a Muslim employee whose hijab was forcibly handled by a manager, show that religious harassment still occurs in the workplace, often leaving victims to fight for legal enforcement. \n\nFederal guidance makes clear that harassment based on religion, including stereotypes and offensive remarks, is illegal when it creates a hostile environment. But enforcement depends on individuals reporting incidents and institutions acting on them.\n\nAmerica is undergoing a significant transformation in religious identity: nearly 30% of adults now identify as religiously unaffiliated, and church attendance is declining sharply. This shift has created cultural friction over what “religious freedom” means. Especially as public debate over religion, politics, gender, and identity intensifies.\n\nThe traditional story of U.S. religious freedom assumes a level playing field where all beliefs are equally protected, but current trends show that:\nSome faith communities feel under threat from social hostility and legal discrimination.\nPolitical use of “religious liberty” can shift the playing field in favor of specific ideologies.\nConflicts on campuses and in workplaces reveal everyday tension between religious expression and institutional standards. \nBroader cultural shifts challenge assumptions about America’s religious identity. \n\n\nIn other words, freedom of religion is not just a right; it’s a lived negotiation between beliefs, law, and culture. And when one group feels privileged while another feels marginalized, the promise of “religious freedom for all” risks becoming a slogan instead of a reality.",
+    "series": "Freedom of Religion"
+  },
+  {
+    "date": "2025-12-27",
+    "title": "What Are They Afraid Of?",
+    "topic": "Why Is Creationism Locked Out of Schools?",
+    "body": "Open a biology textbook today, and you’ll see evolution front and center. Fossils. DNA. Natural selection. It’s presented as the one true story of life on Earth. Creationism? Practically nowhere. Forgotten. Banned. Brushed aside. Why is that? What are schools so afraid of?\n\nLet’s be honest. Creationism isn’t being ignored because it’s “unscientific” in the strict sense; it’s being sidelined because it challenges authority, orthodoxy, and the narratives that dominate our classrooms. It forces students to ask questions that textbooks are carefully designed to avoid. Questions like: What if there’s another explanation? What if life’s origins aren’t fully known? What if billions of years of evolutionary theory aren’t the final word?\n\nTeachers often claim they can’t teach creationism because it’s “religion,” not science. But here’s the paradox: evolution itself is taught in a way that feels like religion. Memorize the steps. Repeat the diagrams. Accept the story without debate. Ask a question, and you risk being labeled ignorant or anti-science. That’s not education, it’s dogma.\n\nMeanwhile, millions of students grow up hearing a single narrative, while alternative viewpoints, views held by countless families, are treated as dangerous or irrelevant. The classroom becomes a place where curiosity is constrained, where critical thinking is subtly punished, and where one worldview is enforced while others are erased.\n\nSo what are they afraid of? They’re afraid of doubt. They’re afraid of students thinking for themselves. They’re afraid that if creationism, even as a philosophical or theological idea, is allowed a place in discussion, students might realize that science doesn’t have all the answers. That evolution, as compelling as it is, is still a theory and NOT a Fact. \n\nEducation should challenge, provoke, and illuminate. It should let students wrestle with ideas, question authority, and confront uncertainty. Banning creationism isn’t protecting science. It’s protecting comfort. It’s teaching obedience over inquiry.\n\nMaybe that’s the real lesson our kids are learning: don’t question the story, don’t think outside the textbook, and never, ever doubt what’s written on the page.",
+    "series": "Evolution"
+  },
+  {
+    "date": "2025-12-23",
+    "title": "When Politics Masquerades as Faith",
+    "topic": "The Dangerous Crossover of Zionism and Religion",
+    "body": "The fusion of politics and religion is never neutral. When nationalist ideology cloaks itself in spiritual legitimacy, the consequences are profound and often dangerous. Zionism, while primarily a nationalist movement, carries deep spiritual resonance for many Jewish people and attracts support from religious communities worldwide, particularly Christian Zionists. This blending of political ambition and religious belief may inspire devotion, but it also poses serious risks to societies, democracies, and human rights.\n\nWhen religion is used to justify political actions, critical scrutiny fades. Support for policies in Israel or against Palestinians becomes framed as a sacred duty rather than a political choice.\n\nThis discourages dissent within religious communities, labeling critique as disloyal or heretical.\n\nPolicies that would normally be debated in civic or legal terms are instead presented as divinely sanctioned, silencing opposition and bypassing democratic safeguards.\n\nNationalism infused with religious legitimacy often prioritizes identity over rights. When political Zionism adopts religious rhetoric:\n\nMinority populations, especially Palestinians, may be framed as obstacles to a divine mandate, justifying exclusion or violence.\n\nPolicy decisions risk favoring a single religious or ethnic group, undermining the equality and pluralism at the heart of democracy.\n\nSecular governance is weakened when citizenship and rights are tied to religious-political identity, rather than universal law.\n\nReligious-political entanglements can globalize conflicts. Christian Zionist support in the U.S. or Europe often pressures foreign governments to align policies with theological interpretations, rather than international law or humanitarian standards. \n\nThis can:\n\nPolarize international diplomacy\n\nFuel cycles of conflict in the Middle East\n\nEncourage interventionist policies framed as moral imperatives rather than strategic decisions\n\n\nThe fusion of ideology and faith can normalize aggressive or oppressive policies. When political aims are sanctified:\n\nOppression, displacement, or military actions can be recast as fulfilling prophecy.\n\nHuman suffering risks being ignored or minimized in the eyes of supporters, justified as “divine will.”\n\nEthical debate becomes nearly impossible because critics are accused of opposing religion itself.\n\n\nReligious-political crossover is a fertile ground for radicalization. Extremist movements often:\n\nExploit the sense of divine mission to recruit followers\n\nFrame enemies in spiritual, existential terms\n\nTurn political disputes into moral crusades, leaving little room for compromise\n\nThe result: polarized societies where dialogue breaks down and conflict intensifies, both within nations and internationally.\n\nConclusion: A Call for Vigilance\n\nThe spiritual appeal of Zionism and allied movements can inspire devotion, community, and identity. But when faith is entwined with political power, the line between belief and policy blurs, creating fertile ground for human rights violations, authoritarianism, and conflict.\n\nTo protect pluralism, democracy, and the dignity of all people, we must:\n\nScrutinize policy motives - distinguish between spiritual inspiration and political agendas.\n\nProtect minority rights - resist religious justification for exclusion or oppression.\n\nSeparate religious belief from governance - ensure laws and policies remain accountable to all citizens, not only those of one faith or ideology.\n\nPromote critical thinking within communities - allow believers to question political entanglements without fear of condemnation.\n\nFaith and politics can coexist without disaster - but only when belief does not become a weapon, and politics does not masquerade as destiny. Until then, this crossover will remain one of the most dangerous forces shaping both domestic policy and global conflict today.",
+    "series": "When politicians use religion to start war",
+    "link": "https:https://docs.google.com/document/d/e/2PACX-1vROtSoAXVAKD4pok5XqpT9Spx_Sev3M3Uj_-7WBEzPU4t1l6dUbsPf9kFOBH_CtGTwVP5fM1XBxLcmT/pub/docs.google.com/document/d/e/2PACX-1vTXB-HVBRXmNwAcldw-6WABTpa_OrWZqMU0mZBEIjz5y8tFU79Nnyjt-DuQIwSR9Z5YnV969bhsAwvb/pub"
+  },
+  {
+    "date": "2025-12-19",
+    "title": "Who Decides What We’re Allowed to Believe?",
+    "topic": "Free Speech",
+    "body": "Social media once promised a more democratic public square. Anyone could speak. Anyone could be heard. Gatekeepers would disappear, and truth would rise through collective conversation. What we got instead was something far more powerful and far more dangerous: amplification without judgment.\n\nIn today’s digital ecosystem, lies often travel faster than the truth. Outrage spreads more efficiently than nuance. Falsehoods are engineered to be sticky, emotional, and shareable, while facts are slower, messier, and less rewarding to engage with. When harm spreads at scale, platforms face a dilemma with no clean solution: intervene and be accused of censorship, or step back and allow damage to multiply in the name of neutrality.\n\nNeither choice is simple. Both carry consequences.\n\nBut the idea that platforms are merely passive conduits is a fiction we can no longer afford. Social media companies already shape what we see, what we hear, and what gains traction. Algorithms decide which voices are elevated and which disappear into silence. They reward content that provokes reaction, not reflection. Calling this process “neutral” doesn’t make it so; it merely obscures responsibility.\n\nThe uncomfortable truth is that decisions about visibility are already being made, constantly, at a massive scale. The question is not whether speech is being moderated. The question is by whom, by what standards, and with what accountability.\n\nFree speech matters because it allows societies to argue, dissent, and evolve. It protects minorities, challenges power, and exposes injustice. But speech that systematically undermines the shared reality that erodes trust in elections, medicine, science, or basic facts does not strengthen democracy, but corrodes it from within. A society that cannot agree on what is real cannot resolve conflict peacefully.\n\nThis does not mean silencing disagreement or unpopular opinions. It means recognizing the difference between debate and sabotage, between dissent and disinformation. When falsehoods are amplified not by accident but by design, the result is not freedom; it is chaos optimized for profit.\n\nThe real danger is not content moderation itself. The danger is unchecked power without transparency, whether wielded by governments or corporations. A handful of private companies now control the infrastructure of public discourse, making decisions that shape political outcomes, public health behavior, and social trust, often behind closed doors, guided by incentives the public never consented to.\n\nIf the modern public square is privately owned, then neutrality is not enough. Transparency, restraint, and accountability are moral necessities. Clear standards. Meaningful appeals. Independent oversight. Without these, moderation becomes arbitrary, and power becomes invisible.\n\nThe question we face is not whether someone will decide what rises and what falls. That decision is already being made. The question is whether it will be governed by democratic principles, ethical responsibility, and public accountability or by opaque algorithms designed to maximize engagement at any cost.\n\nBecause when belief itself is shaped without consent or clarity, the issue is no longer just free speech. It is who gets to decide the reality we share and whether democracy can survive when that power goes unchecked.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTA-zCXkRZIDALLdXdMv7FmzuwtcUr6dXigSxNvFAnLAtPTL-BxCWaTy2iZsPFtqWD6VFHhm9q5R1-2/pub",
+    "series": "public discourse"
+  },
+  {
+    "date": "2025-12-16",
+    "title": "The Culture of Low to No Ethics",
+    "topic": "The Psychology of Politicians Who Lack Integrity",
+    "body": "Political leadership is a complex interplay of personal ambition, social dynamics, and institutional pressures. When ethical lapses emerge at the highest levels, as in the case of Pete Hegseth, it is often not merely a question of “bad decisions” but a pattern rooted in psychological and structural factors.\n\nResearch in political psychology consistently finds that some individuals are drawn to high office primarily as a stage for self-enhancement rather than public service. Traits often observed include:\n\nNarcissistic tendencies: A belief in one’s own exceptionalism, entitlement, and resistance to criticism. People like Donald Trump,  with narcissistic traits, Kamala Harris, the Governor of California, Newsom, Hillary Clinton, or even the Biden Family may prioritize personal loyalty or reputation over institutional norms.\n\nRisk tolerance for attention: Sharing sensitive military information on unsecure platforms, for instance, may be motivated less by malice than by a desire to appear decisive or in control in front of peers or media.\n\nIn Hegseth’s case, public reports suggest that media-savvy strategies like highly publicized defenses of controversial operations and control over press access could reflect a self-presentation bias: prioritizing image and political loyalty over established protocols.\n\nPoliticians with low integrity often display moral rationalization, the ability to reinterpret ethical boundaries to suit their goals. Cognitive mechanisms include:\n\nSelective morality: Applying rules flexibly, especially when convenient. For example, sharing operational details while claiming “no classified information was included” illustrates this reasoning.\n\nEnds-justify-the-means thinking: Decisions are framed in terms of political or strategic outcomes rather than strict adherence to ethical or legal norms.\n\nThis psychological tendency allows individuals to justify violations of norms or law without perceiving themselves as unethical, which can perpetuate patterns of risky or opaque behavior.\n\nGroup loyalty can amplify ethical blind spots. Politicians like Hegseth, closely aligned with a particular political figure (Trump, in this case), may exhibit:\n\nIn-group favoritism: Protecting political allies or narratives at the expense of institutional integrity.\n\nOut-group demonization: Criticism of opponents is reframed as illegitimate or dangerous, which can justify extraordinary measures such as investigations of political critics via military channels.\n\nThis dynamic creates a feedback loop: actions that breach norms are reinforced by the support of a political “tribe,” reducing internal checks on behavior.\n\nPsychological research suggests that some leaders heavily discount long-term consequences in favor of short-term gains, such as:\n\nMedia attention or political favor.\n\nQuick wins in policy messaging.\n\nAvoidance of immediate political embarrassment.\n\nThis can explain why operational security may be sacrificed for speed or publicity, a pattern evident in Hegseth’s Signal messages or his press control strategies. Short-term reinforcement (praise, visibility, loyalty) strengthens risk-taking, often at the expense of national security.\n\nThe psychology of low-integrity leadership matters because individual cognition scales up to institutional impact:\n\nRisk-tolerant, morally flexible leaders can create systemic vulnerabilities, such as breaches of operational security.\n\nLoyalty-driven decision-making can erode norms of transparency and accountability.\n\nShort-term, image-focused behavior can undermine trust between branches of government, the military, and the public.\n\nIn short, the same psychological patterns that drive personal ambition and self-preservation can weaken democratic institutions, putting both policy outcomes and national security at risk.\n\nUnderstanding the psychology behind unethical political behavior suggests pathways to mitigation:\n\nInstitutional constraints: Enforceable security protocols, oversight boards, and transparent reporting reduce the opportunity for risk-driven self-interest to harm the public.\n\nPsychological accountability: Regular ethics reviews, peer feedback, and consequences for breaches help counteract moral rationalization.\n\nStructural resilience: Promoting a culture where norms of transparency and professionalism override short-term partisan incentives.\n\nBy pairing psychology with institutional design, democracies can anticipate the weaknesses of ambitious or self-serving leaders and protect the integrity of governance.",
+    "series": "governance, power, and accountability."
+  },
+  {
+    "date": "2025-12-12",
+    "title": "The Silent Erosion of Culture",
+    "topic": "The Defunded Arts",
+    "body": "Imagine a city where the theaters are dark, galleries are empty, and music programs in schools have become memories. Across the country, the arts once a vibrant heartbeat of community life are quietly being defunded. It’s not always a headline-grabbing story, but the consequences ripple through every corner of society.\n\nPublic funding for arts programs has dwindled year after year. Once thriving school music departments are now just a memory in the minds of alumni. Local theaters, dance troupes, and community galleries struggle to survive without grants or sponsorships, their stages silenced not by lack of talent, but by lack of support. For students in low-income areas, an arts education is increasingly a luxury, not a right, denying generations the chance to explore creativity, express themselves, or find solace in music, painting, and performance.\n\nYet, the arts are far more than decoration or pastime. They are a vital component of community identity, an engine for local economies, and a buffer against the mental strain of modern life. Studies show that creative engagement strengthens cognitive development in children, combats stress in adults, and builds empathy across communities. By cutting funding, society is not just losing paintings on walls or performances on stage, it’s losing human connection, cultural memory, and the very tools that allow imagination to flourish.\n\nIt’s tempting to dismiss art as nonessential during tight budgets. But the truth is the opposite: when the arts are underfunded, the whole ecosystem suffers. Economically, cities lose tourism dollars, small businesses connected to cultural production falter, and aspiring artists are forced to abandon their craft. Socially, communities lose a safe space to convene, to challenge, to dream, and to heal.\n\nIf we truly care about the health of society; culturally, psychologically, and economically, we must stop treating art as expendable. Reinvesting in creative programs is not a luxury; it is a necessity for vibrant, resilient communities. Every mural, concert, and classroom performance represents not just an artist’s vision, but the collective soul of the community. By protecting and funding the arts, we protect ourselves; our imagination, our empathy, and our capacity to envision a better world.",
+    "series": "Political Policy"
+  },
+  {
+    "date": "2025-12-11",
+    "title": "New Religions or No Religion, To Each Their Own",
+    "topic": "Religiously Unaffiliated",
+    "body": "The term religiously unaffiliated, can be misleading if taken at face value. It doesn’t necessarily mean someone has no spiritual beliefs or practices. Instead, it refers to people who do not formally identify with an organized religion, such as Christianity, Islam, Hinduism, or Buddhism.\n\nHere’s a breakdown of what this term really encompasses:\n\n1. Subgroups of the Religiously Unaffiliated\n\nResearchers often distinguish between several categories within the “nones”:\n\nAtheists: People who explicitly disbelieve in God or gods.\n\nAgnostics: People who are unsure about the existence of God or the divine.\n\nSpiritual but not Religious (SBNR): People who maintain personal spiritual practices, such as meditation, prayer, energy work, or connection with nature, but reject formal institutions.\n\nSecular Humanists / Ethical Culture adherents: Individuals who adopt moral or philosophical frameworks without appealing to the supernatural.\n\nUndeclared or indifferent: People who don’t actively think about religion or choose not to answer surveys about it.\n\n2. Spiritual Beliefs in the Unaffiliated\n\nEven within the unaffiliated:\n\nMany believe in God or a higher power. Surveys show that a significant fraction of “nones” still pray, believe in some form of divine or transcendent force, or feel connected to something larger than themselves.\n\nAlternative or eclectic practices are common. This includes meditation, yoga, astrology, mindfulness, or ritual practices outside formal religious frameworks.\n\nFocus on morality and ethics over doctrine. Many prioritize ethical living, community service, or social justice as expressions of spiritual values without affiliating with an organized religion.\n\n3. Why Surveys Underestimate Spirituality\n\nBinary survey questions miss nuance. Asking “Are you religious?” with yes/no options often forces people into categories that don’t fit.\n\nPrivate or non-institutional spirituality is harder to track. People may engage in daily reflection, nature-based rituals, or personal forms of prayer without labeling it “religion.”\n\nCultural versus personal identity differences. Someone may culturally identify as “none” but still participate in religious holidays, moral traditions, or spiritual customs.\n\n4. Global Implications\n\nIn Western countries, a growing number of “nones” are actually spiritually active, just outside traditional institutions. This explains why “declining religious affiliation” does not always mean “declining spirituality.”\n\nThis trend is shaping new forms of spiritual expression, such as online meditation communities, eco-spirituality, or interfaith practices.\n\nIn short, the “religiously unaffiliated” category captures a wide spectrum, from atheists to deeply spiritual individuals who simply reject institutional religion. The label can be misleading if we assume it equals secularism or the absence of belief.",
+    "series": "Religious Denominations"
+  },
+  {
+    "date": "2025-12-10",
+    "title": "The True Cost of Energy on Native Communities",
+    "topic": "Sacred Lands and People",
+    "body": "Protecting Sacred Lands \nAcross the United States, energy projects stretch across deserts, mountains, and rivers. They promise power, progress, and profit. Yet for the Native American communities whose lands are touched by these projects, the promise comes with a heavy price.\n\nFor generations, tribes have cared for their lands as sacred spaces. Every river, mountain, and plateau carries stories, rituals, and life-sustaining traditions. Uranium mining, fossil fuel extraction, and some large-scale energy projects have scarred these landscapes. They have poisoned water, tainted soil, and exposed families to health risks that will last for decades. The Navajo Nation still feels the shadow of abandoned uranium mines. Children, elders, and entire communities continue to pay the cost of decisions made without their consent.\n\nThe destruction is not just physical. When sacred sites are bulldozed or contaminated, something intangible is lost. The songs, ceremonies, and spiritual practices tied to those lands suffer alongside the rivers and forests. Culture and heritage are inseparable from the Earth itself, and energy projects that ignore this connection are erasing more than just rocks and soil.\n\nYet there is hope. A growing movement among Native communities embraces renewable energy, particularly solar and geothermal power, as a path forward. These technologies honor the Earth, create economic opportunity, and give tribes control over their resources. We ned politicians who advocate for sustainable energy solutions that protect both the planet and cultural heritage. Enabling a future where progress does not demand the sacrifice of sacred lands. \nwww.vervenveda.com/onenationforall\n\n\nThe choice is urgent. We can continue the old path of exploitation, risking the health, culture, and sovereignty of Native communities. Or we can invest in energy solutions that respect the land, honor traditions, and safeguard the future.\n\nEvery citizen, every policymaker, every corporation has a responsibility to listen. To consult. To act. The power of energy should not come at the cost of lives, heritage, or sacred earth. For the sake of justice, for the sake of the planet, for the sake of generations yet unborn, it is time to choose wisely.\n\nOur energy future can be a source of hope. But only if we protect the sacred lands and the people who have been their stewards for centuries. The time to act is now.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vS3LUjc_AcfyfKQC_O0bZhwnHu5FbjWwVgnhHP4mTih55bVTeQpRYJVhJ9oAQk5NE3FKO9tEXsADp1M/pub",
+    "series": "Native American communities"
+  },
+  {
+    "date": "2025-12-09",
+    "title": "Why Being Real Matters",
+    "topic": "Authenticity",
+    "body": "The Power of Authenticity\n\nIn a world awash with filters, algorithms, and curated perfection, authenticity has become a rare and precious currency. From the brands we support to the friends we keep, from the art we consume to the work we create, there is a quiet hunger for truth, sincerity, and real connection.\n\nAuthenticity is not just about honesty. It is about alignment between values, actions, and expression. It is the courage to show your imperfections, to pursue passions without compromise, and to engage with others without pretense.\n\nWhy does it matter now more than ever? Because life moves faster than our ability to pause. Social media feeds, global news, and a 24/7 digital marketplace bombard us with polished illusions. In this torrent, realness stands out. Authentic people, brands, and communities resonate because they reflect lived experience, vulnerability, and purpose.\n\nIn culture and lifestyle, authenticity shapes choices:\n\nConsumers choose products with ethical sourcing and transparent storytelling.\n\nTravelers seek experiences that are uncontrived and locally grounded.\n\nArtists and creators gain followers by sharing genuine voices rather than chasing trends.\n\nAuthenticity is also deeply human. It fosters trust, belonging, and resilience. When we act and create from authenticity, we cultivate communities that honor integrity over image, substance over show.\n\nAnd yet, it is not effortless. Being authentic often requires courage, reflection, and resistance to external pressures. But the reward is profound: the freedom to live and create without compromise, in harmony with one’s true self.\n\nIn a world that constantly asks us to perform, to mimic, to fit a mold, authenticity is revolutionary. It is a quiet rebellion and a bold declaration: this is who I am, and that is enough.",
+    "series": "Culture Lifestyle"
+  },
+  {
+    "date": "2025-12-06",
+    "title": "Abdullah Hashem the TikTok Prophet",
+    "topic": "Exploitation, Persecution & Legal Challenges",
+    "body": "Who or what is Abdullah Hashem?  A Charlatan? A Fraud?\n\nAbdullah Hashem presents himself as a religious figure with cosmic ambitions. According to media investigations, he is an Egyptian‑American now living in the UK.\n\nWhat’s unusual is that he wasn’t raised in a traditional clerical lineage or religious institution; instead, before founding AROPL, he reportedly worked as a documentary filmmaker, even exploring fringe religious or UFO‑related groups.\n\nIn 2015, he declared himself the group’s spiritual leader, the “Qāʾim/Riser,” a self‑proclaimed successor in a line of divine guides.\n\n He wrote the movement’s main scripture, The Goal of the Wise, and has used social‑media platforms (YouTube, TikTok) to spread his teachings and recruit followers.\n\nAROPL appears to aim wide: it combines eschatological ideas drawn loosely from Twelver‑Shia tradition with its own reinterpretations, positioning Hashem not just as a Mahdi‑figure, but as a kind of universal salvific leader.\n\nWhat’s Happening and Why It’s Controversial\n\nControl, Isolation, and Financial Pressure\n\nInvestigations reveal that members at AROPL’s UK base, a former orphanage in Crewe, are reportedly urged to sell possessions, donate their salaries, and even hand over property to fund the movement. The group reportedly encourages detachment from outside relationships, with some former members saying they felt pressured to cut ties and devote themselves fully to the community.\n\nAllegations of Radical Beliefs, Miracles & Conspiracy Theories\n\nHashem reportedly claims miraculous powers: followers say he once “healed” a child’s stomach ache in a video, or that he can perform supernatural acts even to the extent of “making the moon disappear.”\n\n The group’s teachings also mix conventional religious elements with conspiratorial narrative, such as deep distrust for “mainstream” governments or institutions, and promises that allegiance to Hashem will spare believers from coming cosmic or earthly disasters.\n\nAllegations of Exploitation, Persecution & Legal Challenges\n\nPrevious incarnations of the group (in Sweden and elsewhere) have faced serious scrutiny. Authorities have accused the group of founding shell companies to secure residency permits for members, a move characterized as immigration fraud.\n In some countries, followers reportedly face persecution, arrest, ts, or even violence due to their beliefs.\n\nGiven the combination of high‑control structures, alleged coercion, social isolation, financial surrender, and grand religious claims, many critics and watchdogs classify AROPL as a “dangerous cult,” or at least as a “high‑control sect.”\n\nWhat It Meanss Why We Should Care\n\nAROPL illustrates how in the 21st century, charismatic individuals can harness global connectivity, social‑media reach, and radical reinterpretations of faith to draw followers into tight‑knit, closed communities.\n\nIt’s a reminder that:\n\nReligious belief remains a powerful force, especially for people seeking meaning, belonging, or certainty.\n\nBut when belief becomes centralized around an individual, and combined with pressure to give up autonomy, wealth, and outside ties,s; the lines between faith, control, and exploitation blur.\n\nLegal systems, media, and society at large face real dilemmas: protecting freedom of religion while guarding against coercion, abuse, or fraud disguised under spiritual garb.\n\nIn short: this isn’t just a fringe story. It’s a vivid example of how faith can be re‑packaged for modern times, and why that deserves scrutiny, especially when children, finances, and human rights are involved.",
+    "series": "Religious Conspiracy"
+  },
+  {
+    "date": "2025-12-04",
+    "title": "islamophobia",
+    "topic": "Discrimination",
+    "body": "Islam today is diverse, growing, and influential, with Muslims making up roughly a quarter of the world’s population. Many communities are experiencing a revival of religious identity, including renewed interest in Islamic education, mosques, halal economies, and cultural traditions.\n\nAt the same time, there are significant challenges and tensions. In some countries, like America under the Zionist Trump Administration, Muslims face rising Islamophobia, discrimination, and online misinformation. Geopolitical divisions among Muslim-majority nations and local communities.  This creates internal fragmentation, often complicated by conflicts, humanitarian crises, and shifting political priorities.\n\nRecent events; like disputes over religious endowments in India, inter-community tensions, and ongoing Middle Eastern conflicts, highlight both the social and political pressures affecting Muslim communities worldwide.\n\nIn short, Islam today is vibrant but complex: growing in numbers and influence, while navigating challenges from external discrimination, internal debates, and global political shifts. The faith and its communities are adapting to modernity, globalization, and evolving social landscapes, balancing tradition with contemporary pressures.",
+    "series": "tradition with contemporary pressures"
+  },
+  {
+    "date": "2025-12-03",
+    "title": "The Church Could Save the World, but...",
+    "topic": "A Moral Test Ignored",
+    "body": "Faith, Fortune, and the Environment: A Moral Test Ignored\n\nFor centuries, the world’s religions have guided billions on morality, justice, and the value of life. Yet when it comes to the planet that sustains us all, many of these institutions, especially the wealthy Vatican, have offered little more than words.\n\nThe Vatican sits atop enormous wealth, vast landholdings, and a moral platform that spans continents. It could be a global leader in environmental stewardship, setting an example for governments, corporations, and citizens alike. Instead, action has been slow, piecemeal, or symbolic. Investments in fossil fuels and polluting industries continued for decades, even as forests burned, rivers choked with plastic, and oceans rose. Only recently, with encyclicals and sermons, has moral guidance on environmental care entered the conversation, but words alone cannot heal a planet in crisis.\n\nThis pattern is echoed across many major religions. While grassroots programs and community-level initiatives exist, the institutional machine, rich, powerful, and influential, has largely failed to mobilize resources on the scale needed to combat climate change, biodiversity loss, and pollution. Faith, when paired with fortune, could have been a force for planetary salvation. Instead, it has been a quiet observer of ongoing devastation.\n\nThe contrast is stark: billions in wealth, moral authority, and global influence on one side; on the other, a planet gasping under the weight of human mismanagement. Followers are left asking whether spiritual leadership will rise to meet the most urgent moral challenge of our age or continue to preach stewardship while failing to practice it at scale.\n\nFaith could save the world. Right now, inaction speaks louder than prayers.\n\nHere is a careful and factual look at the role of world religions, particularly wealthy institutions like the Vatican, in environmental stewardship over the last several decades\n\nThe Vatican, as the world’s wealthiest religious institution, has significant influence through land holdings, investments, and moral authority.\n\nFor decades, critics have argued that the Church’s environmental action has been limited or symbolic, with large-scale initiatives only recently gaining attention.\n\nPope Francis’s 2015 encyclical Laudato Si’ called for care of the environment and action against climate change, but concrete, large-scale environmental reforms or divestment from fossil fuels have been slow or partial.\n\nCritics note that Vatican investments in fossil fuels and other environmentally impactful industries have historically continued with little accountability.\n\nThe Vatican owns vast properties, financial holdings, and commercial assets, yet these resources have not been mobilized in a way that could meaningfully combat climate change, pollution, or biodiversity loss.\n\nReligious influence could shape public behavior, encourage ethical stewardship of resources, and lobby governments, but the pace of action has not matched the scale of the crisis.\n\nAcross major faiths, there are pockets of environmental engagement: tree planting initiatives, conservation projects, and ethical teachings about stewardship.\n\nHowever, critics argue that institutional inertia, wealth, and political conservatism often prevent coordinated, large-scale environmental advocacy.\n\nCompared to corporations, governments, or NGOs, global religious institutions wield enormous moral and financial power that could dramatically influence environmental policy and practice—but have largely underutilized it.\n\nFailure of major religious institutions to act on the environment contributes to continuing pollution, climate change acceleration, and resource depletion.\n\nMillions of followers could be mobilized for sustainability, but in many cases, guidance has been tepid or inconsistent, delaying societal-level environmental action.\n\nFor over 50 years, wealthy religious institutions, most prominently the Vatican, have largely talked about environmental care rather than leading it. Their moral authority and financial clout could drive systemic change, but global ecosystems continue to degrade while their actions remain limited.",
+    "series": "governance, power, and accountability."
+  },
+  {
+    "date": "2025-12-01",
+    "title": "Guardians of History or Keepers of Secrets?",
+    "topic": "Vatican Archives",
+    "body": "Guardians of History or Keepers of Secrets?\n\nThe Vatican Archives are among the most extraordinary repositories of human history on the planet. Within their towering shelves lie centuries of letters, treaties, financial records, and intimate papal correspondence documents that illuminate not just Church history, but diplomacy, war, science, art, and the rise and fall of nations. Yet much of this knowledge remains hidden, locked behind rules that allow only select scholars access.\n\nThis tension is palpable. On one side, the Church insists on confidentiality, citing the need to preserve fragile documents, protect sensitive diplomatic or legal matters, and safeguard the integrity of the institution. On the other hand, historians, journalists, and the public argue that history belongs to humanity, not just an institution, and that excessive secrecy fuels suspicion, conspiracy, and mistrust.\n\nThe dilemma is clear: transparency could expose uncomfortable truths about the past, yet secrecy perpetuates a sense of mystery and, for some, manipulation. Scholars labor to piece together narratives from the fragments that are available, but every restriction creates a void, an opening for speculation that may distort the historical record rather than protect it.\n\nThe Church stands at a crossroads. By selectively releasing documents, investing in digitization, and allowing scholarly oversight, it can honor both its responsibility to protect the material and the public’s right to knowledge. Yet the process is slow, and patience is tested in an age of instant information and global curiosity.\n\nUltimately, the story of the Vatican Archives is not just about old papers; it’s about the human struggle to balance trust, transparency, and truth. How an institution navigates this delicate terrain will define not just how we understand history, but how future generations interpret power, secrecy, and moral authority.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRlLl4pPZzhvctLGV29UypV6Qyw7Mg_Da36bg6dVzhqtf7p2tSVcf9QauXCUgZXUdFl_9KGiMoD34so/pub",
+    "series": "Sacred things,  Relics, Truth Hidden"
+  },
+  {
+    "date": "2025-11-29",
+    "title": "Who is Driving the Moral Compass",
+    "topic": "Religious Organizations Falling Short",
+    "body": "For centuries, religious institutions have guided the moral compass of communities. Today, they are doing more than teaching values; they are mobilizing resources, influence, and conviction to confront some of humanity’s most urgent crises: climate change, poverty, and social injustice.\n\nTake climate change. Pope Francis’s 2015 encyclical Laudato Si’ didn’t just call for prayer; it called for action. Dioceses worldwide have invested in solar energy, sustainable land management, and environmental education. Faith is no longer confined to churches; it reaches forests, farms, and urban communities, teaching stewardship as a spiritual and ethical obligation.\n\nIn humanitarian work, religious organizations have long been on the frontlines. Catholic Relief Services, Islamic Relief Worldwide, and countless local parish networks deliver food, water, shelter, and medical care to those affected by natural disasters and conflict. They don’t just alleviate suffering—they empower communities, providing vocational training, microfinance, and education, creating sustainable pathways out of poverty.\n\nSocial justice, too, is deeply intertwined with faith. From the American civil rights movement led by clergy to international anti-trafficking campaigns, religious institutions have leveraged moral authority and community networks to demand systemic change. Their schools, hospitals, and community centers often serve the marginalized, ensuring that justice is not just preached but practiced.\n\nYet this work is not without tension. Churches must balance tradition with innovation, spiritual guidance with political advocacy, and moral teaching with practical action. But when they succeed, the impact is extraordinary: faith becomes a force multiplier, turning belief into tangible change that reaches millions worldwide.\n\nIn a world often divided by ideology and politics, religious institutions remind us that conviction coupled with action can transform lives and heal the planet. They show that faith is not passive; it can be a powerful engine for justice, compassion, and environmental stewardship.\n\nThe question is not whether religion has a place in addressing global crises; it already does. The question is whether we, as a global community, will support and amplify that force.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRlLl4pPZzhvctLGV29UypV6Qyw7Mg_Da36bg6dVzhqtf7p2tSVcf9QauXCUgZXUdFl_9KGiMoD34so/pub",
+    "series": "humanitarian work"
+  },
+  {},
+  {}
+];
+
+// ======================================================
+// 2. STATE
+// ======================================================
+let filtered = comments.slice();
+let showingDetail = null;
+
+// ======================================================
+// 3. FILTERING
+// ======================================================
+function filterComments() {
+  const dateVal   = document.getElementById("dateSearch").value;
+  const topicVal  = document.getElementById("topicSearch").value.trim().toLowerCase();
+  const seriesVal = document.getElementById("seriesSearch").value.trim().toLowerCase();
+
+  filtered = comments.filter(c => {
+    if (!c || !c.title) return false;
+
+    const dateMatch = !dateVal || c.date === dateVal;
+
+    const topicMatch = !topicVal || (
+      (c.topic  && c.topic.toLowerCase().includes(topicVal)) ||
+      (c.title  && c.title.toLowerCase().includes(topicVal)) ||
+      (c.body   && c.body.toLowerCase().includes(topicVal))
+    );
+
+    const seriesMatch = !seriesVal || (
+      c.series && c.series.toLowerCase().includes(seriesVal)
+    );
+
+    return dateMatch && topicMatch && seriesMatch;
+  });
+
+  showingDetail = null;
+  renderList();
+}
+
+// ======================================================
+// 4. LIST RENDER
+// ======================================================
+function renderList() {
+  const list   = document.getElementById("commentList");
+  const detail = document.getElementById("commentDetail");
+  if (!list || !detail) return;
+
+  detail.innerHTML = "";
+  list.innerHTML = "";
+
+  if (!filtered.length) {
+    list.innerHTML = `<li><span class="comment-title">No entries found.</span></li>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const li = document.createElement("li");
+    li.onclick = () => showDetail(c);
+
+    const snippet = c.body
+      ? c.body.slice(0, 120) + (c.body.length > 120 ? "…" : "")
+      : "";
+
+    const topic  = c.topic  || "";
+    const series = c.series || "";
+    const date   = c.date   || "";
+
+    const metaText = [topic, series ? `Series: ${series}` : "", date]
+      .filter(Boolean).join(" • ");
+
+    li.innerHTML = `
+      <div class="comment-title">${escapeHtml(c.title || "")}</div>
+      <div class="comment-meta">${escapeHtml(metaText)}</div>
+      <div class="comment-body">${escapeHtml(snippet)}</div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// ======================================================
+// 5. DETAIL VIEW → POPUP MODAL
+// ======================================================
+function showDetail(c) {
+  showingDetail = c;
+
+  const backdrop = document.getElementById("modalBackdrop");
+  const modal    = document.getElementById("articleModal");
+  const titleEl  = document.getElementById("modalTitle");
+  const metaEl   = document.getElementById("modalMeta");
+  const bodyEl   = document.getElementById("modalBody");
+  const linkRow  = document.getElementById("modalLinkRow");
+
+  const topic  = c.topic  || "";
+  const series = c.series || "";
+  const date   = c.date   || "";
+
+  const metaText = [topic, series ? `Series: ${series}` : "", date]
+    .filter(Boolean).join(" • ");
+
+  titleEl.textContent = c.title || "";
+  metaEl.textContent  = metaText;
+  bodyEl.textContent  = c.body || "";
+  linkRow.innerHTML   = "";
+
+  if (c.link) {
+    const btn = document.createElement("button");
+    btn.className = "open-link-btn";
+    btn.textContent = "Open Full Article";
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      window.open(c.link, "_blank");
+    });
+    linkRow.appendChild(btn);
+  }
+
+  backdrop.classList.remove("hidden");
+  modal.classList.remove("hidden");
+
+  // Center the modal initially
+  const rect = modal.getBoundingClientRect();
+  const left = Math.max(14, (window.innerWidth - rect.width) / 2);
+  const top  = Math.max(24, (window.innerHeight - rect.height) / 4);
+  modal.style.left = left + "px";
+  modal.style.top  = top  + "px";
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.add("hidden");
+  document.getElementById("articleModal").classList.add("hidden");
+}
+
+// ======================================================
+// 6. DRAGGABLE MODAL
+// ======================================================
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+function initDrag() {
+  const modal  = document.getElementById("articleModal");
+  const header = document.getElementById("modalHeader");
+  if (!modal || !header) return;
+
+  header.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    const rect = modal.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", function(e) {
+    if (!isDragging) return;
+    const modal = document.getElementById("articleModal");
+    if (!modal) return;
+
+    let left = e.clientX - dragOffsetX;
+    let top  = e.clientY - dragOffsetY;
+
+    const maxLeft = window.innerWidth  - modal.offsetWidth;
+    const maxTop  = window.innerHeight - modal.offsetHeight;
+
+    if (left < 7) left = 7;
+    if (top  < 7) top  = 7;
+    if (left > maxLeft - 7) left = maxLeft - 7;
+    if (top  > maxTop  - 7) top  = maxTop  - 7;
+
+    modal.style.left = left + "px";
+    modal.style.top  = top  + "px";
+  });
+
+  window.addEventListener("mouseup", function() {
+    isDragging = false;
+  });
+}
+
+// ======================================================
+// 7. UTILS
+// ======================================================
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ======================================================
+// 8. INIT
+// ======================================================
+filterComments();
+initDrag();
+</script>
+</body>
+</html>
