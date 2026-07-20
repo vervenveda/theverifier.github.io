@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor's Choice</title>
+<style>
+  body {
+    background: #FFFEFA;
+    font-family: 'Futura Light', serif;
+    color: #1a1a1a;
+    margin: 7px;
+    padding: 14px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 8px 0 3px;
+    color: #2b2323;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 1.4rem;
+    color: #634d1b;
+    margin-bottom: 14px;
+  }
+  #app {
+    max-width: 666px;
+    margin: auto;
+    background: #f7f7f7;
+    padding: 24px 7vw 14px;
+    border-radius: 7px;
+    box-shadow: 3px 3px 13px #00000018;
+  }
+  .search-row {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-row label {
+    font-size: 0.99em;
+    margin: 3px 7px 11px 0;
+  }
+  .search-row input,
+  .search-row select {
+    font-size: 1em;
+    padding: 2px 24px;
+    border-radius: 7px;
+    border: 2px solid #b9a785;
+    min-width: 0;
+  }
+
+  .comment-list {
+    margin: 9px;
+    padding: 3px;
+    list-style: none;
+  }
+  .comment-list li {
+    background: #E8E8E8;
+    border-radius: 7px;
+    margin-bottom: 4px;
+    padding: 14px 14px 11px;
+    box-shadow: 0 1px 7px #dfd4a012;
+    cursor: pointer;
+    transition: box-shadow 0.13s, background 0.13s;
+  }
+  .comment-list li:hover {
+    box-shadow: 1px 1px 7px #e1cc8415;
+    background: #E8E8E8;
+  }
+  .comment-title {
+    font-size: 1.19em;
+    font-weight: bold;
+    color: #83692e;
+  }
+  .comment-meta {
+    color: #8e753c;
+    font-size: 0.98em;
+    margin-bottom: 11px;
+  }
+  .comment-body {
+    font-size: 1.08em;
+    margin-top: 7px;
+    color: #8e753c;
+  }
+
+  /* We keep this, but the main article now appears in a popup */
+  .comment-detail {
+    display: none;
+  }
+
+  /* ---------- Modal + Overlay ---------- */
+  .hidden {
+    display: none !important;
+  }
+
+  #modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.33);
+    z-index: 777;
+  }
+
+  #articleModal {
+    position: fixed;
+    max-width: 777px;
+    width: calc(100% - 48px);
+    background: #E8E8E8;
+    border-radius: 14px;
+    box-shadow: 0 11px 33px #00000044;
+    padding: 24px;
+    z-index: 778;
+    cursor: default;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 11px;
+    margin-bottom: 11px;
+    cursor: move; /* drag handle */
+  }
+
+  .modal-title {
+    font-size: 1.33rem;
+    font-weight: bold;
+    color: #83692e;
+  }
+
+  .modal-meta {
+    font-size: 0.95rem;
+    color: #8e753c;
+    margin-bottom: 11px;
+  }
+
+  .modal-close-btn {
+    border: none;
+    background: #b99b53;
+    color: #FFFEFA;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .modal-close-btn:hover {
+    background: #8e753c;
+  }
+
+  .modal-body {
+    font-size: 1.02rem;
+    color: #2b2323;
+    white-space: pre-wrap; /* respect your paragraphs */
+    max-height: 66vh;
+    overflow-y: auto;
+  }
+
+  .modal-link-row {
+    margin-top: 14px;
+  }
+
+  .open-link-btn {
+    background: #b99b53;
+    color: #2b2323;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 8px 0 0 0;
+  }
+  .open-link-btn:hover {
+    background: #8e753c;
+    color: #FFFEFA;
+  }
+
+  @media (max-width:555px) {
+    #app {
+      padding: 14px 7vw 14vw;
+    }
+    .comment-list li {
+      padding: 7px 7vw 11px;
+    }
+    #articleModal {
+      width: calc(100% - 28px);
+      padding: 18px;
+    }
+    .modal-body {
+      max-height: 60vh;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>Presidents</h1>
+<div class="subtitle">
+ News Commentary<br>
+  Browse by date, topic, or series.
+</div>
+
+<div id="app">
+  <div class="search-row">
+    <label for="dateSearch">Date:</label>
+    <input type="date" id="dateSearch" onchange="filterComments()" />
+    </div>
+
+    <label for="topicSearch">Topic:</label>
+    <input type="text" id="topicSearch"
+           placeholder="e.g. Elections, Diplomacy, Geopolitics, Policy, Years Served, "
+           oninput="filterComments()"/> 
+    <br>
+    <label for="seriesSearch">Series:</label>
+    <input type="text" id="seriesSearch"
+           placeholder="e.g. Political views, candidates, votign record"
+           oninput="filterComments()" />
+  </div>
+
+  <ul class="comment-list" id="commentList"></ul>
+  <div id="commentDetail"></div>
+</div>
+
+<!-- Modal + Backdrop -->
+<div id="modalBackdrop" class="hidden"></div>
+<div id="articleModal" class="hidden">
+  <div class="modal-header" id="modalHeader">
+    <div class="modal-title" id="modalTitle"></div>
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+  </div>
+  <div class="modal-meta" id="modalMeta"></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-link-row" id="modalLinkRow"></div>
+</div>
+
+<script>
+// ======================================================
+// 1. HARD-CODED DATA SOURCE
+// ======================================================
+let comments = [
+  {
+    "date": "2026-07-05",
+    "title": "Theodore Roosevelt",
+    "topic": "The Hero America Celebrates and the Legacy It Often Avoids",
+    "body": "Few presidents occupy a more revered place in American history than Theodore Roosevelt. He is remembered as the fearless Rough Rider, the trust-buster who challenged monopolies, the conservationist who preserved millions of acres of wilderness, and the energetic reformer who reshaped the presidency. His face is carved into Mount Rushmore alongside Washington, Jefferson, and Lincoln, a symbol of national greatness.\n\nYet history is not served by monuments alone.\n\nTo understand Theodore Roosevelt honestly, Americans must confront a more uncomfortable truth: many of the same qualities that made him transformative also helped steer the United States toward a more interventionist, imperial, and racially unequal future. His presidency did not merely reflect the prejudices of his era; in important ways, it amplified them through government policy and presidential power.\n\nRoosevelt believed deeply in American exceptionalism. He viewed the United States as a nation destined to shape the world, and he believed that military strength, national expansion, and vigorous leadership were signs of civilization. Those beliefs fueled accomplishments that many still celebrate, but they also justified actions that imposed enormous costs on others.\n\nPerhaps nowhere is this clearer than in American imperialism. Roosevelt embraced overseas expansion and defended the United States' continued control of the Philippines after the Philippine-American War. The conflict and its aftermath claimed hundreds of thousands of Filipino lives, many from violence, disease, and famine. Roosevelt argued that American rule would bring stability and progress. To critics then and now, those arguments echoed the same colonial logic European empires used to justify domination abroad.\n\nHis role in securing the Panama Canal further illustrates this philosophy. When negotiations with Colombia failed, the United States supported Panama's separation from Colombia and quickly secured rights to build and control the canal. Strategically, the canal became one of the most important engineering achievements in modern history. Diplomatically, however, it demonstrated a willingness to use American influence to reshape another nation's future when it served U.S. interests. Roosevelt himself famously remarked, \"I took Panama,\" reflecting his confidence that decisive action justified the outcome.\n\nRoosevelt also expanded presidential authority in ways that permanently altered the office. Before him, presidents generally exercised restraint. Roosevelt argued that the president could do anything not explicitly forbidden by the Constitution if it served the public interest. That philosophy strengthened executive leadership and allowed future presidents to respond more aggressively to national crises. Yet it also contributed to the gradual expansion of executive power, raising constitutional questions that continue to shape American politics today.\n\nOn matters of race, Roosevelt's legacy is equally complicated. He invited Booker T. Washington to dine at the White House, an act that challenged racial norms and provoked fierce backlash. At the same time, Roosevelt publicly expressed beliefs in racial hierarchy that are now recognized as racist. He often portrayed Anglo-Saxon civilization as superior and viewed many non-European societies through paternalistic or discriminatory assumptions.\n\nThose beliefs were reflected in policy. In 1906, after a shooting in Brownsville, Texas, Roosevelt dishonorably discharged 167 Black soldiers without individual trials after they refused to falsely identify one another. Decades later, investigations found the evidence against them was deeply flawed, and their discharges were reversed posthumously. Today, the Brownsville Affair is widely regarded as one of the greatest injustices of his presidency.\n\nRoosevelt's treatment of Native Americans followed a similar pattern. He admired certain aspects of Indigenous culture, particularly bravery and military skill, but supported assimilation rather than tribal sovereignty. His administration continued policies that undermined Native self-government and promoted boarding schools designed to erase Indigenous languages and traditions. Meanwhile, many of the lands preserved through his celebrated conservation efforts had long been inhabited or stewarded by Native communities whose histories were largely ignored in the creation of national parks and forests.\n\nHis enthusiasm for eugenic ideas further complicates his legacy. Like many influential figures of the early twentieth century, Roosevelt expressed concern that educated white Americans were having too few children while those he considered \"unfit\" were reproducing too quickly. Although he was not responsible for later forced sterilization programs, his public statements lent legitimacy to a movement now understood to be rooted in pseudoscience and discrimination.\n\nAnother of Roosevelt's lasting influences was philosophical rather than political.\n\nHe transformed the American presidency from a relatively restrained constitutional office into an active center of national leadership. He helped normalize the idea that the United States should project military, economic, and political power around the globe. His \"Big Stick\" diplomacy influenced American foreign policy throughout the twentieth century, from interventions in Latin America to broader debates about the country's role as a global superpower.\n\nDomestically, he demonstrated that presidents could shape public opinion, pressure Congress, and use executive authority in ways previously considered extraordinary. Modern expectations that presidents solve national problems, lead public debates, and direct federal action owe much to Roosevelt's example.\n\nThese changes produced undeniable results. Roosevelt's conservation legacy preserved landscapes that millions enjoy today. His consumer protection reforms improved food and drug safety. His willingness to challenge concentrated corporate power influenced the Progressive Era and modern regulatory government.\n\nHowever, the same presidency also expanded American intervention abroad, reinforced racial inequalities at home, diminished Indigenous autonomy, and helped normalize an increasingly powerful executive branch.\n\nTheodore Roosevelt's life demonstrates that history rarely offers heroes or villains in pure form. It offers human beings whose achievements and failures often coexist. Celebrating Roosevelt without acknowledging those failures produces mythology rather than history. Condemning him without recognizing his accomplishments produces an equally incomplete picture.\n\nThe responsibility of a mature society is not to preserve comforting legends or replace them with simplistic denunciations. It is to examine the historical record honestly, recognize the people who benefited and those who paid the price, and understand how decisions made more than a century ago continue to influence the United States today.\n\nTheodore Roosevelt helped build modern America. He also helped shape many of the tensions that still define it: the balance between liberty and executive power, national greatness and imperial ambition, conservation and Indigenous rights, reform and inequality. Understanding both sides of that legacy is not an attack on history or the promotion of the wrongs that took place; it is the work of taking history seriously.",
+    "series": "Presidents",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTJ-ya-2M94Kp1DXrHQ8WVbxkyKJWzf6-qvpbx84YgT3K3mYixZt-8fRR8c45DwCehhPQZRh-Hutz8Q/pub"
+  },
+  {},
+  {}
+];
+
+// ======================================================
+// 2. STATE
+// ======================================================
+let filtered = comments.slice();
+let showingDetail = null;
+
+// ======================================================
+// 3. FILTERING
+// ======================================================
+function filterComments() {
+  const dateVal   = document.getElementById("dateSearch").value;
+  const topicVal  = document.getElementById("topicSearch").value.trim().toLowerCase();
+  const seriesVal = document.getElementById("seriesSearch").value.trim().toLowerCase();
+
+  filtered = comments.filter(c => {
+    if (!c || !c.title) return false;
+
+    const dateMatch = !dateVal || c.date === dateVal;
+
+    const topicMatch = !topicVal || (
+      (c.topic  && c.topic.toLowerCase().includes(topicVal)) ||
+      (c.title  && c.title.toLowerCase().includes(topicVal)) ||
+      (c.body   && c.body.toLowerCase().includes(topicVal))
+    );
+
+    const seriesMatch = !seriesVal || (
+      c.series && c.series.toLowerCase().includes(seriesVal)
+    );
+
+    return dateMatch && topicMatch && seriesMatch;
+  });
+
+  showingDetail = null;
+  renderList();
+}
+
+// ======================================================
+// 4. LIST RENDER
+// ======================================================
+function renderList() {
+  const list   = document.getElementById("commentList");
+  const detail = document.getElementById("commentDetail");
+  if (!list || !detail) return;
+
+  detail.innerHTML = "";
+  list.innerHTML = "";
+
+  if (!filtered.length) {
+    list.innerHTML = `<li><span class="comment-title">No entries found.</span></li>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const li = document.createElement("li");
+    li.onclick = () => showDetail(c);
+
+    const snippet = c.body
+      ? c.body.slice(0, 120) + (c.body.length > 120 ? "…" : "")
+      : "";
+
+    const topic  = c.topic  || "";
+    const series = c.series || "";
+    const date   = c.date   || "";
+
+    const metaText = [topic, series ? `Series: ${series}` : "", date]
+      .filter(Boolean).join(" • ");
+
+    li.innerHTML = `
+      <div class="comment-title">${escapeHtml(c.title || "")}</div>
+      <div class="comment-meta">${escapeHtml(metaText)}</div>
+      <div class="comment-body">${escapeHtml(snippet)}</div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// ======================================================
+// 5. DETAIL VIEW → POPUP MODAL
+// ======================================================
+function showDetail(c) {
+  showingDetail = c;
+
+  const backdrop = document.getElementById("modalBackdrop");
+  const modal    = document.getElementById("articleModal");
+  const titleEl  = document.getElementById("modalTitle");
+  const metaEl   = document.getElementById("modalMeta");
+  const bodyEl   = document.getElementById("modalBody");
+  const linkRow  = document.getElementById("modalLinkRow");
+
+  const topic  = c.topic  || "";
+  const series = c.series || "";
+  const date   = c.date   || "";
+
+  const metaText = [topic, series ? `Series: ${series}` : "", date]
+    .filter(Boolean).join(" • ");
+
+  titleEl.textContent = c.title || "";
+  metaEl.textContent  = metaText;
+  bodyEl.textContent  = c.body || "";
+  linkRow.innerHTML   = "";
+
+  if (c.link) {
+    const btn = document.createElement("button");
+    btn.className = "open-link-btn";
+    btn.textContent = "Open Full Article";
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      window.open(c.link, "_blank");
+    });
+    linkRow.appendChild(btn);
+  }
+
+  backdrop.classList.remove("hidden");
+  modal.classList.remove("hidden");
+
+  // Center the modal initially
+  const rect = modal.getBoundingClientRect();
+  const left = Math.max(14, (window.innerWidth - rect.width) / 2);
+  const top  = Math.max(24, (window.innerHeight - rect.height) / 4);
+  modal.style.left = left + "px";
+  modal.style.top  = top  + "px";
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.add("hidden");
+  document.getElementById("articleModal").classList.add("hidden");
+}
+
+// ======================================================
+// 6. DRAGGABLE MODAL
+// ======================================================
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+function initDrag() {
+  const modal  = document.getElementById("articleModal");
+  const header = document.getElementById("modalHeader");
+  if (!modal || !header) return;
+
+  header.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    const rect = modal.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", function(e) {
+    if (!isDragging) return;
+    const modal = document.getElementById("articleModal");
+    if (!modal) return;
+
+    let left = e.clientX - dragOffsetX;
+    let top  = e.clientY - dragOffsetY;
+
+    const maxLeft = window.innerWidth  - modal.offsetWidth;
+    const maxTop  = window.innerHeight - modal.offsetHeight;
+
+    if (left < 7) left = 7;
+    if (top  < 7) top  = 7;
+    if (left > maxLeft - 7) left = maxLeft - 7;
+    if (top  > maxTop  - 7) top  = maxTop  - 7;
+
+    modal.style.left = left + "px";
+    modal.style.top  = top  + "px";
+  });
+
+  window.addEventListener("mouseup", function() {
+    isDragging = false;
+  });
+}
+
+// ======================================================
+// 7. UTILS
+// ======================================================
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ======================================================
+// 8. INIT
+// ======================================================
+filterComments();
+initDrag();
+</script>
+</body>
+</html>
