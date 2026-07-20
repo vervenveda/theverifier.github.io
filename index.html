@@ -940,3 +940,541 @@ setInterval(updateClock, 1000);
 </body>
 </html>
 
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sovereign World Wire — Live News Portal</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<style>
+  :root {
+    --parchment:#fffcf5;
+    --parchment-soft:#f5ecdd;
+    --ink:#2a2520;
+    --ink-soft:#5d5043;
+    --gold:#d9b878;
+    --gold-deep:#b89252;
+    --midnight:#020414;
+    --radius-card:21px;
+    --radius-pill:11px;
+    --shadow-soft:0 18px 44px rgba(0,0,0,0.22);
+  }
+
+  * { box-sizing:border-box; }
+
+  html,body {
+    margin:0;
+    padding:0;
+    min-height:100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", "Cormorant Garamond", serif;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(70,80,120,0.16), transparent 60%),
+      var(--parchment);
+    color:var(--ink);
+  }
+
+  body {
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+  }
+
+  .wrap {
+    width:100%;
+    max-width:1100px;
+    margin:27px auto 40px;
+    padding:0 18px 27px;
+  }
+
+  /* Masthead */
+
+  .masthead {
+    text-align:center;
+    margin-bottom:18px;
+  }
+
+  .mast-title {
+    font-family:"Cinzel", serif;
+    font-size:28px;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:#201713;
+  }
+
+  .mast-sub {
+    font-size:15px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:rgba(0,0,0,0.63);
+    margin-top:6px;
+  }
+
+  .mast-meta {
+    margin-top:6px;
+    font-size:14px;
+    color:rgba(0,0,0,0.6);
+  }
+
+  /* Ticker */
+
+  .ticker-bar {
+    margin-top:21px;
+    border-radius:var(--radius-card);
+    background:linear-gradient(90deg,#111522,#2b384f);
+    color:#f7f3ea;
+    box-shadow:var(--shadow-soft);
+    display:flex;
+    align-items:center;
+    padding:9px 14px;
+    gap:11px;
+    overflow:hidden;
+  }
+
+  .ticker-label {
+    font-size:11px;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    padding:4px 11px 5px;
+    border-radius:var(--radius-pill);
+    border:1px solid rgba(233,210,152,0.8);
+    background:rgba(3,8,20,0.7);
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+
+  .ticker-main {
+    overflow:hidden;
+    flex:1;
+  }
+
+  .ticker-inner {
+    white-space:nowrap;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    transition: opacity 0.3s ease-out;
+  }
+
+  .ticker-headline {
+    font-size:15px;
+    font-weight:500;
+  }
+
+  .ticker-source {
+    font-size:12px;
+    opacity:0.85;
+  }
+
+  .ticker-headline a {
+    color:#f7f3ea;
+    text-decoration:none;
+    border-bottom:1px solid rgba(247,243,234,0.2);
+  }
+
+  .ticker-headline a:hover {
+    border-bottom-color:rgba(247,243,234,0.9);
+  }
+
+  /* Controls row */
+
+  .controls-row {
+    margin-top:18px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:11px;
+    align-items:center;
+  }
+
+  .control-group {
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+  }
+
+  .search-input {
+    padding:8px 11px;
+    border-radius:var(--radius-pill);
+    border:1px solid #d2c1a8;
+    min-width:220px;
+    font-size:15px;
+    background:#fffdf7;
+    color:var(--ink);
+  }
+
+  .select-pill {
+    padding:8px 11px;
+    border-radius:var(--radius-pill);
+    border:1px solid #d2c1a8;
+    font-size:14px;
+    background:#fffdf7;
+    color:var(--ink-soft);
+  }
+
+  .refresh-indicator {
+    font-size:13px;
+    color:#7a6a54;
+    margin-left:auto;
+  }
+
+  @media (max-width:800px){
+    .refresh-indicator { margin-left:0; }
+  }
+
+  /* News list */
+
+  .news-list {
+    margin-top:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .article-card {
+    display:flex;
+    gap:14px;
+    padding:12px 12px 11px;
+    background:linear-gradient(180deg,#fffdf7,#f4e5cf);
+    border-radius:var(--radius-card);
+    border:1px solid rgba(214,192,150,0.85);
+    box-shadow:0 10px 26px rgba(0,0,0,0.16);
+    transition:transform 0.16s ease-out, box-shadow 0.16s ease-out;
+  }
+
+  .article-card:hover {
+    transform:translateY(-1px);
+    box-shadow:0 18px 35px rgba(0,0,0,0.22);
+  }
+
+  .article-img-wrap {
+    flex:0 0 160px;
+    max-width:160px;
+    border-radius:var(--radius-card);
+    overflow:hidden;
+    background:#c5b498;
+  }
+
+  .article-img-wrap img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .article-body {
+    flex:1;
+    min-width:0;
+  }
+
+  .article-source-line {
+    font-size:12px;
+    color:#7c6b55;
+    margin-bottom:4px;
+  }
+
+  .article-source-line span {
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+  }
+
+  .article-title {
+    font-size:18px;
+    font-weight:600;
+    color:#2b231a;
+    margin-bottom:5px;
+  }
+
+  .article-title a {
+    color:inherit;
+    text-decoration:none;
+    border-bottom:1px solid rgba(77,60,35,0.28);
+  }
+
+  .article-title a:hover {
+    border-bottom-color:rgba(77,60,35,0.9);
+  }
+
+  .article-meta {
+    font-size:12px;
+    color:#8a7760;
+    margin-bottom:6px;
+  }
+
+  .article-desc {
+    font-size:15px;
+    color:var(--ink-soft);
+    max-height:4.5em;
+    overflow:hidden;
+  }
+
+  /* Empty / loading */
+
+  .status-msg {
+    font-size:15px;
+    color:#7a6b57;
+    padding:21px 0 7px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="mast-title">SOVEREIGN WORLD WIRE</div>
+    <div class="mast-sub">Live Headlines · Independent Global Feed</div>
+    <div class="mast-meta" id="mastDate"></div>
+  </header>
+
+  <!-- Live ticker -->
+  <section class="ticker-bar">
+    <div class="ticker-label">LIVE · FEED</div>
+    <div class="ticker-main">
+      <div class="ticker-inner" id="tickerInner">
+        <div class="ticker-headline" id="tickerHeadline">Loading latest headlines…</div>
+        <div class="ticker-source" id="tickerSource"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Controls -->
+  <section class="controls-row">
+    <div class="control-group">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search by keyword or phrase…" />
+      <select id="categorySelect" class="select-pill">
+        <option value="all">All categories</option>
+        <option value="world">World</option>
+        <option value="political">Political</option>
+        <option value="environmental">Environmental</option>
+        <option value="crisis">Crisis</option>
+        <option value="business">Business</option>
+        <option value="culture">Culture</option>
+      </select>
+    </div>
+    <div class="refresh-indicator" id="refreshIndicator">
+      Updating every 60 seconds…
+    </div>
+  </section>
+
+  <!-- News list -->
+  <section id="newsList" class="news-list">
+    <div class="status-msg">Loading articles…</div>
+  </section>
+</div>
+
+<script>
+  // ----- CONFIG: News sources with RSS + category -----
+
+  const newsSources = [
+    {
+      name: "BBC World",
+      category: "world",
+      rss: "http://feeds.bbci.co.uk/news/world/rss.xml",
+      thumbnail: "https://news.bbcimg.co.uk/nol/shared/img/bbc_news_120x60.gif"
+    },
+    {
+      name: "Reuters World",
+      category: "world",
+      rss: "http://feeds.reuters.com/reuters/worldNews",
+      thumbnail: "https://s3.reutersmedia.net/resources_v2/images/reuters_social_logo.png"
+    },
+    {
+      name: "Reuters Environment",
+      category: "environmental",
+      rss: "http://feeds.reuters.com/reuters/environment",
+      thumbnail: "https://s3.reutersmedia.net/resources_v2/images/reuters_social_logo.png"
+    },
+    {
+      name: "Al Jazeera · All News",
+      category: "crisis",
+      rss: "https://www.aljazeera.com/xml/rss/all.xml",
+      thumbnail: "https://www.aljazeera.com/wp-content/uploads/2020/03/aj-logo.png"
+    },
+    {
+      name: "NPR News",
+      category: "culture",
+      rss: "https://feeds.npr.org/1001/rss.xml",
+      thumbnail: "https://media.npr.org/chrome_svg/npr-logo.svg"
+    }
+  ];
+
+  const rssProxy = "https://api.rss2json.com/v1/api.json?rss_url=";
+
+  const mastDateEl      = document.getElementById("mastDate");
+  const newsListEl      = document.getElementById("newsList");
+  const searchInputEl   = document.getElementById("searchInput");
+  const categorySelectEl= document.getElementById("categorySelect");
+  const tickerHeadlineEl= document.getElementById("tickerHeadline");
+  const tickerSourceEl  = document.getElementById("tickerSource");
+  const tickerInnerEl   = document.getElementById("tickerInner");
+
+  let allArticles = [];
+  let tickerItems = [];
+  let tickerIndex = 0;
+  let tickerIntervalId = null;
+
+  // ----- Helpers -----
+
+  function formatEditionDate() {
+    const d = new Date();
+    const opts = { weekday:"long", year:"numeric", month:"long", day:"numeric" };
+    return d.toLocaleDateString(undefined, opts);
+  }
+
+  function truncateHtml(text, maxChars) {
+    if (!text) return "";
+    const stripped = text.replace(/<[^>]*>/g,"").trim();
+    if (stripped.length <= maxChars) return stripped;
+    return stripped.slice(0, maxChars).trim() + "…";
+  }
+
+  async function fetchRSS(url) {
+    try {
+      const res = await fetch(rssProxy + encodeURIComponent(url));
+      if (!res.ok) throw new Error("Network error");
+      const data = await res.json();
+      return data.items || [];
+    } catch (e) {
+      console.error("RSS fetch error:", e);
+      return [];
+    }
+  }
+
+  // ----- Data load -----
+
+  async function loadAllNews() {
+    const aggregated = [];
+    for (const src of newsSources) {
+      const items = await fetchRSS(src.rss);
+      items.forEach(item => {
+        const img = item.thumbnail || (item.enclosure && item.enclosure.link) || src.thumbnail || "";
+        let pubDate;
+        try {
+          pubDate = new Date(item.pubDate);
+        } catch {
+          pubDate = new Date();
+        }
+        aggregated.push({
+          title: item.title || "Untitled",
+          link: item.link,
+          sourceName: src.name,
+          category: src.category,
+          pubDate,
+          pubDateText: pubDate.toLocaleString(),
+          description: truncateHtml(item.description || item.content || "", 360),
+          image: img
+        });
+      });
+    }
+
+    aggregated.sort((a,b) => b.pubDate - a.pubDate);
+    allArticles = aggregated;
+    setupTicker();
+    applyFiltersAndRender();
+  }
+
+  // ----- Ticker -----
+
+  function setupTicker() {
+    tickerItems = allArticles.slice(0, 12); // top 12 freshest
+    tickerIndex = 0;
+    if (tickerIntervalId) {
+      clearInterval(tickerIntervalId);
+    }
+    if (!tickerItems.length) {
+      tickerHeadlineEl.textContent = "No headlines available.";
+      tickerSourceEl.textContent = "";
+      return;
+    }
+    showTickerItem(0);
+    tickerIntervalId = setInterval(() => {
+      tickerIndex = (tickerIndex + 1) % tickerItems.length;
+      showTickerItem(tickerIndex);
+    }, 8000);
+  }
+
+  function showTickerItem(idx) {
+    const item = tickerItems[idx];
+    tickerInnerEl.style.opacity = "0";
+    setTimeout(() => {
+      tickerHeadlineEl.innerHTML = `<a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>`;
+      tickerSourceEl.textContent = `${item.sourceName} · ${item.pubDate.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
+      tickerInnerEl.style.opacity = "1";
+    }, 250);
+  }
+
+  // ----- Rendering -----
+
+  function applyFiltersAndRender() {
+    const term = (searchInputEl.value || "").trim().toLowerCase();
+    const cat = categorySelectEl.value || "all";
+
+    let filtered = allArticles.slice();
+
+    if (cat !== "all") {
+      filtered = filtered.filter(a => a.category === cat);
+    }
+
+    if (term) {
+      filtered = filtered.filter(a =>
+        a.title.toLowerCase().includes(term) ||
+        a.description.toLowerCase().includes(term) ||
+        a.sourceName.toLowerCase().includes(term)
+      );
+    }
+
+    renderNewsList(filtered);
+  }
+
+  function renderNewsList(list) {
+    if (!list.length) {
+      newsListEl.innerHTML = `<div class="status-msg">No articles found for the current filters.</div>`;
+      return;
+    }
+
+    newsListEl.innerHTML = list.map(article => {
+      const imgHtml = article.image
+        ? `<div class="article-img-wrap"><img src="${article.image}" alt="article image"></div>`
+        : `<div class="article-img-wrap" style="background:#d0c0a6;"></div>`;
+
+      return `
+        <article class="article-card">
+          ${imgHtml}
+          <div class="article-body">
+            <div class="article-source-line">
+              <span>${article.sourceName}</span> · ${article.category.toUpperCase()}
+            </div>
+            <div class="article-title">
+              <a href="${article.link}" target="_blank" rel="noopener">${article.title}</a>
+            </div>
+            <div class="article-meta">
+              ${article.pubDateText}
+            </div>
+            <div class="article-desc">
+              ${article.description}
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  // ----- Events -----
+
+  searchInputEl.addEventListener("input", () => {
+    applyFiltersAndRender();
+  });
+
+  categorySelectEl.addEventListener("change", () => {
+    applyFiltersAndRender();
+  });
+
+  // ----- Init -----
+
+  mastDateEl.textContent = "Edition for " + formatEditionDate();
+  loadAllNews();
+  setInterval(loadAllNews, 60 * 1000); // refresh every 60 seconds
+</script>
+</body>
+</html>
