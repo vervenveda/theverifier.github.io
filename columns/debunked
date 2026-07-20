@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor's Choice</title>
+<style>
+  body {
+    background: #FFFEFA;
+    font-family: 'Futura Light', serif;
+    color: #1a1a1a;
+    margin: 7px;
+    padding: 14px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 8px 0 3px;
+    color: #2b2323;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 1.4rem;
+    color: #634d1b;
+    margin-bottom: 14px;
+  }
+  #app {
+    max-width: 666px;
+    margin: auto;
+    background: #f7f7f7;
+    padding: 24px 7vw 14px;
+    border-radius: 7px;
+    box-shadow: 3px 3px 13px #00000018;
+  }
+  .search-row {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-row label {
+    font-size: 0.99em;
+    margin: 3px 7px 11px 0;
+  }
+  .search-row input,
+  .search-row select {
+    font-size: 1em;
+    padding: 2px 24px;
+    border-radius: 7px;
+    border: 2px solid #b9a785;
+    min-width: 0;
+  }
+
+  .comment-list {
+    margin: 9px;
+    padding: 3px;
+    list-style: none;
+  }
+  .comment-list li {
+    background: #E8E8E8;
+    border-radius: 7px;
+    margin-bottom: 4px;
+    padding: 14px 14px 11px;
+    box-shadow: 0 1px 7px #dfd4a012;
+    cursor: pointer;
+    transition: box-shadow 0.13s, background 0.13s;
+  }
+  .comment-list li:hover {
+    box-shadow: 1px 1px 7px #e1cc8415;
+    background: #E8E8E8;
+  }
+  .comment-title {
+    font-size: 1.19em;
+    font-weight: bold;
+    color: #83692e;
+  }
+  .comment-meta {
+    color: #8e753c;
+    font-size: 0.98em;
+    margin-bottom: 11px;
+  }
+  .comment-body {
+    font-size: 1.08em;
+    margin-top: 7px;
+    color: #8e753c;
+  }
+
+  /* We keep this, but the main article now appears in a popup */
+  .comment-detail {
+    display: none;
+  }
+
+  /* ---------- Modal + Overlay ---------- */
+  .hidden {
+    display: none !important;
+  }
+
+  #modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.33);
+    z-index: 777;
+  }
+
+  #articleModal {
+    position: fixed;
+    max-width: 777px;
+    width: calc(100% - 48px);
+    background: #E8E8E8;
+    border-radius: 14px;
+    box-shadow: 0 11px 33px #00000044;
+    padding: 24px;
+    z-index: 778;
+    cursor: default;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 11px;
+    margin-bottom: 11px;
+    cursor: move; /* drag handle */
+  }
+
+  .modal-title {
+    font-size: 1.33rem;
+    font-weight: bold;
+    color: #83692e;
+  }
+
+  .modal-meta {
+    font-size: 0.95rem;
+    color: #8e753c;
+    margin-bottom: 11px;
+  }
+
+  .modal-close-btn {
+    border: none;
+    background: #b99b53;
+    color: #FFFEFA;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .modal-close-btn:hover {
+    background: #8e753c;
+  }
+
+  .modal-body {
+    font-size: 1.02rem;
+    color: #2b2323;
+    white-space: pre-wrap; /* respect your paragraphs */
+    max-height: 66vh;
+    overflow-y: auto;
+  }
+
+  .modal-link-row {
+    margin-top: 14px;
+  }
+
+  .open-link-btn {
+    background: #b99b53;
+    color: #2b2323;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 8px 0 0 0;
+  }
+  .open-link-btn:hover {
+    background: #8e753c;
+    color: #FFFEFA;
+  }
+
+  @media (max-width:555px) {
+    #app {
+      padding: 14px 7vw 14vw;
+    }
+    .comment-list li {
+      padding: 7px 7vw 11px;
+    }
+    #articleModal {
+      width: calc(100% - 28px);
+      padding: 18px;
+    }
+    .modal-body {
+      max-height: 60vh;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>DeBunked</h1>
+<div class="subtitle">
+  News Commentary<br>
+  Browse by date, topic, or series.
+</div>
+
+<div id="app">
+  <div class="search-row">
+    <label for="dateSearch">Date:</label>
+    <input type="date" id="dateSearch" onchange="filterComments()" />
+    </div>
+
+    <label for="topicSearch">Topic:</label>
+    <input type="text" id="topicSearch"
+           placeholder="e.g. Myths, untruths, Fake News, Social Media Hype"
+           oninput="filterComments()"/> 
+    <br>
+    <label for="seriesSearch">Series:</label>
+    <input type="text" id="seriesSearch"
+           placeholder="e.g. Fact Check, Debunked, False information"
+           oninput="filterComments()" />
+  </div>
+
+  <ul class="comment-list" id="commentList"></ul>
+  <div id="commentDetail"></div>
+</div>
+
+<!-- Modal + Backdrop -->
+<div id="modalBackdrop" class="hidden"></div>
+<div id="articleModal" class="hidden">
+  <div class="modal-header" id="modalHeader">
+    <div class="modal-title" id="modalTitle"></div>
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+  </div>
+  <div class="modal-meta" id="modalMeta"></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-link-row" id="modalLinkRow"></div>
+</div>
+
+<script>
+// ======================================================
+// 1. HARD-CODED DATA SOURCE
+// ======================================================
+let comments = [
+  {
+    "date": "2026-06-25",
+    "title": "Raw Milk Isn't the Real Debate. Freedom Is.",
+    "topic": "Raw Milk",
+    "body": "Somewhere along the way, America forgot how to have a conversation about food.\n\nToday, every discussion seems to collapse into two opposing camps. One side insists a product is perfectly safe and unfairly attacked. The other insists it is dangerous and should be heavily regulated. The middle ground: the place where nuance, personal responsibility, and common sense reside, often gets lost.\n\nFew foods illustrate this better than raw milk.\n\nTo hear some critics tell it, raw milk is a reckless health fad promoted by people who reject science. To hear some supporters tell it, raw milk is a miracle food suppressed by powerful interests.\n\nThe truth is far more interesting.\n\nFor thousands of years, humans consumed raw milk. Long before pasteurization existed, milk nourished families, sustained communities, and served as the foundation for some of humanity's most treasured foods. Entire cultures developed around the transformation of raw milk into cheese, yogurt, kefir, cultured butter, and countless other fermented foods.\n\nThese traditions were not fringe practices. They were a part of everyday life.\n\nThe microorganisms naturally present in milk helped create foods that preserved nutrition, enhanced flavor, and fed generations long before refrigeration or modern food processing.\n\nThen came industrialization.\n\nAs cities grew and food production became increasingly centralized, new challenges emerged. Milk was transported over longer distances. Sanitation standards varied widely. Outbreaks of milk-borne illness became a genuine public health concern. Pasteurization was introduced as a practical solution, and by most historical accounts, it succeeded in dramatically reducing those risks.\n\nThat history matters, but it is only part of the story.\n\nWhat is often missing from today's debate is the recognition that modern consumers are asking different questions than previous generations.\n\nPeople are increasingly interested in where their food comes from. They want relationships with local farmers. They seek minimally processed foods. They are exploring fermentation, traditional food preparation, regenerative agriculture, and the growing body of research surrounding the human microbiome.\n\nIn short, many people are looking for a more holistic relationship with food.\n\nThat does not automatically make them anti-science. In fact, many are motivated by curiosity.\n\nThey recognize that not every bacterium is harmful. They understand that fermentation has played an essential role in human nutrition for thousands of years. They are interested in preserving traditional food systems that existed long before modern industrial agriculture became the norm.\n\nRaw milk has become a symbol of that movement.\n\nCritics often focus exclusively on the risks. Those risks are real. Raw milk can carry harmful pathogens, and no honest conversation should ignore that fact.\n\nThe existence of risk does not automatically justify prohibition.\n\nAdults navigate risk every day.\n\nWe consume raw oysters. We eat sushi. We ski down mountains. We ride motorcycles. We smoke cigars. We drink alcohol. We make countless decisions that involve weighing benefits against potential consequences.\n\nFreedom has never meant the absence of risk.\n\nFreedom means having the right to make informed choices.\n\nThis is where the conversation shifts from food safety to personal liberty.\n\nAt its core, the raw milk debate asks a simple question: Who should decide what risks an individual is allowed to take?\n\nShould that decision belong to the consumer?\n\nOr should it belong to regulators?\n\nReasonable people can disagree.\n\nYet there is a growing tendency in modern society to assume that every potential danger requires another layer of oversight, another regulation, another restriction, another agency directive.\n\nThe result is a culture that increasingly treats adults as if they are incapable of making decisions for themselves.\n\nThat approach carries its own costs.\n\nIt weakens local food systems.\n\nIt burdens small farmers.\n\nIt concentrates power in larger institutions.\n\nAnd it gradually erodes the principle that free individuals should be trusted to exercise judgment over their own lives.\n\nNone of this means abandoning food safety.\n\nTransparency matters.\n\nHonest labeling matters.\n\nClear information matters.\n\nConsumers deserve to understand both the potential benefits and the potential risks of the foods they purchase.\n\nBut information and prohibition are not the same thing.\n\nA healthy society should empower informed decision-making rather than replacing it.\n\nPerhaps that is why raw milk continues to inspire such passionate debate. The discussion is no longer just about dairy. It has become a conversation about trust.\n\nTrust in farmers.\n\nTrust in consumers.\n\nTrust in local communities.\n\nTrust in our ability to make decisions without constant supervision.\n\nFor some, raw milk represents a return to traditional food culture. For others, it represents an unnecessary risk. Both perspectives deserve a hearing.\n\nBut regardless of where one stands on the issue, we should be cautious about a mindset that assumes government always knows best.\n\nHistory teaches a different lesson.\n\nMany of the foods, traditions, and practices that sustained humanity for centuries emerged not from regulation, but from communities, families, and farmers passing knowledge from one generation to the next.\n\nPerhaps the real question is not whether every American should drink raw milk.\n\nPerhaps the question is whether Americans still trust themselves to choose.\n\nAnd in a free society, that may be the most important ingredient of all.",
+    "series": "Food and Biodiversity"
+  },
+  {
+    "date": "2026-04-13",
+    "title": "The Great Red vs. Blue",
+    "topic": "School Fight That Never Happened",
+    "body": "There are few things more impressive than a full-scale social phenomenon built entirely out of thin air. For a brief, feverish moment, the nation found itself bracing for the so-called “Red vs. Blue” school fights: \n\na coast-to-coast showdown that existed primarily in screenshots, warning posts, and the collective imagination, with all the ingredients of a blockbuster event. Clear sides (always important), a sense of looming chaos, and just enough vagueness to allow anyone, anywhere, to feel personally threatened. Students were allegedly choosing colors. Schools were allegedly preparing. Parents were definitely panicking. The only missing piece was the fights themselves.\n\nWho needs actual events when you have engagement?\n\nThe rumor spread with the efficiency of a well-trained algorithm, sprinting across platforms like TikTok and Instagram, where concern and confusion are often indistinguishable from confirmation. A single post, “Is this happening at your school?” metastasized into a thousand variations, each less informed and more urgent than the last. Soon, the question wasn’t whether the fights were real, but whether your local school was ready.\n\nAuthorities, caught in the uncomfortable position of having to respond to something that might exist, issued cautious statements. Schools sent emails. Police departments posted advisories. These were sensible, measured responses to uncertainty. Naturally, they were interpreted online as definitive proof that the chaos was imminent.\nJust like that, the loop closed.\n\nThis is the genius of the modern phantom trend: it requires no evidence, only reaction. The more people deny it, warn about it, or attempt to clarify it, the more real it becomes in the public mind. It is a self-sustaining ecosystem of anxiety, powered by the very mechanisms we rely on to stay informed.\n\nPsychologists might point to the bandwagon effect, where belief snowballs simply because others appear to believe. Or the negativity bias, which ensures that a hypothetical threat will always outcompete a reassuring fact. Sociologists might invoke the information cascade, in which people abandon their own judgment in favor of the crowd’s apparent certainty.\n\nYou don’t need a degree to recognize what happened here. You just need to notice that at no point amid the warnings, the rumors, the color-coded paranoia, did anyone produce clear evidence of these supposed массов altercations actually occurring.\nThe “Red vs. Blue” fights were less an event than a mirror. They reflected our tendency to confuse visibility with validity, repetition with reality. They revealed how quickly a question can become a narrative, and how eagerly we participate in its spread, especially when it feels urgent or alarming.\n\nIn the end, the schools remained standing. The students, for the most part, remained uncolor-coordinated. And the great nationwide clash dissolved as quietly as it began, leaving behind only a digital paper trail of concern.\n\nIf there’s a lesson here, it’s not just about skepticism, though a little wouldn’t hurt. It’s about recognizing that in an age of constant connectivity, the line between “something is happening” and “people are talking about something happening” has never been thinner.\n\nSometimes, the loudest crisis is the one that never existed at all.",
+    "series": "DeBunked",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vSGcY-umLkH7dcpYlyYC7mxMHfq3IzESBXSJn74FGDEmfEewTG2hD6O1xvrxdW_WLXxhaQAPPa9eFf6/pub"
+  },
+  {
+    "date": "2026-03-25",
+    "title": "Something Meaningful is at Risk",
+    "topic": "One Sentence to Control All - Debunked",
+    "body": "There’s a persistent myth that somewhere, hidden in the mechanics of human psychology, exists a perfect sentence, one that could compel anyone, anywhere, to act. A kind of universal switch. Say the right words in the right order, and people will move.\n\nIt’s an appealing idea. It suggests that human behavior is predictable, controllable, and even hackable.\n\nIt’s also wrong.\n\nHuman beings are not governed by a single emotional trigger but by a layered system of competing drivers, including but not limited to fear, desire, belonging, autonomy, status, and meaning. These forces don’t operate in isolation, and they certainly don’t align neatly across individuals. What motivates one person can repel another. A message that inspires urgency in one context can create resistance in another.\n\nStill, the myth persists because it contains a fragment of truth: while there is no universal statement, there are patterns that consistently influence behavior.\n\nAt the core of these patterns is a simple dynamic that people move toward pleasure and away from pain. More specifically, they are wired to avoid loss. The possibility of losing something meaningful, such as security, opportunity, identity, or connection, often provokes faster and stronger reactions than the promise of gain. This is why urgency works, why warnings capture attention, and why risk is such a powerful narrative tool.\n\nHowever, even this has limits.\n\nPush too hard on fear or urgency, and people don’t comply; they resist. When individuals sense that their freedom is being constrained or that they are being manipulated, they push back, sometimes irrationally. Autonomy is not just a preference; it’s a psychological requirement. Any message that ignores this risks collapsing under its own pressure.\n\nThis is where most attempts at mass persuasion fail. They assume people want to be told what to do. In reality, people want to feel like they chose it themselves.\n\nThe most effective communication doesn’t try to control behavior directly. It aligns with the emotional drivers already present in the individual. It acknowledges their priorities, whether that’s safety, status, belonging, or independence, and frames action as a natural extension of those values, not a command imposed from outside.\n\nIn practice, this means replacing force with resonance.\n\nInstead of saying, “Do this, or you’ll lose,” the more effective approach is, “Here’s what’s at stake, and here’s how you stay in control.” The difference is subtle but critical. One triggers resistance; the other invites ownership.\n\nSo no, there is no single statement that will make everyone act.\n\nThere is a principle that comes close: people act when they feel something meaningful is at risk, believe the action matters, and most importantly, feel that the choice is theirs.\n\nUnderstanding that doesn’t give you control over people.\n\nIt gives you something more useful: the ability to speak in a way they’re willing to hear.",
+    "series": "Psychology"
+  },
+  {
+    "date": "2026-03-07",
+    "title": "Secrets, Symbols, and Soup Kitchens",
+    "topic": "The Truth About the Masonic Temple",
+    "body": "Walk past almost any old downtown in America, and you might see one: a stone building with pillars, a square and compass carved above the door, and the words Masonic Temple. For some people, it sparks curiosity. For others, suspicion. According to the internet, the men inside are either secretly controlling the world, guarding ancient supernatural knowledge, or planning the next global conspiracy.\n\nIn reality, the truth is far less cinematic and perhaps more interesting.\n\nFreemasonry has always been a magnet for speculation. Part of that is by design. Humans are wired to be suspicious of closed doors and secret handshakes. When an organization uses symbolic rituals and private ceremonies, imaginations fill in the blanks faster than facts ever can. Over the centuries, that gap between mystery and reality has been filled with everything from satanic rumors to theories about world domination.\nWhen you strip away the mythology, what remains is not a shadow government; it’s a fraternity.\n\nFreemasonry grew out of the guilds of medieval stonemasons who built Europe’s cathedrals and castles. Those craftsmen developed systems of recognition, symbolic teachings, and moral lessons tied to the tools of their trade. The square represented fairness. The compass symbolized self-control. Over time, the craft evolved from literal stonework into a philosophical brotherhood focused on character, ethics, and mutual support.\n\nYes, they have rituals. Yes, they use symbolism, and yes, they prefer not to livestream their meetings. Secrecy in Freemasonry is less about hiding power and more about preserving tradition. Their ceremonies function more like morality plays than secret plots.\nStill, rumors persist.\n\nOne of the most common accusations is that Freemasons secretly control governments. Many historical figures were indeed members, including George Washington and Benjamin Franklin. Historically, about 14 U.S. Presidents were confirmed Freemasons, and some lists count 15 if you include one who was initiated but did not complete all degrees.\nThat means roughly one-third of American presidents had some connection to Freemasonry.\n\nBelonging to the same fraternity is not the same thing as orchestrating global domination. If anything, it says more about how common fraternal organizations once were than about hidden political power.\n\nAnother rumor claims Freemasons are part of some sinister occult network. This idea gained traction after the 19th-century Taxil Hoax, an elaborate prank by a writer who falsely claimed to expose satanic rituals within the fraternity. Years later, he publicly confessed he had invented the entire story. Unfortunately, conspiracies, once born, rarely die quietly.\n\nHere lies the irony: while the myths focus on shadowy power, the reality is much less glamorous but far more tangible.\n\nFreemasons quietly run one of the largest charitable networks in the world. Through organizations such as Shriners International and the hospitals they support, children receive specialized medical care regardless of their family’s ability to pay. Lodges fund scholarships, sponsor blood drives, support disaster relief, and organize food programs in local communities.\n\nIt turns out the real “secret work” of many Masonic temples isn’t world domination, it’s fundraising for pediatric hospitals and handing out scholarships.\n\nFreemasonry’s charitable work extends well beyond its lodge walls, quietly supporting programs that improve lives in tangible ways. Across the country, Freemasons help fund and operate learning centers that assist children with challenges such as dyslexia, speech disorders, and hearing difficulties. They give many young students access to specialized support they might not otherwise receive. Their philanthropic reach also includes scientific advancement through institutions such as the Masonic Medical Research Institute, where researchers study diseases and work toward new medical treatments that benefit the broader public. At the local level, Masonic lodges frequently serve as community hubs for service, organizing food drives, blood drives, student scholarships, disaster relief efforts, and outreach programs for people experiencing homelessness. Together, these initiatives reflect a core Masonic principle: that personal improvement should be matched by meaningful contributions to the well-being of others.\n\nNone of this means Freemasonry should escape from examination. Like any old institution, it carries traditions, exclusivity, and historical baggage worth discussing. The debate about its relevance in modern society is fair and even healthy. However, criticism should be based on reality, not recycled internet folklore.\n\nPerhaps conspiracies give us villains for complex problems. Perhaps mystery is simply more entertaining than mundane truth. Or perhaps a quiet fraternity devoted to self-improvement and charity doesn’t make for a thrilling headline.\n\nStill, the next time you pass a Masonic temple, consider this: behind that heavy wooden door is probably not a council plotting global control.\n\nMore likely, it’s a group of men arguing over meeting minutes, planning a charity fundraiser, and trying to decide who forgot to bring the coffee.",
+    "series": "Debunked",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vQGRt8c7G1eyzGDypvXboEQDWHLeEz7u-TbQLSJoQJO-ij10_SC0MLvA1Ac_hypSj7_HzR2cC3-drVW/pub"
+  },
+  {
+    "date": "2026-03-03",
+    "title": "Laser Magnets and the Human Superhero Myth",
+    "topic": "Lessons from the Week in Sports",
+    "body": "Breaking news from the lab: scientists have discovered lasers that can flip magnets without heating them. Immediately, the internet did what it does best: panic, fantasize, and imagine a world where every human with a spoon in their blood becomes a walking fridge magnet.\n\nLet’s set the record straight: you are not about to stick to your refrigerator or attract paperclips with your veins. Sorry, Marvel fans.\n\nHere’s why:\nYour body is not a giant iron nugget. Sure, there’s iron in your blood. But it’s chemically bound inside hemoglobin. That’s science-talk for “it’s busy carrying oxygen, not practicing magnet tricks.” Also, the iron isn’t ferromagnetic; it won’t flip polarity with a laser, even if you’re late for work and really, really need to stick to something.\nLasers are picky eaters. The laser that flips magnets only affects solid ferromagnetic materials like nickel or cobalt in lab settings. Your jewelry, piercings, or leftover metallic nutrients? Not on the menu. Sorry to disappoint, aspiring human compass enthusiasts.\n\nAir, water, and food aren’t secret magnets. Trace metals in our environment are mostly aluminum, zinc, and copper. These metals are as magnetic as a wet noodle; that is, not at all. Your smoothie won’t turn you into a living magnet, and your salad won’t make you stick to the fridge.\n\nScience vs. Sci-Fi. Yes, the research is groundbreaking for future computing and memory storage. No, it’s not a secret weapon to turn us into magnetized superheroes. The laser’s power is microscopic and highly controlled. You won’t wake up with a ferromagnetic twin inside you.\nSo, next time someone whispers, “The scientists are secretly training us to become human fridge magnets,” just smile, nod, and remind them: science is exciting, lasers are cool, but we are still not part of a Marvel experiment.\n\nIn fact, the real takeaway? This technology is about computing, not human levitation. We can cheer for lasers flipping magnets in a lab without fearing that our breakfast cereal will stick to our faces.\nNow go enjoy your toast without worrying about becoming Iron Man.",
+    "series": "Debunked!"
+  },
+  {
+    "date": "2026-02-20",
+    "title": "Florida Does NOT Require New Homes to Come With Pet Alligators",
+    "topic": "Scales and Sales Act",
+    "body": "A viral article claiming Florida passed the so-called “Scales and Sales Act” mandating that every new home include a baby alligator is 100% false. Over the past few years, a viral story has circulated claiming that the Florida legislature passed a law mandating all residents to own a pet alligator as part of “heritage preservation.” It comes with fake photos of people posing with gators on their lawns and spreads widely on social media every few months.\n\nThere is no Florida legislation requiring alligators with new homes. Bills are public records, and nothing like this exists.\n\nThe supposed sponsor, Representative Al Gatore, is fictional.\n\nThe Florida Association of Realtors has made no such statements, and no builder is offering “weekly alligator grooming tutorials.”\n\nOwnership of alligators in Florida is heavily regulated: private residents must have permits, and it is illegal to own them as pets without one. \n\nWhile Florida is home to wild alligators, the idea of including them as a “welcome gift” with new homes is pure satire.\n\nFlorida law carefully controls private alligator ownership for safety, research, and education, not tiki hut decoration or for party entertainment.\n\nThis story is a funny exaggeration, designed to play into Florida’s “weird and wild” reputation. It is not factual and should not be shared as real news.",
+    "series": "Debunked"
+  },
+  {
+    "date": "2026-01-29",
+    "title": "A Bedtime Story for the Chronically Online",
+    "topic": "No, You Are Not Eating Spiders in Your Sleep",
+    "body": "As you fall asleep, you remember the myth: eight spiders a year, in your mouth, while you sleep.  Suddenly, you’re awake again, lips sealed like Fort Knox, questioning reality.\n\nLet’s fix that.\n\nThis cursed little nugget of internet folklore is spectacularly, hilariously false.\n\nFirst of all: who started this rumor and why do they hate peace?\n\nThe spider statistic did not come from scientists.\nIt did not come from sleep studies.\nIt did not come from spiders.\n\nIt came from a journalism experiment in the 1990s meant to prove that people will believe anything if it sounds vaguely scientific and mildly horrifying.\n\nMission accomplished, the internet saw “you eat spiders in your sleep,” and everyone had an arachnophobia meltdown.\n\nLet’s talk about spiders for a second.\n\nSpiders are not: curious about humans, attracted to mouths, interested in carbon dioxide blasts, or thrilled by sudden jaw twitches.\n\nSpiders are extremely cautious, vibration-sensitive, and risk-averse introverts.\n\nTo a spider, your face is not a cozy Airbnb; it is a wind tunnel attached to a malfunctioning earthquake.\n\nYour mouth is not the five-star dining destination they’re looking for.\n\nImagine being a spider and thinking:\n\n“Ah yes, a large, warm creature that breathes erratically, snores like a chainsaw, and occasionally clenches its teeth. Perfect.”\n\nIf spiders were routinely crawling into human mouths, someone would have woken up with a crushed spider in their mouth. \n\nThe math alone should’ve saved us.\n\nIf everyone ate eight spiders a year:\n\nBillions of spiders would be disappearing annually.\n\nSpiders would be proven to have a deeply flawed survival instinct.\n\nSomeone would’ve noticed by now, and there would be documentaries, trauma support groups, along with tiny spider warning labels on pillows.\n\nThere are none.\n\nSo why does this myth refuse to die?\n\nBecause it has everything the internet loves:\n\nDisgust ✅\n\nFear ✅\n\n“Fun fact” energy ✅\n\nZero requirement to verify anything ✅\n\nIt’s the same reason we believed that goldfish forget everything, the Great Wall is visible from space, and bald eagles hitch rides on black bear backs, across vast bodies of water.  \n\nIf it sounds cool, outlandishly interesting, or creepy enough, it spreads like wildfire on the internet.\n\nThe real lesson here is that you are not eating spiders in your sleep.\nYou never were.\nYou never will.\n\nYou are living in an age where misinformation can seep into your brain while you’re awake, no eight-legged creatures required.\n\nSo the next time someone whispers, “Did you know you eat spiders in your sleep?”\nYou can smile peacefully and say:\n\n“No. But I do swallow bad internet facts if I’m not careful.”\n\nSleep well, the spiders are avoiding you.",
+    "series": "Debunked"
+  },
+  {
+    "date": "2026-01-17",
+    "title": "No, “F__k” Does Not Mean War, it is a 'Backronym'",
+    "topic": "Acronyms Didn't Exist in Medieval English",
+    "body": "Few myths are as stubborn, confident, and spectacularly wrong as the claim that the word fuck secretly means “war,” or worse, that it’s an acronym born in some grim medieval battlefield or royal bedroom policy. It’s the linguistic equivalent of insisting your housecat descends directly from a saber-toothed tiger; dramatic, impressive, and completely unsupported by evidence.\n\nLet’s clear the smoke.\n\nThe Myth That Refuses to Die\n\nThe story usually arrives dressed in capital letters, which should always raise suspicion:\n\nF.U.C.K. = Fornication Under Consent of the King\n\nOr Forced Unlawful Carnal Knowledge\n\nOr a supposed military term tied to war or conquest\n\nThese explanations sound official. They feel historical. They are also entirely fabricated.\n\nHere’s the first red flag: acronyms didn’t exist in medieval English. People in the 14th and 15th centuries were not casually inventing neat, capitalized abbreviations. They were busy inventing plumbing that mostly worked and dying of preventable diseases.\n\nAny explanation that relies on a tidy acronym for a centuries-old word is almost certainly a backronym, a modern story retrofitted onto an old word.\n\nThe word fuck appears in English texts as early as the 15th century, long before modern warfare terminology or bureaucratic shorthand.\n\nIts roots are Germanic, related to blunt, physical verbs meaning:\n\nto strike\n\nto thrust\n\nto copulate\n\nCognates appear across languages:\n\nMiddle Dutch: fokken (to thrust or breed)\n\nGerman: ficken (to have sex)\n\nIn other words, the word has always been earthy, physical, and unapologetically human, used in an angry context, not martial, royal, or strategic.\n\nSo Where Did the “War” Idea Come From?\n\nSimple:\n\nIt sanitizes a taboo word\n\nIt gives people a “gotcha” fact\n\nIt sounds authoritative enough to repeat at parties\n\nPeople love secret meanings, especially when they make something scandalous sound respectable. Unfortunately, language doesn’t work that way.\n\nBelieving myths like this doesn’t just get one word wrong.  It misunderstands how language evolves. Words aren’t invented by committees or kings; they grow, mutate, offend, survive, and persist because people use them.\n\nFuck has survived for centuries precisely because it’s expressive, versatile, and emotionally efficient, not because it once rallied troops.\n\nFinal Verdict\n\nDebunked.\nFuck does not mean war.\nIt was never an acronym.\nAnd no king signed off on it.\n\nIt is one of the most resilient words in the English language.   Blunt, adaptable, and honest in a way that polite society has never quite known what to do with.\n\nWhich, frankly, is far more interesting than any fake royal decree.",
+    "series": "DeBunked"
+  },
+  {
+    "date": "2026-01-11",
+    "title": "When Gravity Goes Viral",
+    "topic": "How Social Media Turns Science Into Spectacle",
+    "body": "In late 2025, TikTok feeds were flooded with alarming claims. The Earth was about to experience a brief but total loss of gravity in 2026. Posts were meticulously detailed; specific dates, dollar figures, and references to unnamed government programs.  All designed to convince viewers that this wasn’t just a rumor, but insider knowledge. Millions watched, shared, and debated the story.\n\nAnd yet, of course, it wasn’t true.\n\nNASA and other scientific authorities quickly and unequivocally debunked the claims. There is no known mechanism, in physics or engineering, that could cause Earth’s gravity to “switch off,” even temporarily. No government program exists, no scientific experiment is underway, and no credible evidence supports the rumor. What we witnessed was a textbook case of modern disinformation. A story designed to go viral by exploiting awe, fear, and a general lack of scientific understanding.\n\nWhy did so many people believe it, or at least click, share, and comment? \n\nSocial media thrives on spectacle, and the human brain thrives on the unbelievable. A story that violates everything we think we know about the world's gravity, suddenly disappearing, entire cities floating into space, demands attention. Add the veneer of technical detail, mysterious “insider sources,” and the implied authority of dates and dollar amounts, and it becomes irresistible.\n\nWe are hardwired to share stories that are emotional, shocking, or sensational. The problem arises when digital platforms amplify this instinct, rewarding virality over veracity. A post can reach millions in hours, long before scientists or fact-checkers have a chance to respond. By then, the narrative has already taken root in the collective imagination.\n\nThe gravity rumor also highlights a deeper societal challenge: scientific literacy. Many people who shared or commented on the posts did so with a mix of anxiety and curiosity. They wanted to believe there was a secret explanation, that someone “in the know” was warning them. But unlike a story about politics or celebrity gossip, claims about the laws of physics have objectively testable answers. Yet for many, these answers remain inaccessible or intimidating.\n\nIf we want to prevent panic or misinformation in the future, improving public understanding of science is essential in our everyday media diet. People should be equipped to recognize when a claim violates basic scientific principles, and to ask questions before hitting “share.”\n\nThis editorial also raises questions about the responsibility of social media platforms. Algorithms that prioritize engagement tend to favor content that shocks or provokes over content that educates. A false story about gravity is far more clickable than a sober explanation of planetary physics. Platforms face a choice: allow virality to continue unchecked, or invest in moderation, labeling, and proactive debunking.\n\nThe gravity hoax may have been amusing to some, terrifying to others, and absurd to most. But its impact extends beyond a fleeting social media trend. It reminds us how easily human curiosity and fear can be weaponized, how quickly false information can spread, and how critical it is to cultivate both skepticism and knowledge.\n\nIn the end, gravity didn’t disappear. Earth remains grounded. But the story serves as a sobering metaphor: in the age of viral content, truth itself can feel weightless. It’s up to all of us, creators, platforms, and consumers, to restore some measure of grounding.",
+    "series": "Sensationalism and Social Media"
+  },
+  {
+    "date": "2026-01-10",
+    "title": "Lost Brains and Institutional Amnesia",
+    "topic": "The Curious Case of the University of Texas",
+    "body": "In a world where nearly every digital artifact is stored in triplicate on far‑flung servers, one might assume that the physical remnants of scientific inquiry would be meticulously tracked. Especially something as scientifically and culturally significant as human brains. Yet in 2021, the University of Texas at Austin quietly revealed it had temporarily misplaced nearly 100 research brains.  Including specimens believed to be from none other than Charles Whitman, the 1966 University of Texas Tower sniper.\n\nBefore conspiracy theories could ignite and historians could write books with dramatic titles, the university corrected itself: the brains weren’t “missing” in a literal sense; they had been destroyed years earlier during a storage purge. But the episode reveals something deeper and more unsettling about how institutions remember, forget, store, preserve, and try to manage the messy legacies of science.\n\nWhat Actually Happened?\n\nThe story begins with a collection of brain specimens.  Human brains, cataloged for research over decades and stored at UT Austin’s research facilities. Among them were samples linked to high‑profile cases like Charles Whitman, whose 1966 mass shooting from the university’s clock tower shocked the nation and prompted investigations into the neurological underpinnings of violent behavior.\n\nIn 2021, administrators announced that about 100 brains were unaccounted for. Media coverage leapt to the most sensational possibility: had the brains been misplaced? Stolen? Secretly preserved in a forgotten closet?\n\nNot quite.\n\nAs it turned out, a systematic disposal of aging biological materials had occurred years earlier as part of lab clean‑ups and compliance with updated safety regulations. The custodial paperwork hadn’t caught up with the purge, and no one updated the inventory.\n\nThe result? A public announcement about missing brains that was technically true (they weren’t in the freezers) but factually misleading and quickly corrected when records were reviewed.\n\nStill, the allure of “lost brains,” particularly with a specimen tied to a notorious criminal case, was too juicy for some commentators to resist.\n\nBrains, Ethics, and Scientific Collections\n\nWhy were these brains being saved in the first place?\n\nFor decades, scientists have studied the structure, chemistry, and pathology of human brains to understand everything from Alzheimer’s to schizophrenia to neurological differences in behavior. High‑profile cases like Whitman’s were, at the time, seen as opportunities to explore whether structural anomalies might explain extraordinary violence.\n\nIn the late 1960s, researchers found that Whitman’s brain had a glioblastoma tumor pressing against his amygdala, a region involved in emotional regulation and aggression. Whether the tumor influenced his behavior remains debated, but the speculation fueled decades of scientific and ethical discussion about nature, nurture, and culpability.\n\nMaintaining brain collections served research, yes, but also historical and educational purposes. Universities often archive such specimens alongside detailed clinical notes, offering invaluable data for longitudinal studies.\n\nWhich is precisely why the discovery of these brains caused a stir.\n\nHere’s where the story becomes more than a quirky anecdote: it becomes a mirror for how we collectively handle institutional memory.\n\nAn academic laboratory isn’t a public museum. Inventory lists, safety protocols, and storage systems are updated by people who move on, retire, or leave. Physical specimens are sometimes discarded according to evolving ethical standards, health codes, or sheer practicality.\n\nWhen something as evocative as brains, associated with a dramatic historical event, goes “missing,” the public reacts emotionally, not administratively.\n\nThe headlines themselves betrayed this shift:\n\n“UT Austin Lost 100 Human Brains, Including (Possibly) a Sniper’s”\n\n“Where Are the Brains? University Misplaces Neurohistory”\n\n“Did UT Lose Charles Whitman’s Brain?”\n\nWhat these headlines captured wasn’t just confusion about logistics; it exposed a cultural fascination with physical traces of extraordinary lives, and a discomfort with institutional processes that are inherently messy and imperfect.\n\nTo put it bluntly: we would rather believe in lost artifacts and hidden closets than accept that serious institutions sometimes execute clean‑outs, dispose of biological material responsibly, and let go of collections that no longer serve active research.\n\nBeyond the Punchline: What This Reveals\n\nThe “lost brains” saga is funny, but it also illustrates three deeper realities:\n\nUniversities are repositories of knowledge, but also of human error. Paper records turn digital, people retire, and long‑forgotten collections fall between bureaucratic cracks.\n\nWhen someone hears “missing brain,” imagination leaps to conspiracies, secret research, or historical intrigue. But the actual explanation, a routine disposal that wasn’t updated in inventory, was far more prosaic.\n\nThe real story here isn’t that something was secretly stolen or hidden. It’s that humans, brains included, have been studied with rigor and curiosity for decades. And even when collections end, the knowledge and questions they generated continue to shape science.\n\nThe Last Thought\n\nToday, the “lost brains” of UT Austin exist in headlines, memes, and the margins of scientific lore. The physical specimens are gone. But the episode serves as a reminder that institutions don’t just misplace things; they misplace narratives, expectations, and sometimes faith in how orderly the world really is.\n\nBrains aren’t treasure.\nBrains aren’t ephemera.\nBrains are, quite simply, human.\n\nAnd the stories we tell about them reveal as much about ourselves as any neuron ever could.",
+    "series": "The Forgotten Brains"
+  },
+  {
+    "date": "2026-01-04",
+    "title": "Are Wi-Fi Towers Causing Birds to Die?",
+    "topic": "Invisible Wireless Signals",
+    "body": "The internet has been buzzing with alarming claims: birds are supposedly falling out of the sky or avoiding cities because of Wi-Fi and cell towers. Viral videos, dramatic photos of empty parks, and social media threads make it easy to jump to the conclusion that “wireless radiation is killing our feathered friends.” But do these claims hold up under scientific scrutiny?\n\nWhat We Know\n\nBirds do sometimes fall from the sky or avoid certain areas, but these events almost always have identifiable causes. Extreme weather, disease, pesticide exposure, and collisions with buildings or vehicles are proven reasons why birds die or change their behavior.\n\nBirds are also sensitive to environmental factors like habitat quality and food availability. Many Wi-Fi and cell towers are located in industrial zones, open land, or areas with little shelter, and birds would naturally avoid these areas anyway. Observations of birds steering clear of towers are more likely a reflection of habitat preference than radiation effects.\n\nWhat the Science Says\n\nWi-Fi and cellular networks emit non-ionizing radiation, which is far too weak disrupt the navigation of birds at real-world exposure levels. Controlled studies of birds exposed to radiofrequency fields have not shown consistent evidence of harm, disorientation, or mass fatalities.\n\nIf towers were truly killing birds, scientists would expect to see:\n\nMass die-offs concentrated around tower sites\n\nReproducible patterns across regions\n\nClear dose-response relationships\n\nThese patterns have not been documented.\n\nWhat We Don’t Know\n\nResearch on wildlife and modern infrastructure is ongoing. Birds are sensitive to light pollution, loud noises, and human activity. Factors that can influence their behavior in ways that are sometimes misattributed to technology. While long-term cumulative effects are still being studied, there is currently insufficient evidence to claim Wi-Fi or cell towers are killing birds.\n\nThe Bottom Line\n\nThe claim that Wi-Fi towers are causing bird deaths is unverified and likely misleading. Birds face real threats, including habitat loss, predation, collisions with buildings and wind turbines, and chemical exposure, but invisible wireless signals are not proven to be one of them.\n\nAs always, it’s important to separate viral fear from science-based facts. Technology may change how birds interact with our environment, but sensational claims without evidence only distract from the actual conservation challenges that deserve attention.",
+    "series": "Debunked"
+  },
+  {
+    "date": "2025-12-28",
+    "title": "Paging Dr. Deepfake",
+    "topic": "When Your Doctor Is a Computer…",
+    "body": "Imagine this: you scroll through TikTok for a quick health tip, and suddenly a doctor appears on your screen, speaking with calm authority. They nod wisely, adjust their imaginary glasses, and recommend a supplement that promises to reverse menopause, cure your brain fog, and make kale taste like chocolate. Impressive, right? Except, this doctor isn’t real.\n\nWelcome to the wild new frontier of social media: AI-generated deepfake doctors. Yes, the very same technology that can make Tom Cruise sing the Bee Gees is now being used to impersonate medical experts. Hundreds of these videos have already popped up online, targeting vulnerable audiences—particularly women navigating menopause, with dubious health claims. \n\nWhy This Is Hilariously Terrifying\n\nDeepfakes aren’t just your old Photoshop meme anymore. They are sharper, smarter, and scarier. When your “trusted” doctor can be cloned in seconds, it’s like the universe handed misinformation a PhD.\n\nConvincing but fake: These AI doctors nod, smile, and speak in a calm, reassuring tone, making it almost impossible to tell they’re fake. It’s like a high-tech game of “Guess Who?” where everyone is an expert except none of them are.\n\nHealth at risk: While it’s tempting to laugh at a virtual doctor recommending “miracle menopause gummies,” the stakes are real. Misguided advice can lead to ineffective treatments, wasted money, or even serious health consequences.\n\nThere’s a dark comedy here. The same technology that makes CGI superheroes leap across the screen is now being used to tell you that this new supplement will make you glow like a teenager again. It’s absurd… but also a chilling reminder that our brains are easily fooled by authority, even if that authority is entirely fabricated.\n\nAI deepfake doctors are more than just an online joke; they represent a systemic shift in how misinformation spreads. The combination of technology, trust, and social media virality means one clever algorithm could make millions believe in a nonexistent cure or diet trend. Platforms like TikTok and X have removed many of these videos, but as long as the tools exist, someone will keep making them.\n\nCall to Action: Think, Then Click\n\nVerify before you trust: If your “doctor” popped up in your feed, check their credentials or look for official sources.\n\nQuestion miracle claims: If it sounds too good to be true, like reversing menopause with a gummy, it probably is.\n\nLaugh, but stay alert: Humor helps us process absurdity, but these deepfakes are also a warning: the next “doctor” you meet online might be pure code with a PhD in deception.\n\nSo next time your TikTok doctor offers you a magical potion, remember: the only thing they may be curing is your wallet and your sense of reality.",
+    "series": "Internet Con Artists"
+  },
+  {
+    "date": "2025-12-23",
+    "title": "Unpeelable Absurdity",
+    "topic": "Bananas Are the New Wi‑Fi Hack",
+    "body": "In the endless quest for life hacks, humanity has officially crossed into unpeelable absurdity. The latest viral sensation claims that placing a banana near your router will magically boost Wi‑Fi speeds. Yes, you read that correctly: your next download spike isn’t from fiber optics, it’s from potassium.\n\nSocial media is ablaze. TikTokers are lining their living rooms with banana barricades. Reddit threads are full of graphs, charts, and suspiciously “scientific” speed tests showing bananas outperforming every known networking principle. Even your cousin who struggles to send a text is suddenly a Wi‑Fi whisperer, holding a banana aloft like some kind of golden staff. Will we start to see people walking down the street with bananas taped to their phones. \n\nLet’s take a moment to appreciate this: somewhere, an actual engineer is crying into a cup of coffee while realizing that years of studying electromagnetic waves could have been replaced with a fruit salad.\n\nWhy This Is So Deliciously Absurd\n\nScience Says Nope\nRadio waves do not, in fact, like potassium. They do not bend toward fruit. They do not whisper to bananas. Wi‑Fi speeds are affected by distance, walls, interference, and router hardware, not your grocery list.\n\nThe Meme Economy Runs on Absurdity\nThe internet doesn’t want accurate science, it wants something that makes you laugh while questioning your life choices. Bonus points if it can turn your kitchen into a tech shrine.\n\nEverybody Wants Easy Fixes\nForget router firmware updates or proper placement. Why do that when you can line up three bananas in a triangle formation and call it a day?\n\nThe Human Side of This Tragedy\n\nImagine the poor souls who actually tried it. They spent $6.99 on bananas, meticulously positioned each one, and... nothing. Slow internet. Buffering. Rage. And yet they post pictures because failure is more Instagrammable than competence.\n\nIt’s a cautionary tale: the internet may offer “life hacks,” but most of the time, your router wants logic, not fruit therapy.\n\nA Modest Proposal\n\nIf you want faster Wi‑Fi:\n\nMove your router higher\n\nKeep it away from microwaves\n\nUpgrade your plan\n\nIf you want social media fame:\n\nPlace bananas near your router\n\nSnap a dramatic photo\n\nCaption it: “The secret to 1 Gbps revealed 🍌✨”\n\nEither way, humanity wins: either through functional internet or shared laughter.\n\nThe banana Wi‑Fi saga is more than a joke, it’s a mirror. It reminds us that in a world where everyone wants instant solutions, we’ll cling to anything, even fruit, in hopes of magic. And honestly? Sometimes laughing at our collective absurdity is the best bandwidth boost we can get.",
+    "series": "DeBunked, life hacks, modern social media trends",
+    "link": "https:https://docs.google.com/document/d/e/2PACX-1vROtSoAXVAKD4pok5XqpT9Spx_Sev3M3Uj_-7WBEzPU4t1l6dUbsPf9kFOBH_CtGTwVP5fM1XBxLcmT/pub/docs.google.com/document/d/e/2PACX-1vTXB-HVBRXmNwAcldw-6WABTpa_OrWZqMU0mZBEIjz5y8tFU79Nnyjt-DuQIwSR9Z5YnV969bhsAwvb/pub"
+  },
+  {
+    "date": "2025-12-15",
+    "title": "End of the World: Buy 9, Get the 10th Free.",
+    "topic": "The World Has Ended Again. We Must Have Missed It.",
+    "body": "By now, the apocalypse has missed its appointment so many times it should probably stop calling. According to the internet, the world has “definitively” ended dozens of times in the past few decades, sometimes quietly, sometimes in spectacular fashion, and always with complete confidence.\n\nTake the now-debunked claim that a global six-minute blackout would plunge Earth into darkness on August 2, 2025, supposedly triggered by a rare solar eclipse. The story raced through social media feeds with the urgency of an emergency broadcast. NASA, meanwhile, calmly pointed out that no such eclipse existed, no blackout was predicted, and the planet would continue doing what it has done for 4.5 billion years: not ending on schedule.\n\nIt was hardly the first time.\n\nIn 2012, millions braced for extinction when a misreading of the Mayan calendar convinced the internet that December 21 marked the end of time. When the sun rose the next day, the calendar, unlike the theory, was revealed to be perfectly functional.\n\nIn 1999, Y2K panic warned that computers would fail at midnight, planes would fall from the sky, and civilization would reset to the Stone Age. The clocks rolled over, the lights stayed on, and the biggest casualty was bottled water sales, ironically skyrocketing.\n\nThen there was 2011, when radio preacher Harold Camping predicted the Rapture not once, but twice. When May came and went, the date was simply rescheduled. When October passed, the apocalypse quietly retired without comment.\n\nOther near misses include the mysterious Planet X (also known as Nibiru), which has allegedly been on a collision course with Earth since at least 2003. It has failed to arrive every single time. CERN was supposed to create a planet-devouring black hole. Yellowstone was supposed to explode on YouTube’s schedule. The Large Hadron Collider, solar flares, rogue asteroids, alien invasions, and even Facebook glitches have all been promoted as the final chapter of human history.\n\nAnd yet, here we are. Again.\n\nWhat makes these stories spread isn’t scientific plausibility; it’s emotional velocity. They’re dramatic, urgent, and oddly entertaining. A claim doesn’t need to be true to go viral; it just needs to feel big. Deepfake videos of world leaders declaring emergencies that never happened, AI-generated disaster clips mistaken for reality, or recycled hoaxes like “Good morning images contain malware” continue to thrive because they trigger instant reactions before critical thinking catches up.\n\nThe humor lies in the pattern. Every apocalypse arrives with certainty, countdown clocks, and authoritative-sounding language. Every apocalypse leaves without explanation. No apologies. No refunds.\n\nBut beneath the comedy is a real lesson. Social media rewards shock, not accuracy. Algorithms amplify fear faster than facts. And when people share before verifying, misinformation doesn’t just spread, it performs.\n\nThe world ending makes for great content. The world continues, less so.\n\nSo the next time the internet announces that Earth has 48 hours left, take a breath. Check a source. Maybe make a sandwich. History suggests the planet will still be here when you’re done eating.\n\nAfter all, if the Creator wanted to destroy the Earth, if the world really were ending, it probably wouldn’t announce itself via a forwarded post with three emojis and a countdown timer.\n\nAnd if it does? Well, based on past performance, it’ll likely reschedule.",
+    "series": "The world ending"
+  },
+  {
+    "date": "2025-12-11",
+    "title": "The Great Eagle-Bear Migration",
+    "topic": "A Shocking Discovery - Not",
+    "body": "In a story that has rocked the very foundations of natural science and, frankly, common sense, reports have surfaced of an unprecedented phenomenon: hundreds of eagles hitching rides on the backs of bears as they traverse lakes with the elegance of synchronized swimmers. Scientists are scratching their heads. Bears are scratching their backs. And the eagles, well, the eagles appear to be enjoying the scenic cruise.\n\nA New Era of Wildlife Transportation\n\nFor decades, humans have relied on buses, bicycles, and the occasional roller skate. Meanwhile, Mother Nature was quietly perfecting a secret, avian-powered Uber service. Observers claim that each bear is equipped with a custom “eagle docking platform,” ingeniously balanced for maximum aerodynamic efficiency and minimum bear irritation.\n\n“I couldn’t believe my eyes,” said one eyewitness who insists they were definitely sober. “At first I thought it was a mirage, a bear wearing an eagle feather hat. But then more eagles appeared, and suddenly it looked like the bear had become a majestic, feathered flotilla.”\n\nThe Science Behind the Myth, or Maybe Not\n\nDespite the viral footage (or possibly the viral imagination of a mischievous intern at a nature documentary studio), experts have confirmed: bears cannot, in fact, carry eagles across lakes. In reality, the phenomenon is likely a combination of:\n\nEagles are scavenging near bear fishing spots\n\nBears casually wading through waters rich with salmon\n\nImagination, fueled by late-night internet scrolling\n\nYet, why let facts ruin a perfectly good story? Some scientists argue that believing in “eagle Uber bears” could have benefits: it encourages outdoor adventure, strengthens the imagination, and may even improve one’s sense of humor.\n\nAlready, memes are spreading faster than a flock of bald eagles in a tailwind. Local wildlife authorities have issued tongue-in-cheek safety warnings: “Do not attempt to hitch a ride on bears. Eagledness varies. Bear's patience is limited. Water temperature may be chilly.”\n\nChildren, of course, are thrilled. Art projects now feature bears with eagles on their backs, crossing glittering lakes under a rainbow. Pundits argue that, in these times of ecological anxiety, the story of the eagle-bear alliance reminds us of the wonder, absurdity, and joy of nature, even if it’s entirely fictional.\n\nLet it be known: science may not support the logistics, physics, or biology of bear-mounted eagles, but imagination flies higher than any wingspan. If one day a bear emerges from a lake carrying a squadron of eagles, we will be ready with cameras, applause, and probably a very large sandwich for the bear.\n\nUntil then, let us cherish this ridiculous vision. Let it inspire art, laughter, and the occasional daydream in which physics takes a holiday and nature throws the most absurd parade the world has ever seen.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vR0ers0rfJrCJVs4CwYQ8HTYxRksr95o4k6jExOsAm0zgBf4t6ERYasF36i6csC9ihaqRgUR5pQqfAP/pub",
+    "series": "Bear Uber"
+  },
+  {
+    "date": "2025-12-10",
+    "title": "Sharks Smell Blood from Miles Away",
+    "topic": "Sharks Underwater Bloodhounds",
+    "body": "For decades, Hollywood has done its best to convince us that sharks are underwater bloodhounds, silently gliding through the ocean, zeroing in on a single drop of blood from miles away. Cue the dramatic music, panicked swimmers, and jaw-tingling suspense. But let’s slow down and take a breath, literally and figuratively.\n\nThe truth? Sharks are impressive hunters, but the idea that a shark can detect one drop of blood in the vast expanse of the ocean from miles away is more fantasy than fact.\n\nWhat Sharks Can Really Do\n\nSharks have a phenomenal sense of smell, no doubt. Their olfactory organs are highly sensitive to certain chemicals, allowing them to detect prey in their immediate vicinity. A drop of blood in a small, contained tank? They’ll notice it. A drop in an open ocean? Not so much.\n\nWater is a huge, dynamic environment. Currents, tides, and dilution mean that any single drop of blood spreads out almost instantly. For a shark to detect it over miles of ocean is akin to trying to smell a single cup of coffee from the top of Mount Everest. Technically, some molecules might reach you, but good luck pinpointing them.\n\nWhy the Myth Persists\n\nHollywood, sensational news headlines, and urban legends have a lot to answer for. Movies like Jaws cemented the image of the shark as an unstoppable, blood-trailing predator. Meanwhile, headlines claiming “Shark detects human blood miles away!” make for irresistible clickbait.\n\nThe problem is that these myths overestimate shark abilities while underestimating physics. Yes, sharks can detect blood, but distance, dilution, and ocean currents severely limit that ability. They’re predators, not magical blood-seeking missiles.\n\nThe Reality Check\n\nSharks are opportunistic hunters, using a combination of smell, vision, and electroreception to find prey.\n\nThey are not drawn to “blood in the ocean” like an automatic GPS signal.\n\nShark attacks on humans are exceedingly rare; most species don’t even see humans as food.\n\nSo next time you hear that a shark can smell one drop of blood from miles away, smile knowingly. It’s a classic case of science being stretched for drama. The ocean is vast, sharks are amazing, but they are not the unstoppable, blood-trailing monsters popular culture makes them out to be.\n\nSharks deserve our awe and respect. They are elegant, efficient, and perfectly adapted predators. But they also deserve a reality check. The next time someone tries to scare you with the idea of sharks sniffing your tiniest cut from miles away, just remember: the truth is almost always stranger and better than fiction.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRwKZCDXg3SimjXuTSJlqEM5gcx9Zxe8KCxa7gcUwzMCN8gQj29nCoXo71VdBY2bcW5GHaiFZAW2mcp/pub",
+    "series": "Sharks blood swimming"
+  },
+  
+  {
+    "date": "2025-11-27",
+    "title": "Thanksgiving Myths",
+    "topic": "Misleading Holidays",
+    "body": "Every year, millions of Americans gather around dinner tables adorned with turkey, stuffing, and familiar family recipes. Thanksgiving has long been celebrated as a day of gratitude, a moment to pause, reflect, and appreciate the people and experiences that enrich our lives. Yet, behind the warmth of the holiday lies a deeper and more complex story, one that offers important lessons about history, culture, and the ways we choose to remember.\n\nThe Origins: More Than a Myth\n\nThanksgiving’s roots trace back to 1621, when English Pilgrims and the Wampanoag people shared a harvest meal in Plymouth. Popular culture often romanticizes this gathering as a symbol of harmony and mutual respect. While cooperation did occur, this narrative oversimplifies a period marked by disease, cultural misunderstanding, and conflict.\n\nTeaching the holiday only as a cheerful feast misses an opportunity to better understand the experiences of Native peoples and the profound impact colonization had on their communities. A fuller picture allows us to honor the Wampanoag’s resilience and acknowledge the complexities of early American history.\n\nGratitude as a Practice\n\nDespite its complicated past, Thanksgiving still carries a powerful message that resonates today: gratitude. Psychological research consistently shows that practicing thankfulness can improve well-being, strengthen relationships, and boost resilience. The holiday encourages us to slow down in a fast-paced world, reconnect with loved ones, and consider what we often take for granted.\n\nGratitude doesn’t need to be confined to one day a year. It can become a habit, expressed in small acts of appreciation, time spent helping others, or simply being present with the people who matter.\n\nInclusivity and Reflection\n\nIn recent years, many communities and educators have begun observing Thanksgiving in more inclusive and thoughtful ways. Some incorporate Indigenous perspectives into lessons and celebrations. Others use the day to volunteer, donate, or support Native organizations.\n\nThis shift doesn’t diminish the holiday; it enriches it. By acknowledging both the joys and the injustices intertwined with Thanksgiving’s origins, we make room for a more honest, compassionate celebration, one that respects the past while shaping a better future.\n\nMoving Forward Together\n\nThanksgiving can be more than a traditional meal. It can be a reminder of our shared responsibilities: to each other, to our communities, and to the histories that shaped the nation. As we celebrate, we are invited to hold two truths at once: gratitude for what we have and mindfulness of what others have lost.\n\nThis year, may Thanksgiving be not only a day of giving thanks but a day of learning, listening, and growing.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTapvCDliRP42qbPC33ZAO3DYelM9bTJanL_8KLlRt20jhL0azcvuOj6VsfLygV1AW2Zs_4t9CWfJtL/pub",
+    "series": "Tradition, False information Thanksgiving"
+  },
+  {},
+  {}
+];
+
+// ======================================================
+// 2. STATE
+// ======================================================
+let filtered = comments.slice();
+let showingDetail = null;
+
+// ======================================================
+// 3. FILTERING
+// ======================================================
+function filterComments() {
+  const dateVal   = document.getElementById("dateSearch").value;
+  const topicVal  = document.getElementById("topicSearch").value.trim().toLowerCase();
+  const seriesVal = document.getElementById("seriesSearch").value.trim().toLowerCase();
+
+  filtered = comments.filter(c => {
+    if (!c || !c.title) return false;
+
+    const dateMatch = !dateVal || c.date === dateVal;
+
+    const topicMatch = !topicVal || (
+      (c.topic  && c.topic.toLowerCase().includes(topicVal)) ||
+      (c.title  && c.title.toLowerCase().includes(topicVal)) ||
+      (c.body   && c.body.toLowerCase().includes(topicVal))
+    );
+
+    const seriesMatch = !seriesVal || (
+      c.series && c.series.toLowerCase().includes(seriesVal)
+    );
+
+    return dateMatch && topicMatch && seriesMatch;
+  });
+
+  showingDetail = null;
+  renderList();
+}
+
+// ======================================================
+// 4. LIST RENDER
+// ======================================================
+function renderList() {
+  const list   = document.getElementById("commentList");
+  const detail = document.getElementById("commentDetail");
+  if (!list || !detail) return;
+
+  detail.innerHTML = "";
+  list.innerHTML = "";
+
+  if (!filtered.length) {
+    list.innerHTML = `<li><span class="comment-title">No entries found.</span></li>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const li = document.createElement("li");
+    li.onclick = () => showDetail(c);
+
+    const snippet = c.body
+      ? c.body.slice(0, 120) + (c.body.length > 120 ? "…" : "")
+      : "";
+
+    const topic  = c.topic  || "";
+    const series = c.series || "";
+    const date   = c.date   || "";
+
+    const metaText = [topic, series ? `Series: ${series}` : "", date]
+      .filter(Boolean).join(" • ");
+
+    li.innerHTML = `
+      <div class="comment-title">${escapeHtml(c.title || "")}</div>
+      <div class="comment-meta">${escapeHtml(metaText)}</div>
+      <div class="comment-body">${escapeHtml(snippet)}</div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// ======================================================
+// 5. DETAIL VIEW → POPUP MODAL
+// ======================================================
+function showDetail(c) {
+  showingDetail = c;
+
+  const backdrop = document.getElementById("modalBackdrop");
+  const modal    = document.getElementById("articleModal");
+  const titleEl  = document.getElementById("modalTitle");
+  const metaEl   = document.getElementById("modalMeta");
+  const bodyEl   = document.getElementById("modalBody");
+  const linkRow  = document.getElementById("modalLinkRow");
+
+  const topic  = c.topic  || "";
+  const series = c.series || "";
+  const date   = c.date   || "";
+
+  const metaText = [topic, series ? `Series: ${series}` : "", date]
+    .filter(Boolean).join(" • ");
+
+  titleEl.textContent = c.title || "";
+  metaEl.textContent  = metaText;
+  bodyEl.textContent  = c.body || "";
+  linkRow.innerHTML   = "";
+
+  if (c.link) {
+    const btn = document.createElement("button");
+    btn.className = "open-link-btn";
+    btn.textContent = "Open Full Article";
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      window.open(c.link, "_blank");
+    });
+    linkRow.appendChild(btn);
+  }
+
+  backdrop.classList.remove("hidden");
+  modal.classList.remove("hidden");
+
+  // Center the modal initially
+  const rect = modal.getBoundingClientRect();
+  const left = Math.max(14, (window.innerWidth - rect.width) / 2);
+  const top  = Math.max(24, (window.innerHeight - rect.height) / 4);
+  modal.style.left = left + "px";
+  modal.style.top  = top  + "px";
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.add("hidden");
+  document.getElementById("articleModal").classList.add("hidden");
+}
+
+// ======================================================
+// 6. DRAGGABLE MODAL
+// ======================================================
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+function initDrag() {
+  const modal  = document.getElementById("articleModal");
+  const header = document.getElementById("modalHeader");
+  if (!modal || !header) return;
+
+  header.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    const rect = modal.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", function(e) {
+    if (!isDragging) return;
+    const modal = document.getElementById("articleModal");
+    if (!modal) return;
+
+    let left = e.clientX - dragOffsetX;
+    let top  = e.clientY - dragOffsetY;
+
+    const maxLeft = window.innerWidth  - modal.offsetWidth;
+    const maxTop  = window.innerHeight - modal.offsetHeight;
+
+    if (left < 7) left = 7;
+    if (top  < 7) top  = 7;
+    if (left > maxLeft - 7) left = maxLeft - 7;
+    if (top  > maxTop  - 7) top  = maxTop  - 7;
+
+    modal.style.left = left + "px";
+    modal.style.top  = top  + "px";
+  });
+
+  window.addEventListener("mouseup", function() {
+    isDragging = false;
+  });
+}
+
+// ======================================================
+// 7. UTILS
+// ======================================================
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ======================================================
+// 8. INIT
+// ======================================================
+filterComments();
+initDrag();
+</script>
+</body>
+</html>
