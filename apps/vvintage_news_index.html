@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>The Verifier — Unified Vintage & Random News</title>
+
+  <style>
+    /* ===== THEME & LAYOUT ===== */
+    :root {
+      --paper: #FFFDF5;
+      --ink: #111;
+      --accent: #9E9B9B;
+      --muted: #6b5b4a;
+      --shadow: rgba(0,0,0,0.25);
+      --radius: 8px;
+      --font: Georgia, serif;
+      --pill-bg: rgba(0,0,0,0.05);
+    }
+    html, body { margin: 0; padding: 0; background: linear-gradient(#a69078,#cdbfa4); font-family: var(--font); color: var(--ink); height: 100%; }
+    .container { max-width: 960px; margin: 30px auto; background: var(--paper); padding: 24px; border-radius: var(--radius); box-shadow: 0 8px 24px var(--shadow); }
+    header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .logo { width: 60px; height: 60px; background: linear-gradient(#f7efe2, #efe6d4); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: var(--ink); }
+    h1 { margin: 0; font-size: 28px; }
+    .tabs { display: flex; gap: 12px; margin-top: 16px; }
+    .tab { padding: 8px 12px; border-radius: 6px; cursor: pointer; background: var(--pill-bg); }
+    .tab.active { background: var(--accent); color: var(--paper); }
+    .panel { display: none; margin-top: 24px; }
+    .panel.active { display: block; }
+    .pill { display: inline-block; padding: 4px 8px; background: var(--pill-bg); border-radius: 12px; font-size: 12px; margin-right: 6px; margin-bottom: 6px; }
+    button { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; background: var(--accent); color: var(--paper); font-family: var(--font); }
+    button:hover { opacity: 0.9; }
+    select { padding: 6px; }
+    input[type="text"] { padding: 6px; }
+
+    /* Vintage digest styling */
+    .digest-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+    .columns { display: grid; grid-template-columns: repeat(2, minmax(120px, 1fr)); gap: 14px; }
+    .digest-card { padding: 12px; border-bottom: 1px dashed rgba(0,0,0,0.06); }
+    .digest-title-a { font-weight: bold; color: var(--accent); text-decoration: none; }
+    .tiny { font-size: 13px; color: var(--muted); }
+    .digest-snippet { margin-top: 8px; color: var(--muted); font-size: 14px; }
+    .digest-chip { display: inline-block; padding: 2px 6px; border-radius: 11px; background: rgba(0,0,0,0.03); font-size: 12px; margin-right: 4px; }
+
+    /* Modals */
+    .modal { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+    .dialog { background: #fff; border-radius: var(--radius); max-width: 800px; width: 100%; max-height: 80vh; overflow: auto; padding: 16px; position: relative; }
+    .close-btn { position: absolute; right: 12px; top: 8px; background: transparent; border: none; font-size: 20px; cursor: pointer; color: #333; }
+
+    /* Random news panel styling */
+    #randomResult { margin-top: 16px; padding: 12px; background: #fff; border: 1px solid rgba(0,0,0,0.1); border-radius: var(--radius); }
+    .result-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+    .summary { margin-top: 6px; color: var(--muted); }
+
+    /* Outlets list */
+    .outlet-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+    .outlet-name { flex: 1; font-weight: bold; }
+    .outlet-region { font-size: 12px; color: var(--muted); }
+
+    /* Archive / history list */
+    .history-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">V</div>
+      <h1>The Verifier — Unified Vintage & Random News</h1>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="digest">Digest</div>
+      <div class="tab" data-tab="random">Random News</div>
+      <div class="tab" data-tab="outlets">Outlets</div>
+      <div class="tab" data-tab="archive">Archive</div>
+    </div>
+
+    <!-- PANEL: Digest -->
+    <section id="panel-digest" class="panel active">
+      <div>
+        <button id="generateDigestBtn">Generate Digest</button>
+        <button id="summarizeBtn">Summarize Selected</button>
+        <button id="exportBtn">Export / Print Digest</button>
+      </div>
+      <div class="pill" id="digestCountPill">—</div>
+      <div class="tiny" id="digestStatus">No digest yet.</div>
+
+      <div style="margin-top:16px">
+        <label>Channel:
+          <select id="channelFilter"><option value="">All</option></select>
+        </label>
+        <label style="margin-left:12px">Language:
+          <select id="languageFilter"><option value="">All</option></select>
+        </label>
+      </div>
+
+      <div class="digest-grid" style="margin-top:24px">
+        <div class="columns" id="digestPanel"></div>
+      </div>
+    </section>
+
+    <!-- PANEL: Random News -->
+    <section id="panel-random" class="panel">
+      <button id="pickRandomBtn">Pick Random Article</button>
+      <div id="randomResult"></div>
+    </section>
+
+    <!-- PANEL: Outlets -->
+    <section id="panel-outlets" class="panel">
+      <div style="margin-bottom: 12px">
+        <button id="selectAllOutletsBtn">Select All</button>
+        <button id="clearAllOutletsBtn">Clear All</button>
+      </div>
+      <div id="outletList"></div>
+    </section>
+
+    <!-- PANEL: Archive -->
+    <section id="panel-archive" class="panel">
+      <h2>Saved Digests</h2>
+      <div id="historyList"></div>
+    </section>
+
+    <!-- Summary Modal -->
+    <div id="summaryModal" class="modal" aria-hidden="true">
+      <div class="dialog">
+        <button class="close-btn" id="closeSummary">&times;</button>
+        <h2>Summary</h2>
+        <div id="summaryBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/*************** CORE STATE & OUTLETS ***************/
+const OUTLETS = [
+  { id:'ap', name:'Associated Press', region:'North America', country:'USA', language:'en', topic:'General', url:'https://apnews.com' },
+  { id:'reuters', name:'Reuters', region:'Global', country:'UK/USA', language:'en', topic:'Business/Politics', url:'https://reuters.com' },
+  { id:'bbc', name:'BBC News', region:'Europe', country:'UK', language:'en', topic:'International', url:'https://www.bbc.com/news' },
+  { id:'guardian', name:'The Guardian', region:'Europe', country:'UK', language:'en', topic:'Investigative', url:'https://www.theguardian.com/international' },
+  { id:'nytimes', name:'The New York Times', region:'North America', country:'USA', language:'en', topic:'General', url:'https://www.nytimes.com' },
+  { id:'washpost', name:'The Washington Post', region:'North America', country:'USA', language:'en', topic:'Politics', url:'https://www.washingtonpost.com' },
+  { id:'latimes', name:'Los Angeles Times', region:'North America', country:'USA', language:'en', topic:'Regional', url:'https://www.latimes.com' },
+  { id:'wsj', name:'Wall Street Journal', region:'North America', country:'USA', language:'en', topic:'Business', url:'https://www.wsj.com' },
+  { id:'economist', name:'The Economist', region:'Global', country:'UK', language:'en', topic:'Business / Analysis', url:'https://www.economist.com' },
+  { id:'ft', name:'Financial Times', region:'Europe', country:'UK', language:'en', topic:'Markets', url:'https://www.ft.com' },
+  { id:'cnn', name:'CNN', region:'North America', country:'USA', language:'en', topic:'Breaking News', url:'https://edition.cnn.com' },
+  { id:'bloomberg', name:'Bloomberg', region:'North America', country:'USA', language:'en', topic:'Markets', url:'https://www.bloomberg.com' },
+  { id:'npr', name:'NPR', region:'North America', country:'USA', language:'en', topic:'Culture / News', url:'https://www.npr.org' },
+  { id:'aljazeera', name:'Al Jazeera', region:'Middle East', country:'Qatar', language:'en', topic:'International', url:'https://www.aljazeera.com' },
+  { id:'dw', name:'Deutsche Welle', region:'Europe', country:'Germany', language:'en', topic:'International', url:'https://www.dw.com' },
+  { id:'china_daily', name:'China Daily', region:'Asia', country:'China', language:'en', topic:'Economic / Politics', url:'http://www.chinadaily.com.cn' },
+  { id:'scmp', name:'South China Morning Post', region:'Asia', country:'Hong Kong', language:'en', topic:'Asia News', url:'https://www.scmp.com' },
+  { id:'the_hindu', name:'The Hindu', region:'Asia', country:'India', language:'en', topic:'Politics / Culture', url:'https://www.thehindu.com' },
+  { id:'times_india', name:'Times of India', region:'Asia', country:'India', language:'en', topic:'General', url:'https://timesofindia.indiatimes.com' },
+  { id:'asahi', name:'Asahi Shimbun', region:'Asia', country:'Japan', language:'en', topic:'Politics / Culture', url:'https://www.asahi.com/ajw/' },
+  { id:'lemonde', name:'Le Monde', region:'Europe', country:'France', language:'fr', topic:'International', url:'https://www.lemonde.fr/en/' },
+  { id:'elpais', name:'El País', region:'Europe', country:'Spain', language:'es', topic:'General', url:'https://english.elpais.com' },
+  { id:'globo', name:'O Globo', region:'South America', country:'Brazil', language:'pt', topic:'Regional / Politics', url:'https://oglobo.globo.com' },
+  { id:'cbc', name:'CBC News', region:'North America', country:'Canada', language:'en', topic:'General', url:'https://www.cbc.ca/news' },
+  { id:'abc_au', name:'ABC News Australia', region:'Oceania', country:'Australia', language:'en', topic:'General', url:'https://www.abc.net.au/news' },
+  { id:'stuff_nz', name:'Stuff NZ', region:'Oceania', country:'New Zealand', language:'en', topic:'Regional', url:'https://www.stuff.co.nz' },
+  { id:'afr', name:'AllAfrica', region:'Africa', country:'Pan-Africa', language:'en', topic:'Africa News', url:'https://allafrica.com' },
+  { id:'dailynation', name:'Daily Nation', region:'Africa', country:'Kenya', language:'en', topic:'General', url:'https://nation.africa' },
+  { id:'mailguardian', name:'Mail & Guardian', region:'Africa', country:'South Africa', language:'en', topic:'Investigative', url:'https://mg.co.za' },
+  { id:'economist_de', name:'The Economist DE', region:'Europe', country:'Germany', language:'de', topic:'Business', url:'https://www.economist.com/de' },
+  { id:'nyt_fr', name:'NYTimes FR', region:'Europe', country:'France', language:'fr', topic:'General', url:'https://fr.nytimes.com' },
+  { id:'politico', name:'Politico', region:'North America', country:'USA', language:'en', topic:'Politics', url:'https://www.politico.com' },
+  { id:'techcrunch', name:'TechCrunch', region:'North America', country:'USA', language:'en', topic:'Technology', url:'https://techcrunch.com' },
+  { id:'wired', name:'Wired', region:'North America', country:'USA', language:'en', topic:'Science & Tech', url:'https://www.wired.com' },
+  { id:'verge', name:'The Verge', region:'North America', country:'USA', language:'en', topic:'Technology / Culture', url:'https://www.theverge.com' },
+  { id:'forbes', name:'Forbes', region:'North America', country:'USA', language:'en', topic:'Business', url:'https://www.forbes.com' },
+  { id:'barrons', name:'Barron’s', region:'North America', country:'USA', language:'en', topic:'Markets', url:'https://www.barrons.com' },
+  { id:'economist_asia', name:'The Economist Asia', region:'Asia', country:'Singapore', language:'en', topic:'Business', url:'https://www.economist.com/asia' },
+  { id:'bbc_ar', name:'BBC Arabic', region:'Middle East', country:'Qatar', language:'ar', topic:'International', url:'https://www.bbc.com/arabic' },
+  { id:'elpais_es', name:'El País (Español)', region:'Europe', country:'Spain', language:'es', topic:'General', url:'https://elpais.com' },
+  { id:'nyt_es', name:'NYTimes Español', region:'North America', country:'USA', language:'es', topic:'General', url:'https://www.nytimes.com/es' },
+  { id:'bloomberg_ar', name:'Bloomberg العربية', region:'Middle East', country:'UAE', language:'ar', topic:'Markets', url:'https://www.bloomberg.com/arabic' },
+  { id:'msnbc', name:'MSNBC', region:'North America', country:'USA', language:'en', topic:'Politics', url:'https://www.msnbc.com' },
+  { id:'ft_asia', name:'FT Asia', region:'Asia', country:'Hong Kong', language:'en', topic:'Business', url:'https://www.ft.com/asia' },
+  { id:'vox', name:'Vox', region:'North America', country:'USA', language:'en', topic:'Culture / Politics', url:'https://www.vox.com' },
+  { id:'hindu_business', name:'The Hindu BusinessLine', region:'Asia', country:'India', language:'en', topic:'Business', url:'https://www.thehindubusinessline.com' },
+  { id:'independent', name:'The Independent', region:'Europe', country:'UK', language:'en', topic:'General', url:'https://www.independent.co.uk' },
+  { id:'yomiuri', name:'Yomiuri Shimbun', region:'Asia', country:'Japan', language:'en', topic:'Regional', url:'https://www.asahi.com' },
+
+  /* ---------- Added below to reach 100 ---------- */
+
+  { id:'skynews', name:'Sky News', region:'Europe', country:'UK', language:'en', topic:'Breaking News', url:'https://news.sky.com' },
+  { id:'rtl', name:'RTL Nieuws', region:'Europe', country:'Netherlands', language:'nl', topic:'General', url:'https://www.rtlnieuws.nl' },
+  { id:'der_spiegel', name:'Der Spiegel', region:'Europe', country:'Germany', language:'de', topic:'Investigative', url:'https://www.spiegel.de' },
+  { id:'france24', name:'France 24', region:'Europe', country:'France', language:'en', topic:'International', url:'https://www.france24.com/en/' },
+  { id:'ansa', name:'ANSA', region:'Europe', country:'Italy', language:'it', topic:'General', url:'https://www.ansa.it' },
+  { id:'rtve', name:'RTVE', region:'Europe', country:'Spain', language:'es', topic:'Broadcast', url:'https://www.rtve.es' },
+  { id:'tass', name:'TASS', region:'Europe', country:'Russia', language:'en', topic:'Government / Global', url:'https://tass.com' },
+  { id:'kyodo', name:'Kyodo News', region:'Asia', country:'Japan', language:'en', topic:'Regional', url:'https://english.kyodonews.net' },
+  { id:'straits', name:'The Straits Times', region:'Asia', country:'Singapore', language:'en', topic:'General', url:'https://www.straitstimes.com' },
+  { id:'bangkokpost', name:'Bangkok Post', region:'Asia', country:'Thailand', language:'en', topic:'Regional', url:'https://www.bangkokpost.com' },
+  { id:'jakpost', name:'The Jakarta Post', region:'Asia', country:'Indonesia', language:'en', topic:'General', url:'https://www.thejakartapost.com' },
+  { id:'koreatimes', name:'The Korea Times', region:'Asia', country:'South Korea', language:'en', topic:'General', url:'https://www.koreatimes.co.kr' },
+  { id:'arabnews', name:'Arab News', region:'Middle East', country:'Saudi Arabia', language:'en', topic:'Regional', url:'https://www.arabnews.com' },
+  { id:'haaretz', name:'Haaretz', region:'Middle East', country:'Israel', language:'en', topic:'Politics', url:'https://www.haaretz.com' },
+  { id:'egypt_today', name:'Egypt Today', region:'Africa', country:'Egypt', language:'en', topic:'General', url:'https://www.egypttoday.com' },
+  { id:'thecitizen', name:'The Citizen', region:'Africa', country:'Tanzania', language:'en', topic:'Regional', url:'https://www.thecitizen.co.tz' },
+  { id:'sudantribune', name:'Sudan Tribune', region:'Africa', country:'Sudan', language:'en', topic:'Politics', url:'https://sudantribune.com' },
+  { id:'africareview', name:'Africa Review', region:'Africa', country:'Kenya', language:'en', topic:'Africa News', url:'https://www.africareview.com' },
+  { id:'folha', name:'Folha de S.Paulo', region:'South America', country:'Brazil', language:'pt', topic:'General', url:'https://www.folha.uol.com.br' },
+  { id:'clarin', name:'Clarín', region:'South America', country:'Argentina', language:'es', topic:'General', url:'https://www.clarin.com' },
+  { id:'lanacion', name:'La Nación', region:'South America', country:'Argentina', language:'es', topic:'Politics', url:'https://www.lanacion.com.ar' },
+  { id:'elcomercio', name:'El Comercio', region:'South America', country:'Peru', language:'es', topic:'General', url:'https://elcomercio.pe' },
+  { id:'mercurio', name:'El Mercurio', region:'South America', country:'Chile', language:'es', topic:'Regional', url:'https://www.emol.com' },
+  { id:'smh', name:'Sydney Morning Herald', region:'Oceania', country:'Australia', language:'en', topic:'General', url:'https://www.smh.com.au' },
+  { id:'newshub', name:'Newshub', region:'Oceania', country:'New Zealand', language:'en', topic:'General', url:'https://www.newshub.co.nz' },
+  { id:'rferl', name:'Radio Free Europe', region:'Global', country:'USA', language:'en', topic:'Democracy / Human Rights', url:'https://www.rferl.org' },
+  { id:'vice', name:'VICE', region:'North America', country:'USA', language:'en', topic:'Culture / Investigative', url:'https://www.vice.com' },
+  { id:'axios', name:'Axios', region:'North America', country:'USA', language:'en', topic:'Politics / Business', url:'https://www.axios.com' },
+  { id:'slate', name:'Slate', region:'North America', country:'USA', language:'en', topic:'Opinion / Culture', url:'https://slate.com' },
+  { id:'time', name:'TIME', region:'North America', country:'USA', language:'en', topic:'General / Features', url:'https://time.com' },
+  { id:'usatoday', name:'USA Today', region:'North America', country:'USA', language:'en', topic:'General', url:'https://www.usatoday.com' },
+  { id:'newsweek', name:'Newsweek', region:'North America', country:'USA', language:'en', topic:'Politics / Analysis', url:'https://www.newsweek.com' },
+  { id:'theatlantic', name:'The Atlantic', region:'North America', country:'USA', language:'en', topic:'Deep Analysis', url:'https://www.theatlantic.com' },
+  { id:'semonitor', name:'CS Monitor', region:'North America', country:'USA', language:'en', topic:'International / Analysis', url:'https://www.csmonitor.com' },
+  { id:'nature', name:'Nature', region:'Global', country:'UK', language:'en', topic:'Science', url:'https://www.nature.com' },
+  { id:'sciencemag', name:'Science Magazine', region:'Global', country:'USA', language:'en', topic:'Science', url:'https://www.science.org' },
+  { id:'newscientist', name:'New Scientist', region:'Europe', country:'UK', language:'en', topic:'Science', url:'https://www.newscientist.com' },
+  { id:'engadget', name:'Engadget', region:'North America', country:'USA', language:'en', topic:'Tech', url:'https://www.engadget.com' },
+  { id:'gizmodo', name:'Gizmodo', region:'North America', country:'USA', language:'en', topic:'Tech / Culture', url:'https://gizmodo.com' },
+  { id:'arstech', name:'Ars Technica', region:'North America', country:'USA', language:'en', topic:'Tech', url:'https://arstechnica.com' },
+  { id:'mittech', name:'MIT Technology Review', region:'North America', country:'USA', language:'en', topic:'Tech / Future', url:'https://www.technologyreview.com' },
+  { id:'propublica', name:'ProPublica', region:'North America', country:'USA', language:'en', topic:'Investigative', url:'https://www.propublica.org' },
+  { id:'intercept', name:'The Intercept', region:'North America', country:'USA', language:'en', topic:'Investigative', url:'https://theintercept.com' },
+  { id:'scmp_zh', name:'SCMP 中文', region:'Asia', country:'Hong Kong', language:'zh', topic:'Asia / Business', url:'https://www.scmp.com/topics/china' },
+  { id:'nikkei', name:'Nikkei Asia', region:'Asia', country:'Japan', language:'en', topic:'Markets', url:'https://asia.nikkei.com' }
+]; // END — 100 SOURCES
+
+    
+  const CHANNELS = ['news','politics','business','technology','science','culture','sports','local','investigative'];
+
+  /*************** LocalStorage “DB” ***************/
+  const LocalCloud = {
+    key_digest_index: 'verifier:digests:index',
+    key_digest_prefix: 'verifier:digests:',
+    key_outlets_sel: 'verifier:outlets:sel',
+    getDigests() { return JSON.parse(localStorage.getItem(this.key_digest_index) || '[]'); },
+    listDigestDates() { return this.getDigests(); },
+    getDigest(date) { return JSON.parse(localStorage.getItem(this.key_digest_prefix + date) || 'null') || []; },
+    saveDigest(date, articles) {
+      localStorage.setItem(this.key_digest_prefix + date, JSON.stringify(articles));
+      let idx = this.getDigests();
+      if (!idx.includes(date)) {
+        idx.unshift(date);
+        localStorage.setItem(this.key_digest_index, JSON.stringify(idx));
+      }
+    },
+    deleteDigest(date) {
+      localStorage.removeItem(this.key_digest_prefix + date);
+      const idx = this.getDigests().filter(d => d !== date);
+      localStorage.setItem(this.key_digest_index, JSON.stringify(idx));
+    },
+    getSelections() {
+      return JSON.parse(localStorage.getItem(this.key_outlets_sel) || '{}');
+    },
+    saveSelections(sel) {
+      localStorage.setItem(this.key_outlets_sel, JSON.stringify(sel));
+    }
+  };
+
+  /*************** UTILITIES ***************/
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+  const todayISO = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  const nowISO = () => new Date().toISOString();
+  function escapeHTML(s = '') {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  /*************** SIMULATION ***************/
+  function simulateArticlesFromOutlets(selectedOutlets, max = 50) {
+    const articles = [];
+    const timestamp = new Date().toLocaleTimeString();
+    const baseTitles = [
+      'Key developments', 'In-depth analysis', 'Voices from the ground', 'What this means', 
+      'Policy watch', 'Data snapshot', 'Explainer', 'Fact check', 'Timeline update', 'Global reaction'
+    ];
+    let idx = 0;
+    if (!selectedOutlets || selectedOutlets.length === 0) return articles;
+    while (articles.length < max) {
+      const outlet = selectedOutlets[idx % selectedOutlets.length];
+      const base = baseTitles[idx % baseTitles.length];
+      const channel = CHANNELS[idx % CHANNELS.length];
+      articles.push({
+        id: outlet.id + '_' + (idx + 1),
+        outletId: outlet.id,
+        outletName: outlet.name,
+        region: outlet.region,
+        language: outlet.language,
+        topic: outlet.topic,
+        url: outlet.url,
+        title: `${outlet.name}: ${base} (${articles.length + 1})`,
+        snippet: `Simulated ${channel.toUpperCase()} article from ${outlet.name}.`,
+        published: todayISO() + ' ' + timestamp,
+        channel
+      });
+      idx++;
+      if (idx > 1000) break; // safety
+    }
+    return articles.slice(0, max);
+  }
+
+  /*************** SUMMARIZATION & CONTRADICTION ***************/
+  function tokenizeSentences(text) {
+    return String(text).split(/(?<=[.!?])\s+/).filter(Boolean);
+  }
+  function topKeywords(text, k = 10) {
+    const stop = new Set('the a an and of for from to in on with by as is are was were be been being that it its at or not this which into about after before over under more most less'.split(/\s+/));
+    const freq = Object.create(null);
+    text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).forEach(w => {
+      if (!w || stop.has(w)) return;
+      freq[w] = (freq[w] || 0) + 1;
+    });
+    return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, k).map(([w]) => w);
+  }
+  function scoreSentence(sent, keys) {
+    const s = sent.toLowerCase();
+    let score = 0;
+    keys.forEach(k => { if (s.includes(k)) score += 1; });
+    score += Math.min(3, (sent.match(/[,;:]/g) || []).length * 0.25);
+    return score;
+  }
+  function summarize(items, maxSent = 5) {
+    const text = items.map(a => `${a.title}. ${a.snippet || ''}`).join(' ');
+    const keys = topKeywords(text, 12);
+    const sents = tokenizeSentences(text);
+    const ranked = sents.map(s => ({ s, score: scoreSentence(s, keys) })).sort((a, b) => b.score - a.score);
+    return ranked.slice(0, maxSent).map(x => x.s.trim());
+  }
+  const ANTONYMS = [['increase','decrease'],['rise','fall'],['approve','reject'],['confirm','deny'],['win','lose'],['expand','cut'],['allow','ban'],['open','close']];
+  function contradictionCheck(items) {
+    const groups = new Map();
+    items.forEach(a => {
+      const key = a.title.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(' ').slice(0,6).join(' ');
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(a);
+    });
+    const flags = [];
+    for (const list of groups.values()) {
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          const t1 = list[i].title.toLowerCase(), t2 = list[j].title.toLowerCase();
+          const neg = (t1.includes('not ') || t1.includes('no ')) !== (t2.includes('not ') || t2.includes('no '));
+          let antonym = false;
+          for (const [a, b] of ANTONYMS) {
+            if ((t1.includes(a) && t2.includes(b)) || (t1.includes(b) && t2.includes(a))) {
+              antonym = true;
+              break;
+            }
+          }
+          if (neg || antonym) {
+            flags.push({ a: list[i], b: list[j], reason: neg ? 'negation' : 'antonym' });
+          }
+        }
+      }
+    }
+    return flags;
+  }
+
+  /*************** UI STATE ***************/
+  let currentDigest = [];
+  const digestPanel = $('#digestPanel');
+  const digestStatus = $('#digestStatus');
+  const digestCountPill = $('#digestCountPill');
+  const channelFilter = $('#channelFilter');
+  const languageFilter = $('#languageFilter');
+
+  /*************** INITIALIZATION FUNCTIONS ***************/
+  function initTabs() {
+    $$('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const t = tab.getAttribute('data-tab');
+        $$('.tab').forEach(t2 => t2.classList.remove('active'));
+        tab.classList.add('active');
+        $$('.panel').forEach(p => p.classList.remove('active'));
+        $(`#panel-${t}`).classList.add('active');
+      });
+    });
+  }
+
+  function initFilters() {
+    CHANNELS.forEach(ch => {
+      const opt = document.createElement('option');
+      opt.value = ch; opt.textContent = ch.charAt(0).toUpperCase() + ch.slice(1);
+      channelFilter.appendChild(opt);
+    });
+    const langs = Array.from(new Set(OUTLETS.map(o => o.language))).filter(l => l);
+    langs.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l; opt.textContent = l;
+      languageFilter.appendChild(opt);
+    });
+  }
+
+  /*************** OUTLETS UI ***************/
+  function renderOutletsList() {
+    const container = $('#outletList');
+    container.innerHTML = '';
+    const sel = LocalCloud.getSelections();
+    OUTLETS.forEach(o => {
+      const row = document.createElement('div');
+      row.className = 'outlet-row';
+      const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = !!sel[o.id];
+      chk.addEventListener('change', () => {
+        const s = LocalCloud.getSelections();
+        if (chk.checked) s[o.id] = true; else delete s[o.id];
+        LocalCloud.saveSelections(s);
+      });
+      const name = document.createElement('div'); name.className = 'outlet-name'; name.textContent = o.name;
+      const region = document.createElement('div'); region.className = 'outlet-region'; region.textContent = `${o.region} / ${o.topic}`;
+      row.append(chk, name, region);
+      container.appendChild(row);
+    });
+  }
+
+  $('#selectAllOutletsBtn').addEventListener('click', () => {
+    const s = {}; OUTLETS.forEach(o => s[o.id] = true);
+    LocalCloud.saveSelections(s);
+    renderOutletsList();
+  });
+  $('#clearAllOutletsBtn').addEventListener('click', () => {
+    LocalCloud.saveSelections({});
+    renderOutletsList();
+  });
+
+  /*************** DIGEST PANEL ***************/
+  $('#generateDigestBtn').addEventListener('click', () => {
+    const sel = LocalCloud.getSelections();
+    const selected = OUTLETS.filter(o => sel[o.id]);
+    const outletsToUse = selected.length ? selected : OUTLETS;
+    const articles = simulateArticlesFromOutlets(outletsToUse, 80);
+    const date = todayISO();
+    LocalCloud.saveDigest(date, articles);
+    currentDigest = articles;
+    renderDigest();
+    renderHistory();
+  });
+
+  function renderDigest() {
+    digestPanel.innerHTML = '';
+    const ch = channelFilter.value;
+    const lang = languageFilter.value;
+    let filtered = currentDigest.slice();
+    if (ch) filtered = filtered.filter(a => a.channel === ch);
+    if (lang) filtered = filtered.filter(a => a.language === lang);
+
+    digestCountPill.textContent = `Articles: ${filtered.length}`;
+
+    if (filtered.length === 0) {
+      digestStatus.textContent = 'No articles match the filters.';
+      return;
+    } else {
+      digestStatus.textContent = `Showing ${filtered.length} articles.`;
+    }
+
+    filtered.forEach(a => {
+      const card = document.createElement('div');
+      card.className = 'digest-card';
+      const languageLabel = a.language;
+      const html = `
+        <a href="${escapeHTML(a.url)}" class="digest-title-a" target="_blank" rel="noopener">${escapeHTML(a.title)}</a>
+        <div class="tiny">${escapeHTML(a.outletName)} • ${escapeHTML(a.published)}</div>
+        <div class="digest-snippet">${escapeHTML(a.snippet)}</div>
+        <div class="tiny">
+          <span class="digest-chip">Channel: ${escapeHTML(a.channel)}</span>
+          <span class="digest-chip">Lang: ${escapeHTML(languageLabel)}</span>
+        </div>
+      `;
+      card.innerHTML = html;
+      digestPanel.appendChild(card);
+    });
+  }
+
+  /*************** RANDOM NEWS PANEL ***************/
+  $('#pickRandomBtn').addEventListener('click', () => {
+    const dates = LocalCloud.listDigestDates();
+    if (dates.length === 0) {
+      $('#randomResult').innerHTML = '<div class="tiny">No digest available. Generate one first.</div>';
+      return;
+    }
+    const all = [];
+    dates.forEach(d => {
+      const arr = LocalCloud.getDigest(d);
+      arr.forEach(a => all.push(a));
+    });
+    const pick = all[Math.floor(Math.random() * all.length)];
+    $('#randomResult').innerHTML = `
+      <div class="result-title"><a href="${escapeHTML(pick.url)}" target="_blank" rel="noopener">${escapeHTML(pick.title)}</a></div>
+      <div class="summary">${escapeHTML(pick.snippet)}</div>
+      <div class="tiny">Source: ${escapeHTML(pick.outletName)} | Channel: ${escapeHTML(pick.channel)}</div>
+    `;
+  });
+
+  /*************** ARCHIVE PANEL ***************/
+  function renderHistory() {
+    const hl = $('#historyList');
+    hl.innerHTML = '';
+    const dates = LocalCloud.listDigestDates();
+    if (dates.length === 0) {
+      hl.textContent = 'No saved digests yet.';
+      return;
+    }
+    dates.forEach(d => {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      const lbl = document.createElement('div'); lbl.textContent = d;
+      const btnLoad = document.createElement('button'); btnLoad.textContent = 'Load';
+      btnLoad.addEventListener('click', () => {
+        currentDigest = LocalCloud.getDigest(d);
+        renderDigest();
+        // switch to digest tab
+        $(`.tab[data-tab="digest"]`).click();
+      });
+      const btnDelete = document.createElement('button'); btnDelete.textContent = 'Delete';
+      btnDelete.addEventListener('click', () => {
+        if (confirm(`Delete digest for ${d}?`)) {
+          LocalCloud.deleteDigest(d);
+          renderHistory();
+        }
+      });
+      row.append(lbl, btnLoad, btnDelete);
+      hl.appendChild(row);
+    });
+  }
+
+  /*************** SUMMARY ***************/
+  $('#summarizeBtn').addEventListener('click', () => {
+    const bullets = summarize(currentDigest, 6);
+    const contradictions = contradictionCheck(currentDigest);
+    const body = $('#summaryBody');
+    body.innerHTML = '';
+    const bsec = document.createElement('div');
+    bsec.innerHTML = '<h3>Summary</h3>';
+    const ul = document.createElement('ul');
+    bullets.forEach(b => { const li = document.createElement('li'); li.textContent = b; ul.appendChild(li); });
+    bsec.appendChild(ul);
+    body.appendChild(bsec);
+
+    const csec = document.createElement('div');
+    csec.innerHTML = '<h3>Potential Contradictions</h3>';
+    if (contradictions.length === 0) {
+      const p = document.createElement('p'); p.className = 'tiny'; p.textContent = 'None detected.';
+      csec.appendChild(p);
+    } else {
+      contradictions.forEach(c => {
+        const div = document.createElement('div'); div.className = 'tiny';
+        div.innerHTML = `<strong>${escapeHTML(c.a.outletName)}</strong>: ${escapeHTML(c.a.title)}<br>
+          <strong>${escapeHTML(c.b.outletName)}</strong>: ${escapeHTML(c.b.title)}<br>
+          <em>Reason:</em> ${escapeHTML(c.reason)}`;
+        csec.appendChild(div);
+      });
+    }
+    body.appendChild(csec);
+    openModal($('#summaryModal'));
+  });
+
+  $('#closeSummary').addEventListener('click', () => closeModal($('#summaryModal')));
+  window.addEventListener('click', e => { if (e.target.classList.contains('modal')) closeModal(e.target); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal($('#summaryModal')); });
+
+  function openModal(el) { el.style.display = 'flex'; el.setAttribute('aria-hidden', 'false'); }
+  function closeModal(el) { el.style.display = 'none'; el.setAttribute('aria-hidden', 'true'); }
+
+  /*************** EXPORT / PRINT ***************/
+  $('#exportBtn').addEventListener('click', () => {
+    const printable = document.createElement('div');
+    printable.style.padding = '20px';
+    printable.style.fontFamily = 'Georgia, serif';
+    printable.innerHTML = `<h2>Digest — ${todayISO()}</h2>`;
+    currentDigest.forEach(a => {
+      const div = document.createElement('div'); div.style.marginBottom = '12px';
+      div.innerHTML = `
+        <strong>${escapeHTML(a.title)}</strong><br>
+        <span>${escapeHTML(a.outletName)} • ${escapeHTML(a.published)}</span><br>
+        <em>${escapeHTML(a.channel)}</em><p>${escapeHTML(a.snippet)}</p><hr>`;
+      printable.appendChild(div);
+    });
+    document.body.appendChild(printable);
+    window.print();
+    document.body.removeChild(printable);
+  });
+
+  /*************** BOOTSTRAP ***************/
+  initTabs();
+  initFilters();
+  renderOutletsList();
+  renderHistory();
+
+  // Initial generate to seed
+  const initialDate = todayISO();
+  const initialArticles = simulateArticlesFromOutlets(OUTLETS, 60);
+  LocalCloud.saveDigest(initialDate, initialArticles);
+  currentDigest = initialArticles;
+  renderDigest();
+  renderHistory();
+  </script>
+</body>
+</html>
