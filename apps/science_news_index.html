@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Science • Technology • AI Innovation News</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#0b1724; --text:#f5f7fb; --muted:rgba(245,247,251,.78);
+    --card:#111827; --card2:#0f1a2c;
+    --accent:#7c3aed; /* purple for innovation */
+    --chip:rgba(124,58,237,.16);
+    --border:rgba(148,163,184,.28);
+    --shadow:0 18px 46px rgba(0,0,0,.42);
+    --radius:16px;
+    --maxw:980px;
+  }
+  body.light{
+    --bg:#f5f6fb; --text:#0b1220; --muted:rgba(11,18,32,.76);
+    --card:#ffffff; --card2:#f3f5ff;
+    --chip:rgba(124,58,237,.10);
+    --border:rgba(15,23,42,.18);
+    --shadow:0 12px 30px rgba(11,18,32,.12);
+  }
+  html,body{height:100%}
+  body{
+    margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background: radial-gradient(1200px 700px at 50% -10%, rgba(124,58,237,.25), transparent 55%),
+                linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 75%, #000 25%));
+    color:var(--text);
+  }
+  header{
+    padding:16px 14px 12px;
+    text-align:center;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 85%, #000 15%), var(--accent));
+    color:#fff;
+    font-weight:800;
+    letter-spacing:.04em;
+    position:sticky; top:0; z-index:50;
+    box-shadow: 0 10px 28px rgba(0,0,0,.25);
+  }
+  header .sub{
+    display:block; font-weight:600; letter-spacing:0;
+    opacity:.92; margin-top:6px; font-size:.92rem;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:14px 12px 24px;}
+  .tabs{
+    display:flex; gap:10px; overflow-x:auto; padding:10px 6px 12px;
+    border-bottom:1px solid var(--border);
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    flex:0 0 auto;
+    padding:10px 14px;
+    border-radius:999px;
+    border:1px solid transparent;
+    background: rgba(255,255,255,.06);
+    color:var(--text);
+    cursor:pointer;
+    font-weight:700;
+    font-size:1rem;
+    transition: transform .1s ease, background .2s ease, border-color .2s ease;
+    user-select:none;
+  }
+  body.light .tab{background: rgba(11,18,32,.04)}
+  .tab:hover{transform: translateY(-1px)}
+  .tab.active{
+    background: var(--accent);
+    color:#fff;
+    border-color: color-mix(in srgb, var(--accent) 65%, #000 35%);
+  }
+  .row{
+    display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    margin:12px 6px 0;
+    color:var(--muted);
+    font-size:.95rem;
+  }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    background: rgba(255,255,255,.06);
+    border:1px solid var(--border);
+  }
+  body.light .pill{background: rgba(11,18,32,.04)}
+  .pill input[type="text"]{
+    width:220px; max-width:60vw;
+    background: transparent; border:none; outline:none;
+    color:var(--text); font-weight:700;
+  }
+  .pill .smallbtn{
+    border:none; background:transparent; color:var(--text); cursor:pointer;
+    font-weight:800; opacity:.9;
+  }
+  .card{
+    margin:14px 6px;
+    padding:18px 18px 14px;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--card), color-mix(in srgb, var(--card) 82%, #000 18%));
+    box-shadow: var(--shadow);
+    border:1px solid var(--border);
+    cursor:pointer;
+    transition: transform .12s ease, box-shadow .2s ease, opacity .35s ease;
+  }
+  body.light .card{
+    background: linear-gradient(180deg, var(--card), var(--card2));
+  }
+  .card:hover{transform: translateY(-1px)}
+  .title{
+    font-size:1.35rem;
+    font-weight:900;
+    line-height:1.22;
+    margin:0 0 10px;
+  }
+  .desc{
+    font-size:1.05rem;
+    line-height:1.55;
+    margin:0;
+    color:var(--muted);
+  }
+  .meta{
+    margin-top:12px;
+    display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    font-size:.92rem;
+  }
+  .chip{
+    padding:4px 10px;
+    border-radius:999px;
+    background: var(--chip);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-weight:800;
+  }
+  .chip.dim{opacity:.85; font-weight:750}
+  .controls{
+    margin:14px 6px 6px;
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between;
+  }
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap}
+  button{
+    padding:10px 16px;
+    border-radius:999px;
+    border:none;
+    background: var(--accent);
+    color:#fff;
+    font-weight:900;
+    font-size:1rem;
+    cursor:pointer;
+    box-shadow: 0 10px 26px rgba(0,0,0,.25);
+    transition: transform .1s ease, box-shadow .2s ease;
+  }
+  button:hover{transform: translateY(-1px)}
+  button.secondary{
+    background: rgba(255,255,255,.10);
+    border:1px solid var(--border);
+    box-shadow:none;
+    color:var(--text);
+  }
+  body.light button.secondary{background: rgba(11,18,32,.05)}
+  .panel{
+    margin:10px 6px 0;
+    padding:14px;
+    border-radius:14px;
+    border:1px solid var(--border);
+    background: rgba(0,0,0,.18);
+    display:none;
+  }
+  body.light .panel{background: rgba(11,18,32,.03)}
+  .panel h3{margin:0 0 10px; font-size:1.05rem}
+  .panel .item{padding:10px 0; border-bottom:1px solid var(--border)}
+  .panel .item:last-child{border-bottom:none}
+  .panel a{color:#93c5fd; text-decoration:none; font-weight:800}
+  .panel a:hover{text-decoration:underline}
+  .grid2{display:grid; grid-template-columns: 1fr; gap:10px}
+  @media (min-width: 760px){
+    .grid2{grid-template-columns: 1fr 1fr}
+  }
+  select, textarea{
+    width:100%;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background: rgba(255,255,255,.06);
+    color:var(--text);
+    padding:10px 12px;
+    font-weight:750;
+    outline:none;
+  }
+  body.light select, body.light textarea{background: rgba(11,18,32,.04)}
+  textarea{min-height:84px; resize:vertical; font-weight:650}
+  label{display:block; font-weight:900; margin:6px 0 6px}
+  .note{color:var(--muted); font-size:.95rem; line-height:1.4}
+  .toast{
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 18px;
+    background: rgba(0,0,0,.82);
+    color: #fff;
+    border:1px solid rgba(255,255,255,.18);
+    padding:10px 14px;
+    border-radius: 999px;
+    font-weight:900;
+    z-index: 999;
+    display:none;
+    max-width: 92vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body.light .toast{background: rgba(11,18,32,.90)}
+</style>
+</head>
+<body>
+<header>
+  🧪 Science • 💻 Tech • 🤖 AI Innovation
+  <span class="sub">Fresh headlines + watchlist triggers • offline cache • swipe • trends</span>
+</header>
+
+<div class="wrap">
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-topic="all">All</div>
+    <div class="tab" data-topic="ai">AI</div>
+    <div class="tab" data-topic="tech">Tech</div>
+    <div class="tab" data-topic="science">Science</div>
+    <div class="tab" data-topic="space">Space</div>
+    <div class="tab" data-topic="trends">Trends</div>
+    <div class="tab" id="tabFav">⭐ Favorites</div>
+    <div class="tab" id="tabSettings">⚙️ Settings</div>
+    <div class="tab" id="tabTheme">🌙/☀️</div>
+    <div class="tab" id="tabFull">⛶</div>
+  </div>
+
+  <div class="row">
+    <div class="pill" title="Search titles/descriptions (client-side)">
+      🔎 <input id="q" type="text" placeholder="search (e.g., quantum, GPT, battery)"/>
+      <button class="smallbtn" id="clearQ" title="Clear">✕</button>
+    </div>
+    <div class="pill" title="Last refresh time">
+      ⏱ <span id="last">—</span>
+    </div>
+    <div class="pill" title="Tap refresh if you want fresh headlines right now">
+      🔄 <button class="smallbtn" id="refreshNow">Refresh</button>
+    </div>
+  </div>
+
+  <div class="card" id="newsCard" role="button" aria-label="Open article">
+    <h2 class="title" id="title">Loading headlines…</h2>
+    <p class="desc" id="desc"></p>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <div class="controls">
+    <div class="btnrow">
+      <button class="secondary" id="prevBtn">⬅ Prev</button>
+      <button class="secondary" id="nextBtn">Next ➡</button>
+    </div>
+    <div class="btnrow">
+      <button class="secondary" id="readBtn">🔊 Read</button>
+      <button class="secondary" id="saveBtn">⭐ Save</button>
+    </div>
+  </div>
+
+  <div class="panel" id="favoritesPanel"></div>
+  <div class="panel" id="settingsPanel"></div>
+  <div class="panel" id="trendsPanel"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================
+   STOPWORDS + TOKEN STOPS
+   ========================= */
+const stop = new Set([
+  "the","a","an","and","or","but","nor","so","yet",
+  "to","of","in","on","for","with","as","at","by","from","into","onto","over","under","up","down","out","off",
+  "about","above","below","between","through","during","before","after","within","without","around","across","per","via",
+  "i","me","my","mine","myself","you","your","yours","yourself","yourselves","we","us","our","ours","ourselves",
+  "they","them","their","theirs","themselves","he","him","his","himself","she","her","hers","herself","it","its","itself",
+  "this","that","these","those","there","here",
+  "is","are","was","were","be","been","being","am","do","does","did","doing","have","has","had","having",
+  "can","could","will","would","shall","should","may","might","must",
+  "get","gets","got","getting","make","makes","made","making",
+  "not","no","yes","yeah","yep","nope",
+  "if","then","than","because","while","when","where","who","whom","whose","what","which","why","how",
+  "all","any","both","each","few","more","most","other","some","such","only","own","same","too","very","just","also","still","even","ever","never","always","again","once",
+  "new","now","today","yesterday","tomorrow","much","many","less","least","lot","lots",
+  "rt","amp","link","news","update","updates","report","reports","said","says","say","according",
+  "u","ur"
+]);
+
+const tokenStop = new Set([
+  "im","ive","ill","id","youre","youve","youll","youd","were","weve","well","wed","theyre","theyve","theyll","theyd",
+  "hes","shes","its","thats","theres","whats","wheres","whens","whos","hows",
+  "lets","cant","wont","dont","doesnt","didnt","isnt","arent","wasnt","werent","havent","hasnt","hadnt",
+  "wouldnt","shouldnt","couldnt","mustnt","mightnt","aint","gonna","wanna","kinda","sorta",
+  "ok","okay","pls","please","thx","thanks","hey","hi","hello","yo","lol","lmao","omg","btw","fyi"
+]);
+
+/* =========================
+   SOURCES (edit anytime)
+   =========================
+   Tip: This app is resilient—if a feed fails, others still load.
+*/
+const DEFAULT_SOURCES = [
+  // Tech / Innovation
+  { url: "https://www.theverge.com/rss/index.xml", topicHint: "tech", outlet: "The Verge" },
+  { url: "https://feeds.arstechnica.com/arstechnica/index", topicHint: "tech", outlet: "Ars Technica" },
+
+  // Science / Space (often reliable)
+  { url: "https://www.sciencedaily.com/rss/top/science.xml", topicHint: "science", outlet: "ScienceDaily (Top Science)" },
+  { url: "https://www.sciencedaily.com/rss/top/technology.xml", topicHint: "tech", outlet: "ScienceDaily (Tech)" },
+  { url: "https://www.nasa.gov/rss/dyn/breaking_news.rss", topicHint: "space", outlet: "NASA (Breaking News)" },
+
+  // AI / research-y
+  { url: "https://www.technologyreview.com/feed/", topicHint: "ai", outlet: "MIT Technology Review" },
+  { url: "https://www.nature.com/subjects/artificial-intelligence.rss", topicHint: "ai", outlet: "Nature (AI subject)" },
+
+  // Fallback alt sources (sometimes blocked; keep optional)
+  // { url: "https://rsshub.app/mit/technologyreview", topicHint: "tech", outlet: "RSSHub (backup)" },
+];
+
+const LS = {
+  cache: "sciNews_cache_v1",
+  favs: "sciNews_favs_v1",
+  settings: "sciNews_settings_v1",
+  seen: "sciNews_seen_v1",
+  lastFetch: "sciNews_lastFetch_v1"
+};
+
+const DEFAULT_SETTINGS = {
+  refreshMinutes: 60,              // 15, 30, 60, 180, 360, 720
+  watchlist: "ai; quantum; battery; fusion; gpt; llm; chip; breakthrough",
+  watchMatchMode: "any",           // any | all
+  watchOnlyMode: false,            // if true, browsing list only shows keyword matches
+  toastAlerts: true,
+  browserNotifications: false,
+  maxItemsPerFeed: 18,
+  sources: DEFAULT_SOURCES
+};
+
+let settings = loadJSON(LS.settings, DEFAULT_SETTINGS);
+let allArticles = loadJSON(LS.cache, []);
+let articles = allArticles.slice();
+let index = 0;
+let currentTopic = "all";
+let lastSpoken = null;
+
+/* =========================
+   HELPERS
+   ========================= */
+function loadJSON(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return fallback;
+    return JSON.parse(raw);
+  }catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+function stripHtml(html){
+  const div = document.createElement("div");
+  div.innerHTML = html || "";
+  return (div.textContent || div.innerText || "").replace(/\s+/g," ").trim();
+}
+function normalizeText(s){
+  return (s||"").toLowerCase().replace(/&amp;/g,"&").replace(/\s+/g," ").trim();
+}
+function hashKey(a){
+  const k = (a.link || "") + "||" + (a.title || "");
+  return k.slice(0, 600);
+}
+function toast(msg){
+  if(!settings.toastAlerts) return;
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(t._tm);
+  t._tm = setTimeout(()=> t.style.display="none", 3200);
+}
+function fmtTime(ts){
+  if(!ts) return "—";
+  const d = new Date(ts);
+  return d.toLocaleString([], {month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit"});
+}
+
+/* =========================
+   TOPIC TAGGING
+   ========================= */
+const TOPIC_KEYWORDS = {
+  ai: ["ai","artificial intelligence","machine learning","ml","deep learning","neural","llm","gpt","transformer","generative","openai","anthropic","gemini","model","agent","alignment"],
+  tech: ["software","hardware","device","smartphone","laptop","chip","semiconductor","gpu","cpu","apple","google","microsoft","amazon","meta","tesla","cybersecurity","hack","breach","android","ios"],
+  science: ["study","research","scientists","paper","journal","biology","chemistry","physics","medicine","health","genetics","vaccine","trial","climate","ocean","energy","fusion","quantum","experiment"],
+  space: ["nasa","space","rocket","mars","moon","astronomy","telescope","asteroid","launch","spacex","satellite","cosmic","galaxy","star","planet","iss"]
+};
+
+function inferTopic(text){
+  const t = normalizeText(text);
+  // strong space first
+  for(const k of TOPIC_KEYWORDS.space){ if(t.includes(k)) return "space"; }
+  for(const k of TOPIC_KEYWORDS.ai){ if(t.includes(k)) return "ai"; }
+  for(const k of TOPIC_KEYWORDS.tech){ if(t.includes(k)) return "tech"; }
+  for(const k of TOPIC_KEYWORDS.science){ if(t.includes(k)) return "science"; }
+  return "science";
+}
+
+/* =========================
+   TOKENIZE + TRENDS
+   ========================= */
+function tokenize(text){
+  const s = normalizeText(text)
+    .replace(/['’]/g,"")
+    .replace(/[^a-z0-9\s]/g," ");
+  return s.split(/\s+/g)
+    .filter(Boolean)
+    .filter(w => w.length > 2 && !stop.has(w) && !tokenStop.has(w));
+}
+function buildTrends(list){
+  const freq = new Map();
+  for(const a of list.slice(0, 60)){
+    const words = tokenize((a.title||"") + " " + (a.descText||""));
+    for(const w of words){
+      freq.set(w, (freq.get(w)||0) + 1);
+    }
+  }
+  const top = [...freq.entries()]
+    .sort((a,b)=> b[1]-a[1])
+    .slice(0, 18);
+  const panel = document.getElementById("trendsPanel");
+  panel.innerHTML = "<h3>📈 Trends (top words)</h3>" +
+    (top.length
+      ? `<div class="meta">${top.map(([w,c])=>`<span class="chip">${w} · ${c}</span>`).join("")}</div>
+         <p class="note" style="margin-top:10px">Tip: tap a word below to search it.</p>
+         <div class="meta">${top.map(([w])=>`<span class="chip dim" style="cursor:pointer" data-w="${w}">🔎 ${w}</span>`).join("")}</div>`
+      : `<p class="note">Not enough data yet—refresh to load headlines.</p>`);
+  panel.querySelectorAll("[data-w]").forEach(el=>{
+    el.onclick = ()=>{ document.getElementById("q").value = el.dataset.w; applyAllFilters(); };
+  });
+}
+
+/* =========================
+   FETCH RSS (via AllOrigins)
+   ========================= */
+async function fetchRSS(source){
+  const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(source.url);
+  const res = await fetch(proxy, {cache:"no-store"});
+  if(!res.ok) throw new Error("Network error");
+  const data = await res.json();
+  const xml = new DOMParser().parseFromString(data.contents, "text/xml");
+  const items = [...xml.querySelectorAll("item")];
+
+  return items.slice(0, settings.maxItemsPerFeed).map(item=>{
+    const title = item.querySelector("title")?.textContent?.trim() || "(no title)";
+    const descRaw = item.querySelector("description")?.textContent || "";
+    const link = item.querySelector("link")?.textContent?.trim() || "";
+    const pubDate = item.querySelector("pubDate")?.textContent || "";
+    const descText = stripHtml(descRaw).slice(0, 520);
+    const combined = title + " " + descText;
+    const topic = source.topicHint || inferTopic(combined);
+    return {
+      title,
+      descRaw,
+      descText,
+      link,
+      pubDate,
+      ts: Date.parse(pubDate || "") || Date.now(),
+      outlet: source.outlet || "Source",
+      topic
+    };
+  });
+}
+
+async function loadNews(){
+  const sources = (settings.sources && settings.sources.length) ? settings.sources : DEFAULT_SOURCES;
+
+  const temp = [];
+  for(const s of sources){
+    try{
+      const items = await fetchRSS(s);
+      temp.push(...items);
+    }catch(e){
+      console.warn("RSS error:", s.url, e);
+    }
+  }
+
+  if(!temp.length){
+    if(!allArticles.length) showFallback();
+    return;
+  }
+
+  // De-dupe
+  const seen = new Set();
+  const deduped = [];
+  for(const a of temp){
+    const key = hashKey(a);
+    if(seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(a);
+  }
+
+  // Newest first
+  deduped.sort((a,b)=> (b.ts||0) - (a.ts||0));
+
+  // Save cache
+  allArticles = deduped;
+  saveJSON(LS.cache, allArticles);
+  saveJSON(LS.lastFetch, Date.now());
+
+  // Keyword trigger check
+  handleWatchlistTriggers(allArticles);
+
+  // Re-apply filters + render
+  applyAllFilters();
+  index = 0;
+  showArticle(+1);
+
+  document.getElementById("last").textContent = fmtTime(Date.now());
+  toast("Updated headlines ✨");
+}
+
+/* =========================
+   WATCHLIST TRIGGERS
+   ========================= */
+function parseWatchlist(){
+  return (settings.watchlist || "")
+    .split(/[;,|\n]/g)
+    .map(s=>s.trim())
+    .filter(Boolean);
+}
+function matchesWatchlist(article){
+  const keys = parseWatchlist();
+  if(!keys.length) return {match:false, hits:[]};
+
+  const hay = normalizeText((article.title||"") + " " + (article.descText||""));
+  const hits = keys.filter(k => hay.includes(normalizeText(k)));
+
+  if(settings.watchMatchMode === "all"){
+    return {match: hits.length === keys.length, hits};
+  }
+  return {match: hits.length > 0, hits};
+}
+function handleWatchlistTriggers(latest){
+  // track "seen" so we only alert on truly new items
+  const seenMap = loadJSON(LS.seen, {});
+  const now = Date.now();
+  const newlyMatched = [];
+
+  for(const a of latest.slice(0, 60)){
+    const key = hashKey(a);
+    if(seenMap[key]) continue;
+    const m = matchesWatchlist(a);
+    if(m.match){
+      newlyMatched.push({a, hits:m.hits});
+    }
+    seenMap[key] = now;
+  }
+
+  // prune old entries (keep last ~7 days)
+  const cutoff = now - 7*24*60*60*1000;
+  for(const k of Object.keys(seenMap)){
+    if(seenMap[k] < cutoff) delete seenMap[k];
+  }
+  saveJSON(LS.seen, seenMap);
+
+  if(!newlyMatched.length) return;
+
+  const top = newlyMatched[0];
+  toast(`Watchlist hit: ${top.hits.slice(0,3).join(", ")} — ${top.a.title}`);
+
+  if(settings.browserNotifications && "Notification" in window){
+    if(Notification.permission === "granted"){
+      new Notification("Science/Tech Watchlist Hit", { body: top.a.title });
+    }
+  }
+}
+
+/* =========================
+   FILTERING + SEARCH
+   ========================= */
+function applyAllFilters(){
+  const q = normalizeText(document.getElementById("q").value);
+  // topic filter
+  let filtered = (currentTopic === "all" || currentTopic === "trends")
+    ? allArticles.slice()
+    : allArticles.filter(a => a.topic === currentTopic);
+
+  // keyword-only mode
+  if(settings.watchOnlyMode){
+    filtered = filtered.filter(a => matchesWatchlist(a).match);
+  }
+
+  // search filter
+  if(q){
+    filtered = filtered.filter(a => normalizeText(a.title + " " + a.descText).includes(q));
+  }
+
+  articles = filtered;
+  if(index >= articles.length) index = 0;
+
+  // trends panel uses *filtered all* or full, depending on tab
+  buildTrends(allArticles);
+}
+
+function showFallback(){
+  document.getElementById("title").textContent = "Couldn’t load headlines right now.";
+  document.getElementById("desc").textContent =
+    "Check your connection, then tap Refresh. If you’ve opened this app before, cached headlines should appear shortly.";
+  document.getElementById("meta").innerHTML = "";
+}
+
+/* =========================
+   RENDER
+   ========================= */
+function showArticle(direction=1){
+  const card = document.getElementById("newsCard");
+  const titleEl = document.getElementById("title");
+  const descEl = document.getElementById("desc");
+  const metaEl = document.getElementById("meta");
+
+  if(currentTopic === "trends"){
+    // hide card content + show trends panel
+    document.getElementById("trendsPanel").style.display = "block";
+    document.getElementById("favoritesPanel").style.display = "none";
+    document.getElementById("settingsPanel").style.display = "none";
+    card.style.display = "none";
+    return;
+  }else{
+    document.getElementById("trendsPanel").style.display = "none";
+    card.style.display = "block";
+  }
+
+  if(!articles.length){ showFallback(); return; }
+
+  card.style.opacity = 0;
+  card.style.transform = `translateX(${direction*34}px)`;
+
+  setTimeout(()=>{
+    const a = articles[index];
+    titleEl.textContent = a.title;
+    descEl.textContent = a.descText || "";
+
+    const watch = matchesWatchlist(a);
+    const topicLabel =
+      a.topic === "ai" ? "AI" :
+      a.topic === "tech" ? "Tech" :
+      a.topic === "space" ? "Space" : "Science";
+
+    metaEl.innerHTML = `
+      <span class="chip">${a.outlet || "Source"}</span>
+      <span class="chip dim">${topicLabel}</span>
+      ${a.pubDate ? `<span class="chip dim">${new Date(a.ts).toLocaleDateString([], {month:"short", day:"2-digit"})}</span>` : ""}
+      ${watch.match ? `<span class="chip">🔥 ${watch.hits.slice(0,3).join(", ")}</span>` : ""}
+    `;
+
+    card.style.opacity = 1;
+    card.style.transform = "translateX(0)";
+  }, 220);
+}
+
+/* =========================
+   FAVORITES
+   ========================= */
+function saveFavorite(){
+  if(!articles.length) return;
+  const favs = loadJSON(LS.favs, []);
+  favs.unshift(articles[index]);
+  // de-dupe by link/title
+  const seen = new Set();
+  const cleaned = [];
+  for(const f of favs){
+    const k = hashKey(f);
+    if(seen.has(k)) continue;
+    seen.add(k);
+    cleaned.push(f);
+  }
+  saveJSON(LS.favs, cleaned.slice(0, 120));
+  toast("Saved to Favorites ⭐");
+}
+function toggleFavorites(){
+  const p = document.getElementById("favoritesPanel");
+  const s = document.getElementById("settingsPanel");
+  const t = document.getElementById("trendsPanel");
+  const card = document.getElementById("newsCard");
+
+  t.style.display = "none";
+  s.style.display = "none";
+
+  if(p.style.display === "block"){
+    p.style.display = "none";
+    card.style.display = "block";
+    return;
+  }
+
+  const favs = loadJSON(LS.favs, []);
+  p.innerHTML = "<h3>⭐ Favorites</h3>" + (
+    favs.length
+      ? favs.slice(0, 40).map(f=>`
+        <div class="item">
+          <div style="font-weight:900; margin-bottom:6px">${f.title}</div>
+          <div class="note">${(f.descText||"").slice(0,220)}${(f.descText||"").length>220?"…":""}</div>
+          ${f.link ? `<div style="margin-top:8px"><a href="${f.link}" target="_blank" rel="noopener">Open ↗</a></div>` : ""}
+        </div>
+      `).join("")
+      : `<p class="note">No saved articles yet.</p>`
+  );
+  p.style.display = "block";
+  card.style.display = "none";
+}
+
+/* =========================
+   SETTINGS PANEL
+   ========================= */
+function requestNotifyPerm(){
+  if(!("Notification" in window)) return toast("Notifications not supported here.");
+  Notification.requestPermission().then(p=>{
+    toast("Notifications: " + p);
+  });
+}
+
+function toggleSettings(){
+  const p = document.getElementById("favoritesPanel");
+  const t = document.getElementById("trendsPanel");
+  const s = document.getElementById("settingsPanel");
+  const card = document.getElementById("newsCard");
+
+  p.style.display = "none";
+  t.style.display = "none";
+
+  if(s.style.display === "block"){
+    s.style.display = "none";
+    card.style.display = "block";
+    return;
+  }
+
+  s.innerHTML = `
+    <h3>⚙️ Settings</h3>
+    <div class="grid2">
+      <div>
+        <label>Auto-refresh</label>
+        <select id="refreshSel">
+          ${[15,30,60,180,360,720].map(m => `<option value="${m}" ${settings.refreshMinutes===m?"selected":""}>Every ${m===60?"1 hour":m+" min"}</option>`).join("")}
+        </select>
+        <p class="note">Tip: hourly is great for “news”, 3–6 hours saves bandwidth.</p>
+
+        <label style="margin-top:10px">Watchlist keywords (semicolon or comma separated)</label>
+        <textarea id="watchTxt" placeholder="ai; quantum; battery; gpt; llm">${settings.watchlist||""}</textarea>
+
+        <label style="margin-top:10px">Watchlist match mode</label>
+        <select id="matchSel">
+          <option value="any" ${settings.watchMatchMode==="any"?"selected":""}>ANY keyword matches</option>
+          <option value="all" ${settings.watchMatchMode==="all"?"selected":""}>ALL keywords required</option>
+        </select>
+
+        <label style="margin-top:10px">Display mode</label>
+        <select id="watchOnlySel">
+          <option value="0" ${!settings.watchOnlyMode?"selected":""}>Show all headlines</option>
+          <option value="1" ${settings.watchOnlyMode?"selected":""}>Show only watchlist matches</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Alerts</label>
+        <select id="toastSel">
+          <option value="1" ${settings.toastAlerts?"selected":""}>On-screen toast alerts</option>
+          <option value="0" ${!settings.toastAlerts?"selected":""}>No toast alerts</option>
+        </select>
+
+        <label style="margin-top:10px">Browser notifications</label>
+        <select id="notifSel">
+          <option value="0" ${!settings.browserNotifications?"selected":""}>Off</option>
+          <option value="1" ${settings.browserNotifications?"selected":""}>On (requires permission)</option>
+        </select>
+        <button class="secondary" id="permBtn" style="margin-top:10px; width:100%">Request Permission</button>
+
+        <label style="margin-top:10px">Sources (one per line, format: Outlet | URL)</label>
+        <textarea id="sourcesTxt" placeholder="Outlet | https://example.com/rss">
+${(settings.sources||DEFAULT_SOURCES).map(s => `${s.outlet} | ${s.url}`).join("\n")}
+        </textarea>
+        <p class="note">You can add/remove feeds here anytime.</p>
+      </div>
+    </div>
+
+    <div class="controls" style="margin:14px 0 0">
+      <div class="btnrow">
+        <button class="secondary" id="cancelSet">Close</button>
+      </div>
+      <div class="btnrow">
+        <button id="saveSet">Save</button>
+      </div>
+    </div>
+  `;
+
+  s.style.display = "block";
+  card.style.display = "none";
+
+  s.querySelector("#permBtn").onclick = requestNotifyPerm;
+  s.querySelector("#cancelSet").onclick = toggleSettings;
+  s.querySelector("#saveSet").onclick = ()=>{
+    const refreshMinutes = parseInt(s.querySelector("#refreshSel").value, 10);
+    const watchlist = s.querySelector("#watchTxt").value || "";
+    const watchMatchMode = s.querySelector("#matchSel").value;
+    const watchOnlyMode = s.querySelector("#watchOnlySel").value === "1";
+    const toastAlerts = s.querySelector("#toastSel").value === "1";
+    const browserNotifications = s.querySelector("#notifSel").value === "1";
+
+    // parse sources textarea
+    const raw = (s.querySelector("#sourcesTxt").value || "").split("\n")
+      .map(l=>l.trim()).filter(Boolean);
+
+    const parsedSources = raw.map(line=>{
+      const parts = line.split("|").map(x=>x.trim());
+      if(parts.length >= 2){
+        return { outlet: parts[0] || "Source", url: parts.slice(1).join("|").trim(), topicHint:"" };
+      }
+      return null;
+    }).filter(Boolean);
+
+    settings.refreshMinutes = refreshMinutes;
+    settings.watchlist = watchlist;
+    settings.watchMatchMode = watchMatchMode;
+    settings.watchOnlyMode = watchOnlyMode;
+    settings.toastAlerts = toastAlerts;
+    settings.browserNotifications = browserNotifications;
+    settings.sources = parsedSources.length ? parsedSources : DEFAULT_SOURCES;
+
+    saveJSON(LS.settings, settings);
+    startAutoRefresh(); // restart timer
+    applyAllFilters();
+    showArticle(+1);
+
+    toast("Settings saved ✅");
+    toggleSettings();
+  };
+}
+
+/* =========================
+   NAV + READ ALOUD
+   ========================= */
+function next(){ if(!articles.length) return; index = (index+1)%articles.length; showArticle(+1); }
+function prev(){ if(!articles.length) return; index = (index-1+articles.length)%articles.length; showArticle(-1); }
+
+function readAloud(){
+  if(!articles.length) return;
+  const a = articles[index];
+  const text = `${a.title}. ${a.descText||""}`;
+  if(lastSpoken === text){
+    speechSynthesis.cancel();
+    lastSpoken = null;
+    toast("Speech stopped.");
+    return;
+  }
+  lastSpoken = text;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+  toast("Reading aloud…");
+}
+
+/* =========================
+   AUTO REFRESH
+   ========================= */
+let refreshTimer = null;
+function startAutoRefresh(){
+  if(refreshTimer) clearInterval(refreshTimer);
+  const ms = Math.max(5, settings.refreshMinutes) * 60 * 1000;
+  refreshTimer = setInterval(loadNews, ms);
+}
+function maybeInitialRefresh(){
+  const last = loadJSON(LS.lastFetch, 0);
+  const ms = Math.max(5, settings.refreshMinutes) * 60 * 1000;
+  const stale = !last || (Date.now() - last) > ms;
+  if(stale) loadNews();
+  document.getElementById("last").textContent = last ? fmtTime(last) : "—";
+}
+
+/* =========================
+   WIRING UI
+   ========================= */
+document.getElementById("nextBtn").onclick = next;
+document.getElementById("prevBtn").onclick = prev;
+document.getElementById("readBtn").onclick = readAloud;
+document.getElementById("saveBtn").onclick = saveFavorite;
+
+document.getElementById("newsCard").addEventListener("click", ()=>{
+  if(currentTopic === "trends") return;
+  if(!articles.length) return;
+  const a = articles[index];
+  if(a.link) window.open(a.link, "_blank", "noopener");
+});
+
+document.getElementById("refreshNow").onclick = loadNews;
+
+document.getElementById("q").addEventListener("input", ()=>{
+  applyAllFilters();
+  index = 0;
+  showArticle(+1);
+});
+document.getElementById("clearQ").onclick = ()=>{
+  document.getElementById("q").value = "";
+  applyAllFilters();
+  index = 0;
+  showArticle(+1);
+};
+
+document.getElementById("tabFav").onclick = toggleFavorites;
+document.getElementById("tabSettings").onclick = toggleSettings;
+document.getElementById("tabTheme").onclick = ()=> document.body.classList.toggle("light");
+document.getElementById("tabFull").onclick = ()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+};
+
+// Swipe navigation (mobile)
+let startX = 0;
+document.addEventListener("touchstart", e=>{
+  if(!e.touches.length) return;
+  startX = e.touches[0].clientX;
+},{passive:true});
+document.addEventListener("touchend", e=>{
+  if(!e.changedTouches.length) return;
+  const dx = e.changedTouches[0].clientX - startX;
+  if(dx > 40) prev();
+  if(dx < -40) next();
+},{passive:true});
+
+// Tabs
+document.querySelectorAll(".tab[data-topic]").forEach(tab=>{
+  tab.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab[data-topic]").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    currentTopic = tab.dataset.topic;
+    // hide panels when switching
+    document.getElementById("favoritesPanel").style.display = "none";
+    document.getElementById("settingsPanel").style.display = "none";
+    applyAllFilters();
+    index = 0;
+    showArticle(+1);
+  });
+});
+
+// Visibility refresh (nice for “a few times a day” usage)
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState === "visible"){
+    maybeInitialRefresh();
+  }
+});
+
+// Notifications toggle safety
+(function ensureNotificationState(){
+  if(settings.browserNotifications && ("Notification" in window) && Notification.permission === "default"){
+    // don’t auto-prompt; user can request in settings
+  }
+})();
+
+/* =========================
+   BOOT
+   ========================= */
+applyAllFilters();
+showArticle(+1);
+startAutoRefresh();
+maybeInitialRefresh();
+</script>
+</body>
+</html>
