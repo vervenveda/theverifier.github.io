@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra-Polished Live News Dashboard</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; background:#f7f9fc; color:#333; }
+  header { background:#1f2937; color:#fff; padding:1rem; text-align:center; }
+  main { max-width:1200px; margin:2rem auto; padding:0 1rem; }
+  h1 { margin:0; }
+  .top-story { background:#1e3a8a; color:#fff; padding:1rem; border-radius:8px; margin-bottom:2rem; }
+  .top-story h2 { margin:0 0 0.5rem 0; font-size:1.2rem; }
+  .issue { margin-bottom:2rem; border-radius:8px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+  .summary-card { padding:1rem; border-left:6px solid; margin-bottom:1rem; cursor:pointer; }
+  .summary-card h3 { margin:0.5rem 0; font-size:1rem; display:flex; align-items:center; }
+  .summary-card h3 img { width:60px; height:40px; object-fit:cover; margin-right:0.5rem; border-radius:4px; }
+  .issue-content { display:none; padding:1rem; border-top:1px solid #e5e7eb; }
+  .feed-item { border-bottom:1px solid #e5e7eb; padding:0.5rem 0; display:flex; align-items:flex-start; }
+  .feed-item:last-child { border-bottom:none; }
+  .feed-item img { width:100px; height:60px; object-fit:cover; margin-right:1rem; border-radius:4px; }
+  .feed-item div { flex:1; }
+  .feed-item h4 { margin:0; font-size:1rem; }
+  .feed-item p { margin:0.2rem 0 0 0; font-size:0.85rem; color:#555; }
+  a { color:#1e40af; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<header>
+  <h1> Live News Dashboard</h1>
+  <p>Top stories and live news across 10 major issues</p>
+</header>
+<main id="dashboard">
+  <div id="top-story" class="top-story"><p>Loading top story...</p></div>
+</main>
+
+<script>
+const issues = [
+  { title: "Climate Change and Extreme Weather", color:"#16a34a", summary:"Rising global temperatures and extreme weather events demand urgent action.", sources:["https://www.ipcc.ch/rss.xml","https://www.un.org/en/climatechange/news/feed"] },
+  { title: "AI and Automation Ethics", color:"#f59e0b", summary:"AI raises ethical questions and societal impact that require careful consideration.", sources:["https://www.technologyreview.com/feed/","https://www.weforum.org/rss/"] },
+  { title: "Global Economic Inequality", color:"#ef4444", summary:"Economic disparities continue to widen globally, highlighting systemic challenges.", sources:["https://www.worldbank.org/en/news/press-release/rss","https://www.imf.org/en/News/Feed"] },
+  { title: "Book Bans and Intellectual Freedom", color:"#3b82f6", summary:"Censorship and book bans threaten intellectual freedom worldwide.", sources:["https://www.ala.org/news/rss.xml","https://pen.org/feed/"] },
+  { title: "Gene Editing and Human Enhancement", color:"#8b5cf6", summary:"CRISPR advances raise ethical questions about human enhancement.", sources:["https://www.nationalacademies.org/news/rss.xml","https://www.nature.com/subjects/genome-editing.rss"] },
+  { title: "Social Media, Misinformation, and Free Speech", color:"#10b981", summary:"Misinformation spreads rapidly online, challenging societal responsibility.", sources:["https://www.pewresearch.org/feed/","https://www.eff.org/rss.xml"] },
+  { title: "Transgender Athletes and Fairness in Sports", color:"#f97316", summary:"Debates over fairness and inclusion continue in competitive sports.", sources:["https://olympics.com/rss.xml","https://www.nbcnews.com/section/olympics/rss.xml"] },
+  { title: "Cancel Culture and Public Accountability", color:"#ec4899", summary:"Public shaming and cancel culture raise questions about accountability and justice.", sources:["https://www.theguardian.com/world/rss","https://www.nytimes.com/svc/collections/rss/"] },
+  { title: "Labor Rights and the Gig Economy", color:"#6366f1", summary:"Gig economy workers fight for fair compensation and protections.", sources:["https://www.economicpolicyinstitute.org/feed","https://www.ft.com/?format=rss"] },
+  { title: "Global Health and Pandemic Preparedness", color:"#0ea5e9", summary:"Global health threats highlight the need for coordinated pandemic preparedness.", sources:["https://www.who.int/feeds/entity/csr/don/en/rss.xml","https://www.cidrap.umn.edu/rss.xml"] }
+];
+
+const dashboard = document.getElementById('dashboard');
+const topStoryDiv = document.getElementById('top-story');
+
+// --- Helper: fetch RSS via rss2json ---
+async function fetchRSS(url) {
+  try {
+    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    return data.items.slice(0,5);
+  } catch(e) {
+    console.error("RSS fetch error:",e);
+    return [];
+  }
+}
+
+// --- Load dashboard ---
+async function loadDashboard() {
+  let topStorySet = false;
+
+  for(const issue of issues){
+    const div = document.createElement('div');
+    div.className = 'issue';
+    
+    // Fetch news for issue
+    let news = [];
+    for(const src of issue.sources){
+      const items = await fetchRSS(src);
+      news = news.concat(items);
+    }
+    if(news.length===0) news=[{title:"No news available", link:"#", pubDate:"", description:""}];
+    
+    // Top 1-2 stories for summary card
+    const summaryHTML = news.slice(0,2).map(item=>{
+      const img = item.thumbnail || item.enclosure?.link || 'https://via.placeholder.com/60x40?text=No+Image';
+      const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : '';
+      return `<h3><img loading="lazy" src="${img}" alt="img"><a href="${item.link}" target="_blank">${item.title}</a></h3><p style="font-size:0.8rem; color:#555;">${date}</p>`;
+    }).join("");
+
+    div.innerHTML = `
+      <div class="summary-card" style="border-left-color:${issue.color}">
+        <p>${issue.summary}</p>
+        ${summaryHTML}
+        <span class="read-more">View Full Feed ▼</span>
+      </div>
+      <div class="issue-content"></div>
+    `;
+    dashboard.appendChild(div);
+
+    const summaryCard = div.querySelector('.summary-card');
+    const contentDiv = div.querySelector('.issue-content');
+    const readMore = div.querySelector('.read-more');
+
+    readMore.addEventListener('click', ()=>{
+      const visible = contentDiv.style.display==='block';
+      contentDiv.style.display = visible?'none':'block';
+      readMore.textContent = visible?'View Full Feed ▼':'Hide Full Feed ▲';
+    });
+
+    // Fill full feed
+    contentDiv.innerHTML = "";
+    news.forEach(item=>{
+      const img = item.thumbnail || item.enclosure?.link || 'https://via.placeholder.com/100x60?text=No+Image';
+      const date = item.pubDate ? new Date(item.pubDate).toLocaleString() : '';
+      const feedItem = document.createElement('div');
+      feedItem.className = 'feed-item';
+      feedItem.innerHTML = `
+        <img loading="lazy" src="${img}" alt="img">
+        <div>
+          <h4><a href="${item.link}" target="_blank">${item.title}</a></h4>
+          <p>${date}</p>
+          <p>${item.description || ""}</p>
+        </div>
+      `;
+      contentDiv.appendChild(feedItem);
+    });
+
+    // Set top story (first story from first issue)
+    if(!topStorySet && news.length>0){
+      const item = news[0];
+      const img = item.thumbnail || item.enclosure?.link || 'https://via.placeholder.com/150x80?text=No+Image';
+      const date = item.pubDate ? new Date(item.pubDate).toLocaleString() : '';
+      topStoryDiv.innerHTML = `
+        <h2>Top Story: <a href="${item.link}" target="_blank">${item.title}</a></h2>
+        <p>${date}</p>
+        <img loading="lazy" src="${img}" alt="img" style="width:100%; max-height:200px; object-fit:cover; border-radius:6px; margin-top:0.5rem;">
+        <p>${item.description || ""}</p>
+      `;
+      topStorySet = true;
+    }
+  }
+}
+
+// --- Auto-refresh daily ---
+function dailyRefresh(){
+  loadDashboard();
+  setInterval(loadDashboard,24*60*60*1000);
+}
+
+dailyRefresh();
+</script>
+</body>
+</html>
