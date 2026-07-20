@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ultimate Campaign Search Gate</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+  :root{
+    --red:#C41313;
+    --blue:#1166C3;
+    --white:#FFFFFF;
+    --black:#000000;
+    --muted:#444444;
+    --radius-lg:21px;
+    --radius-md:11px;
+    --gap:14px;
+  }
+  *{box-sizing:border-box;}
+
+  body{
+    margin:7px;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:transparent;
+    color:var(--black);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .campaign-search-shell{
+    width:100%;
+    max-width:1111px;
+  }
+
+  .campaign-search{
+    background:var(--white);
+    border-radius:var(--radius-lg);
+    border:1px solid var(--blue);
+    box-shadow:7px 11px 24px rgba(0,0,0,.16);
+    padding:24px;
+  }
+
+  .campaign-search-header{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin-bottom:24px;
+  }
+
+  .campaign-badge{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,#ffffff,#C41313 55%,#7a0707 90%);
+    box-shadow:0 6px 14px rgba(196,19,19,.55);
+    flex-shrink:0;
+  }
+
+  .campaign-search-title{
+    font-size:24px;
+    font-weight:777;
+    color:var(--red);
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+  }
+
+  .campaign-search-sub{
+    font-size:24px;
+    color:var(--muted);
+  }
+
+  form{margin-top:11px;}
+
+  .field-row{
+    display:flex;
+    gap:11px;
+    flex-wrap:wrap;
+  }
+  .field-row > *{
+    flex:1 1 222px;
+  }
+
+  .campaign-input,
+  .campaign-select{
+    width:100%;
+    padding:11px 24px;
+    border-radius:var(--radius-md);
+    border:1px solid #cccccc;
+    font-size:24px;
+    color:var(--black);
+    background:var(--white);
+  }
+
+  .campaign-input:focus-visible,
+  .campaign-select:focus-visible{
+    outline:2px solid var(--blue);
+    outline-offset:2px;
+    border-color:var(--blue);
+  }
+
+  .campaign-button{
+    width:100%;
+    padding:11px 14px;
+    border-radius:var(--radius-md);
+    border:none;
+    font-size:24px;
+    font-weight:666;
+    cursor:pointer;
+    background:linear-gradient(90deg,var(--red),var(--blue));
+    color:var(--white);
+    box-shadow:0 11px 24px rgba(0,0,0,.25);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    margin-top:24px;
+  }
+
+  .campaign-button:hover{filter:brightness(1.05);}
+  .campaign-button:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+    box-shadow:none;
+  }
+
+  .campaign-caption{
+    margin-top:11px;
+    font-size:24px;
+    color:var(--muted);
+    line-height:1.44;
+  }
+
+  .engine-label{
+    font-size:24px;
+    color:var(--black);
+    font-weight:555;
+    margin-top:11px;
+  }
+
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:11px;
+    margin-top:11px;
+  }
+  .chip{
+    padding:11px 11px;
+    border-radius:7px;
+    border:1px solid #dddddd;
+    font-size:14px;
+    cursor:pointer;
+    background:#f7f7f7;
+    color:var(--black);
+  }
+  .chip:hover{
+    background:#ffffff;
+    border-color:var(--blue);
+    color:var(--blue);
+  }
+
+  @media (max-width:555px){
+    body{padding:14px;}
+    .campaign-search{padding:24px;}
+  }
+</style>
+</head>
+<body>
+
+<section class="campaign-search-shell">
+  <div class="campaign-search" aria-label="Ultimate internet search for Jennifer Pearl campaign">
+    <div class="campaign-search-header">
+      <div class="campaign-badge" aria-hidden="true"></div>
+      <div>
+        <div class="campaign-search-title">Plera Search Gate</div>
+        <div class="campaign-search-sub">
+          Choose an engine, choose a lane (jobs, legal, medical, maps, recipes, etc.), and open results in a new tab.
+        </div>
+      </div>
+    </div>
+
+    <form id="campaignSearchForm">
+      <div class="field-row">
+        <input
+          id="campaignQuery"
+          class="campaign-input"
+          type="search"
+          placeholder="Search (e.g. Florida voting rules, clean water, housing)…"
+          aria-label="Search the web"
+          required
+        >
+
+        <!-- Search engine picker -->
+        <select id="campaignEngine" class="campaign-select" aria-label="Choose search engine">
+          <optgroup label="Privacy & independent">
+            <option value="duckduckgo" selected>DuckDuckGo</option>
+            <option value="brave">Brave Search</option>
+            <option value="startpage">Startpage</option>
+            <option value="kagi">Kagi</option>
+            <option value="mojeek">Mojeek</option>
+            <option value="swisscows">Swisscows</option>
+            <option value="qwant">Qwant</option>
+            <option value="presearch">Presearch</option>
+          </optgroup>
+          <optgroup label="Major engines">
+            <option value="google">Google</option>
+            <option value="bing">Microsoft Bing</option>
+            <option value="yahoo">Yahoo! Search</option>
+            <option value="ask">Ask.com</option>
+            <option value="lycos">Lycos</option>
+            <option value="you">You.com</option>
+            <option value="ecosia">Ecosia</option>
+          </optgroup>
+          <optgroup label="Regional">
+            <option value="baidu">Baidu (CN)</option>
+            <option value="yandex">Yandex (RU)</option>
+            <option value="naver">Naver (KR)</option>
+            <option value="seznam">Seznam (CZ)</option>
+            <option value="sogou">Sogou (CN)</option>
+            <option value="petal">Petal (Huawei)</option>
+          </optgroup>
+        </select>
+
+        <!-- Search lane picker -->
+        <select id="campaignLane" class="campaign-select" aria-label="Search lane">
+          <optgroup label="Type">
+            <option value="web" selected>Web (everything)</option>
+            <option value="images">Images</option>
+            <option value="videos">Videos</option>
+            <option value="news">News</option>
+            <option value="maps">Maps</option>
+            <option value="shopping">Shopping & prices</option>
+          </optgroup>
+          <optgroup label="Specialty filters">
+            <option value="jobs">Jobs & careers</option>
+            <option value="recipes">Food & recipes</option>
+            <option value="people">People lookup</option>
+            <option value="realestate">Real estate & rentals</option>
+            <option value="medical">Medical & health</option>
+            <option value="scholar">Research & scholarly</option>
+            <option value="legal">Legal & case law</option>
+            <option value="blog">Blogs & commentary</option>
+            <option value="code">Code & open source</option>
+            <option value="datasets">Datasets & open data</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <button type="submit" class="campaign-button">
+        🔍 Open Results in New Tab
+      </button>
+    </form>
+
+    <div class="engine-label">Quick civic topics</div>
+    <div class="chip-row" id="campaignChips">
+      <button type="button" class="chip" data-q="Weather">Weather</button>
+      <button type="button" class="chip" data-q="recipes">Recipes</button>
+      <button type="button" class="chip" data-q="Employment">Jobs</button>
+      <button type="button" class="chip" data-q="shopping">Shopping</button>
+      <button type="button" class="chip" data-q="maps">Maps</button>
+      <button type="button" class="chip" data-q="travel">Travel</button>
+      <button type="button" class="chip" data-q="politics">Politics</button>
+      <button type="button" class="chip" data-q="education">Education</button>
+    </div>
+
+   <p class="campaign-caption">
+  Verve N Veda & Khaemenes Academy
+  <strong>JenniferPearlFlorida2026.com</strong>.
+</p>
+  </div>
+</section>
+
+<script>
+(function(){
+  const form   = document.getElementById("campaignSearchForm");
+  const input  = document.getElementById("campaignQuery");
+  const engine = document.getElementById("campaignEngine");
+  const lane   = document.getElementById("campaignLane");
+  const chips  = document.getElementById("campaignChips");
+
+  function buildUrl(rawQuery, engineId, laneId){
+    let q = (rawQuery || "").trim();
+    if(!q) return null;
+
+    // --- Specialty filters (add site: hints, not hard rules) ---
+    switch(laneId){
+      case "jobs":
+        q += " (site:indeed.com OR site:glassdoor.com OR site:monster.com OR site:careerbuilder.com)";
+        break;
+      case "recipes":
+        q += " (recipe site:yummly.com OR site:allrecipes.com OR site:foodnetwork.com)";
+        break;
+      case "people":
+        q += " (site:whitepages.com OR site:spokeo.com OR site:zoominfo.com)";
+        break;
+      case "realestate":
+        q += " (site:zillow.com OR site:realtor.com OR site:redfin.com OR site:rightmove.co.uk)";
+        break;
+      case "medical":
+        q += " (site:pubmed.ncbi.nlm.nih.gov OR site:webmd.com OR site:mayoclinic.org)";
+        break;
+      case "scholar":
+        q += " (site:scholar.google.com OR site:semanticscholar.org OR site:arxiv.org)";
+        break;
+      case "legal":
+        q += " (site:scholar.google.com OR site:law.cornell.edu OR site:justia.com OR site:lexisnexis.com)";
+        break;
+      case "blog":
+        q += " (blog OR newsletter site:substack.com OR site:medium.com OR site:wordpress.com)";
+        break;
+      case "code":
+        q += " (source code site:github.com OR site:gitlab.com OR site:bitbucket.org)";
+        break;
+      case "datasets":
+        q += " (dataset site:data.gov OR site:kaggle.com OR site:figshare.com OR site:zenodo.org)";
+        break;
+      default:
+        // web/images/videos/news/maps/shopping handled below
+        break;
+    }
+
+    const query = encodeURIComponent(q);
+    const raw   = encodeURIComponent((rawQuery || "").trim());
+
+    // --- Engine-specific paths for major types (where we know them) ---
+
+    // Helpful helpers for main engines
+    function googleBase(){
+      switch(laneId){
+        case "images":   return "https://www.google.com/search?tbm=isch&q=" + query;
+        case "videos":   return "https://www.youtube.com/results?search_query=" + raw;
+        case "news":     return "https://news.google.com/search?q=" + raw;
+        case "maps":     return "https://www.google.com/maps/search/" + raw;
+        case "shopping": return "https://www.google.com/search?tbm=shop&q=" + query;
+        default:         return "https://www.google.com/search?q=" + query;
+      }
+    }
+    function ddgBase(){
+      switch(laneId){
+        case "images":   return "https://duckduckgo.com/?iax=images&ia=images&q=" + query;
+        case "videos":   return "https://duckduckgo.com/?ia=videos&q=" + query;
+        case "news":     return "https://duckduckgo.com/?iar=news&ia=news&q=" + query;
+        default:         return "https://duckduckgo.com/?q=" + query;
+      }
+    }
+    function bingBase(){
+      switch(laneId){
+        case "images":   return "https://www.bing.com/images/search?q=" + query;
+        case "videos":   return "https://www.bing.com/videos/search?q=" + query;
+        case "news":     return "https://www.bing.com/news/search?q=" + query;
+        case "maps":     return "https://www.bing.com/maps?q=" + query;
+        case "shopping": return "https://www.bing.com/shop?q=" + query;
+        default:         return "https://www.bing.com/search?q=" + query;
+      }
+    }
+    function braveBase(){
+      switch(laneId){
+        case "images":   return "https://search.brave.com/images?q=" + query;
+        case "videos":   return "https://search.brave.com/videos?q=" + query;
+        case "news":     return "https://search.brave.com/news?q=" + query;
+        default:         return "https://search.brave.com/search?q=" + query;
+      }
+    }
+
+    // --- Engine routing ---
+    switch(engineId){
+      case "google":     return googleBase();
+      case "duckduckgo": return ddgBase();
+      case "bing":       return bingBase();
+      case "brave":      return braveBase();
+
+      case "startpage":  return "https://www.startpage.com/do/dsearch?query=" + query;
+      case "kagi":       return "https://kagi.com/search?q=" + query;
+      case "mojeek":     return "https://www.mojeek.com/search?q=" + query;
+      case "swisscows":  return "https://swisscows.com/web?query=" + query;
+      case "qwant":      return "https://www.qwant.com/?q=" + query + "&t=web";
+      case "presearch":  return "https://engine.presearch.org/search?q=" + query;
+
+      case "ask":        return "https://www.ask.com/web?q=" + query;
+      case "yahoo":      return "https://search.yahoo.com/search?p=" + query;
+      case "lycos":      return "https://search.lycos.com/web/?q=" + query;
+      case "you":        return "https://you.com/search?q=" + query;
+      case "ecosia":     return "https://www.ecosia.org/search?q=" + query;
+
+      case "baidu":      return "https://www.baidu.com/s?wd=" + query;
+      case "yandex":     return "https://yandex.com/search/?text=" + query;
+      case "naver":      return "https://search.naver.com/search.naver?query=" + query;
+      case "seznam":     return "https://search.seznam.cz/?q=" + query;
+      case "sogou":      return "https://www.sogou.com/web?query=" + query;
+      case "petal":      return "https://petalsearch.com/search?query=" + query;
+
+      default:
+        // Fallback: DuckDuckGo
+        return ddgBase();
+    }
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    const q   = (input.value || "").trim();
+    const eng = engine.value;
+    const ln  = lane.value;
+    if(!q) return;
+    const url = buildUrl(q, eng, ln);
+    if(!url) return;
+    window.open(url, "_blank", "noopener");
+  });
+
+  chips.addEventListener("click", function(e){
+    const btn = e.target.closest("[data-q]");
+    if(!btn) return;
+    const q = btn.getAttribute("data-q") || "";
+    input.value = q;
+    input.focus();
+  });
+})();
+</script>
+
+</body>
+</html>
