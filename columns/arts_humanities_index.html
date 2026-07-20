@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor's Choice</title>
+<style>
+  body {
+    background: #FFFEFA;
+    font-family: 'Futura Light', serif;
+    color: #1a1a1a;
+    margin: 7px;
+    padding: 14px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 8px 0 3px;
+    color: #2b2323;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 1.4rem;
+    color: #634d1b;
+    margin-bottom: 14px;
+  }
+  #app {
+    max-width: 666px;
+    margin: auto;
+    background: #f7f7f7;
+    padding: 24px 7vw 14px;
+    border-radius: 7px;
+    box-shadow: 3px 3px 13px #00000018;
+  }
+  .search-row {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-row label {
+    font-size: 0.99em;
+    margin: 3px 7px 11px 0;
+  }
+  .search-row input,
+  .search-row select {
+    font-size: 1em;
+    padding: 2px 24px;
+    border-radius: 7px;
+    border: 2px solid #b9a785;
+    min-width: 0;
+  }
+
+  .comment-list {
+    margin: 9px;
+    padding: 3px;
+    list-style: none;
+  }
+  .comment-list li {
+    background: #E8E8E8;
+    border-radius: 7px;
+    margin-bottom: 4px;
+    padding: 14px 14px 11px;
+    box-shadow: 0 1px 7px #dfd4a012;
+    cursor: pointer;
+    transition: box-shadow 0.13s, background 0.13s;
+  }
+  .comment-list li:hover {
+    box-shadow: 1px 1px 7px #e1cc8415;
+    background: #E8E8E8;
+  }
+  .comment-title {
+    font-size: 1.19em;
+    font-weight: bold;
+    color: #83692e;
+  }
+  .comment-meta {
+    color: #8e753c;
+    font-size: 0.98em;
+    margin-bottom: 11px;
+  }
+  .comment-body {
+    font-size: 1.08em;
+    margin-top: 7px;
+    color: #8e753c;
+  }
+
+  /* We keep this, but the main article now appears in a popup */
+  .comment-detail {
+    display: none;
+  }
+
+  /* ---------- Modal + Overlay ---------- */
+  .hidden {
+    display: none !important;
+  }
+
+  #modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.33);
+    z-index: 777;
+  }
+
+  #articleModal {
+    position: fixed;
+    max-width: 777px;
+    width: calc(100% - 48px);
+    background: #E8E8E8;
+    border-radius: 14px;
+    box-shadow: 0 11px 33px #00000044;
+    padding: 24px;
+    z-index: 778;
+    cursor: default;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 11px;
+    margin-bottom: 11px;
+    cursor: move; /* drag handle */
+  }
+
+  .modal-title {
+    font-size: 1.33rem;
+    font-weight: bold;
+    color: #83692e;
+  }
+
+  .modal-meta {
+    font-size: 0.95rem;
+    color: #8e753c;
+    margin-bottom: 11px;
+  }
+
+  .modal-close-btn {
+    border: none;
+    background: #b99b53;
+    color: #FFFEFA;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .modal-close-btn:hover {
+    background: #8e753c;
+  }
+
+  .modal-body {
+    font-size: 1.02rem;
+    color: #2b2323;
+    white-space: pre-wrap; /* respect your paragraphs */
+    max-height: 66vh;
+    overflow-y: auto;
+  }
+
+  .modal-link-row {
+    margin-top: 14px;
+  }
+
+  .open-link-btn {
+    background: #b99b53;
+    color: #2b2323;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 8px 0 0 0;
+  }
+  .open-link-btn:hover {
+    background: #8e753c;
+    color: #FFFEFA;
+  }
+
+  @media (max-width:555px) {
+    #app {
+      padding: 14px 7vw 14vw;
+    }
+    .comment-list li {
+      padding: 7px 7vw 11px;
+    }
+    #articleModal {
+      width: calc(100% - 28px);
+      padding: 18px;
+    }
+    .modal-body {
+      max-height: 60vh;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>Arts & Humanities</h1>
+<div class="subtitle">
+ News Commentary<br>
+  Browse by date, topic, or series.
+</div>
+
+<div id="app">
+  <div class="search-row">
+    <label for="dateSearch">Date:</label>
+    <input type="date" id="dateSearch" onchange="filterComments()" />
+    </div>
+
+    <label for="topicSearch">Topic:</label>
+    <input type="text" id="topicSearch"
+           placeholder="e.g. Art, Gallery Exhibits, Music Scene, Photography, Sculpture"
+           oninput="filterComments()"/> 
+    <br>
+    <label for="seriesSearch">Series:</label>
+    <input type="text" id="seriesSearch"
+           placeholder="e.g. Hollywood, Social Media, Exhibits, Calls for Art"
+           oninput="filterComments()" />
+  </div>
+
+  <ul class="comment-list" id="commentList"></ul>
+  <div id="commentDetail"></div>
+</div>
+
+<!-- Modal + Backdrop -->
+<div id="modalBackdrop" class="hidden"></div>
+<div id="articleModal" class="hidden">
+  <div class="modal-header" id="modalHeader">
+    <div class="modal-title" id="modalTitle"></div>
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+  </div>
+  <div class="modal-meta" id="modalMeta"></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-link-row" id="modalLinkRow"></div>
+</div>
+
+<script>
+// ======================================================
+// 1. HARD-CODED DATA SOURCE
+// ======================================================
+let comments = [
+  {
+    "date": "2026-06-22",
+    "title": "Understanding the Human Experience",
+    "topic": "Arts and Humanities in the United States",
+    "body": "The arts and humanities are often described as the disciplines that help us understand what it means to be human. While science and technology explain how the world works, the arts and humanities explore why people think, believe, create, and behave as they do. They encompass fields such as history, literature, philosophy, languages, religion, cultural studies, visual arts, music, theater, and creative writing.\n\nIn modern America, discussions about education frequently emphasize workforce development, technology, engineering, and economic competitiveness. Yet the arts and humanities remain essential to a healthy society because they cultivate critical thinking, communication, creativity, cultural understanding, ethical reasoning, and civic engagement. Their value extends far beyond classrooms and museums; they influence democracy, public discourse, innovation, community identity, and economic development.\n\nUnderstanding the importance of the arts and humanities requires examining their role in individual development, civic life, cultural preservation, economic growth, and the future of an increasingly technological society.\n\nAt their core, the humanities seek to answer fundamental questions about human existence:\n\nWho are we?\nWhere do we come from?\nWhat do we value?\nHow should we live?\nWhat responsibilities do we have to others?\n\nHistory helps people understand the successes and failures of previous generations. Literature allows readers to experience perspectives different from their own. Philosophy encourages examination of morality, justice, and truth. Religious studies explore belief systems that have shaped civilizations for thousands of years.\n\nThese disciplines provide context for understanding contemporary issues. Debates about immigration, race, democracy, technology, and human rights are often rooted in historical experiences and philosophical questions that humanities scholars have studied for centuries.\n\nWithout an understanding of human experience and historical context, societies risk repeating mistakes and losing the ability to learn from the past.\n\nOne of the most significant contributions of the arts and humanities is the development of critical thinking and communication skills.\n\nStudents in the humanities learn to analyze complex texts and arguments, evaluate evidence, and identify bias and assumptions. They also learn to construct logical arguments and communicate ideas effectively. These abilities are increasingly important in an age characterized by information overload, misinformation, and rapidly evolving media environments.\n\nUnlike disciplines that often focus on finding a single correct answer, humanities education teaches students to examine multiple perspectives, weigh competing interpretations, and develop nuanced conclusions. This process encourages intellectual flexibility and independent thought.\n\nThe humanities play a crucial role in sustaining democratic societies.\nDemocracy depends upon citizens who can evaluate political arguments, understand historical precedents, interpret laws and public policies, participate in informed debat,e and respect differing viewpoints. Subjects such as history, political philosophy, ethics, and literature help individuals understand the foundations of democratic institutions and civic responsibility.\n\nThe study of historical events reveals how democratic systems have evolved, how rights have expanded over time, and how societies have addressed conflict and injustice. Humanities education encourages citizens to engage thoughtfully with public issues rather than relying solely on slogans or partisan narratives.\n\nIn this sense, the humanities are not merely academic subjects; they serve as tools for preserving democratic culture and fostering informed citizenship. Every society depends on institutions that preserve its history, traditions, and cultural achievements.\n\nMuseums, libraries, archives, historical societies, and cultural organizations protect materials that help future generations understand their heritage. Humanities scholars interpret and contextualize these resources, making them accessible and meaningful to the public.\n\nPreserving cultural heritage serves several important functions. It maintains historical knowledge, strengthens community identity, protects diverse traditions and perspectives, and provides educational resources while encouraging cross-cultural understanding.\n\nThe preservation of historical documents, oral histories, works of art, and cultural artifacts allows societies to maintain continuity between past, present, and future. Without these efforts, valuable knowledge and cultural memory could be lost.\n\nCreativity is often associated exclusively with artists, writers, musicians, and performers. However, creativity is a fundamental human skill that influences nearly every field.\n\nInnovation frequently emerges from the ability to imagine alternatives, connect seemingly unrelated ideas, approach problems from a new perspective,s and challenge conventional assumptions. The arts cultivate these capacities by encouraging experimentation, imagination, and expression.\n\nLiterature, theater, film, music, and visual art expose audiences to experiences and perspectives different from their own. By engaging with stories, cultures, and histories, individuals gain a deeper understanding of diverse communities and human experiences.\n\nEmpathy contributes to improved interpersonal relationships, greater social cohesion, reduced prejudice, enhanced cross-cultural communication, and ultimately more inclusive communities.\n\nIn an increasingly interconnected world, the ability to understand people from different backgrounds has become both a social and professional necessity. The arts and humanities provide opportunities to explore these differences while recognizing shared aspects of human experience.\n\nThe arts and humanities are sometimes criticized as impractical or economically insignificant. However, the broader arts and cultural sector contributes substantially to the American economy. These sectors generate employment, attract tourism, stimulate local economies, and contribute billions of dollars in economic activity annually.\n\nCities and regions often use cultural institutions and artistic initiatives as tools for economic revitalization. Museums, theaters, festivals, and public art projects can increase tourism, attract investment, and strengthen local identity. The arts are not only cultural assets but also economic drivers.\n\nEducation in the arts and humanities supports intellectual development beyond vocational training. Research suggests that exposure to arts education can improve engagement, motivation, and academic performance. Participation in music, theater, visual arts, and creative writing can also support emotional development and confidence. Arts and humanities education encourages lifelong learning. Rather than focusing solely on specific technical skills, it helps individuals develop habits of inquiry that remain valuable throughout their lives.\n\nAs artificial intelligence transforms workplaces and industries, the importance of uniquely human skills may become even more pronounced. AI systems can process information, generate text, and perform many analytical tasks. However, questions involving meaning, ethics, culture, values, and human experience remain deeply connected to the humanities.\n\nRather than becoming obsolete in the digital age, the arts and humanities may become increasingly important as society seeks to navigate complex ethical and cultural challenges.\n\nThe arts and humanities are essential components of a thriving society. They help individuals understand themselves and others, strengthen democratic participation, preserve cultural heritage, foster creativity, and contribute to economic development. While their benefits are sometimes less immediately visible than those of technological or scientific disciplines, their influence extends throughout every aspect of social life.\n\nIn a rapidly changing world characterized by globalization, technological advancement, and social complexity, the arts and humanities provide the tools needed to interpret change, evaluate competing values, and maintain a sense of shared humanity. They remind us that progress is not measured solely by economic growth or technological achievement, but also by our ability to understand the human condition, appreciate cultural diversity, and engage thoughtfully with the challenges of our time.\n\nFor these reasons, the arts and humanities remain not merely relevant, but indispensable to the future of the United States and to the continued development of an informed, creative, and democratic society.",
+    "series": "Beyond Classrooms and Museums",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vQ5ok2sX-1PPLjNyVGuNCzD2hkIlbvQODuJD3_yulsf4vAHO5OnCmU4kkDyg1MHai0aunmuMCR1t2GY/pub"
+  },
+  {
+    "date": "2026-04-07",
+    "title": "Florida’s Cultural Crossroads",
+    "topic": "Who Gets To Decide Florida's Future?",
+    "body": "Florida is at a cultural crossroads, and this time, the stakes are not just economic; they are personal. Every child who draws in a classroom, every musician who dreams of their first stage, every small town festival or historic theater tells the story of who we are. When arts funding wavers, it is not just programs that suffer; it is opportunity, identity, and community that are put at risk.\n\nThe arts are more than decoration. They are Florida’s economy in motion. Tourism, local businesses, workforce innovation, and community resilience all flourish when creativity is nurtured. Yet, year after year, political volatility threatens these pillars, leaving artists, educators, and cultural institutions scrambling to survive.\n\nThis ends under my leadership. Through the Florida Arts & Humanities Renaissance Policy, we will stabilize funding, protect creative freedom, and expand access statewide. From rural towns to urban centers, every Floridian deserves the chance to experience, participate in, and benefit from the cultural wealth of our state.\n\nWe will establish the Florida Arts & Humanities Advancement Agency (FAHAA) to ensure that funding is merit-based, transparent, and insulated from political whims. Multi-year grants, public-private partnerships, and digital innovation initiatives will create a resilient ecosystem where arts and culture are treated as essential infrastructure; not optional extras.\n\nFlorida’s future is creative and inclusive. It is economically vibrant and culturally rich. Investing in arts and humanities is not charity; it is strategy, opportunity, and a statement of values. Together, we can ensure that Florida does not just preserve its cultural heritage, but leads the nation in the arts, innovation, and human expression.\n\nFloridians, this is our moment to protect, empower, and elevate creativity. Every signature, every voice, and every investment brings us closer to a state where arts are not sidelined, but central to the life, economy, and identity of Florida.",
+    "series": "Arts and Humanities",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRRwQgDchHvOrWd_zCFiRgklYUsL_niv2GQHaUCjwOuStpp1W7Al5d2fX0aS9sK1FX0cUxt6eI0oA6z/pub"
+  },
+  {
+    "date": "2026-03-23",
+    "title": "Funded, Forgotten, and Somehow Still Alive",
+    "topic": "The Arts in America",
+    "body": "If you listen carefully in Washington, you can almost hear it: a polite, ceremonial applause for the arts, followed by the faint sound of a wallet snapping shut.\n\nThe United States does, in fact, fund the arts and humanities. This surprises some people and disappoints others who assumed the number must be larger than what amounts to loose change in the federal couch cushions. Each year, a few hundred million dollars are distributed through official channels. That sounds respectable until you remember the federal budget is measured in trillions. In that context, arts funding is less a priority and more a rounding error with good intentions.\n\nYet, it exists, which is part of the paradox.\n\nAmerica treats the arts the way one treats a houseplant inherited from a relative: it waters it occasionally, insists it matters deeply, and is quietly shocked it hasn’t died.\n\nThe real engine of arts and humanities funding in the U.S. isn’t the government; it’s private money. Wealthy donors, foundations, ticket buyers, and tuition-paying students. This creates a cultural landscape that is vibrant in some places and barren in others, like a garden watered by scattered rainstorms instead of an irrigation system. If you happen to live near a major city or a generous billionaire, congratulations: culture thrives. If not, well—there’s always the internet.\n\nFederal funding, small as it is, plays a peculiar role. It doesn’t sustain the system so much as legitimize it. A grant is less about the money and more about the signal: this is worth funding. It’s the cultural equivalent of a blue checkmark: symbolically powerful, financially modest.\n\nSymbolism has its limits, especially when politics enters the chat.\n\nArts funding in America is not just small; it is perpetually on trial. Every few years, it becomes a talking point, a bargaining chip, or a target. Entire agencies can be threatened with elimination, as if centuries of human expression were a line item one could simply delete. For organizations on the ground, this volatility isn’t theoretical; it’s existential. Funding doesn’t just fluctuate; it can vanish midstream, like a stage light going dark in the middle of a performance.\n\nMeanwhile, other sectors, particularly science and technology, receive funding at levels that make arts budgets look like typographical errors. This isn’t accidental; it reflects a national value system that prioritizes what can be measured, monetized, or weaponized. The arts, stubbornly resistant to all three, are left to argue for their relevance in a language they were never meant to speak.\n\nDespite all of this, the arts persist.\n\nThey persist in underfunded classrooms, in community theaters held together by volunteer labor, in libraries that double as civic lifelines, through scholars quietly preserving history that no algorithm thought to save. They persist not because the system is robust, but because the people within it are tenacious.\n\nWhich raises an uncomfortable question: Is the system working as intended?\n\nAfter all, if artists and humanists continue to produce, teach, and inspire under these conditions, one might conclude that minimal support is sufficient. \n\nA culture that funds its imagination at the margins shouldn’t be surprised when its public life feels thinner, its discourse coarser, its sense of shared meaning harder to locate. The arts and humanities are not luxuries; they are the infrastructure of understanding how a society defines itself and expresses itself.\n\nIn the United States, that infrastructure exists. It’s just running on a very tight budget and an extraordinary amount of goodwill.\n\nWhat would it look like to take the arts seriously, not ceremonially, but structurally? It would mean funding them not as afterthoughts, but as foundations. It would mean building programs in schools where creativity is not extracurricular, but essential; investing in community institutions so culture is not zip-code dependent; and treating artists and humanists not as hobbyists with grants, but as workers with value. A true renaissance of the arts in America would not require invention so much as commitment, the decision to fund imagination with the same confidence we fund innovation. The result would not just be more paintings on walls or books on shelves, but a richer public life: more curious, more empathetic, and far more capable of understanding itself.",
+    "series": "Arts & Humanities"
+  },
+  {
+    "date": "2026-02-22",
+    "title": "The World Is on Fire. So We’re Pushing It Around a Soccer Field.",
+    "topic": "The Irony of Art",
+    "body": "If you ever wondered whether the arts are responding appropriately to modern chaos, this week’s answer is clear:\n\nYes.\n\nAt Frieze Los Angeles, artist Amanda Ross-Ho debuted a performance titled Untitled Orbit (MANUAL MODE) in which she rolls a 16-foot inflatable globe around a field; daily, repeatedly, manually.\n\nSubtle.\n\nOn the surface, it’s absurd. Beneath the surface, it’s still absurd, but poetically so. What better metaphor for modern existence than one human being physically shoving the planet forward while everyone else watches and nods thoughtfully?\n\nSomewhere between climate anxiety and student loan payments, that globe feels heavy.\n\nMeanwhile, in the dignified halls of higher learning, we were reminded that academia has also embraced whimsy. A roundup of the world’s strangest university names includes institutions like Batman University and the legendary Hamburger University.\n\nYes, one trains scholars. The other trains fast-food executives. Both hand out credentials. Both require tuition of some kind. The humanities remain undefeated in irony.\n\nThen there’s the grant ecosystem, that mysterious creative lottery where poets, comedians, sculptors, and performance artists submit deeply sincere proposals describing works that may or may not involve inflatable planets, interpretive choreography, or reimagined 17th-century textile theory.\n\nSomewhere, a funding committee is reading the sentence:\n“This piece interrogates late-stage capitalism through biodegradable confetti,” and approving it.\n\nWhich is, honestly, flummoxed.\n\nHere’s the thing about the arts: they are the only sector brave enough to look directly at societal chaos and say, “What if we made it symbolic but larger, more outlandish?”\n\nWhere policymakers write white papers, artists build giant pencils.\nWhere economists forecast decline, performers roll globes in circles.\nWhere universities debate curriculum reform, someone designs a crest featuring a bat.\n\nIt’s easy to mock contemporary art. It’s harder to ignore it. The absurdity is often the point.\n\nPushing a globe around a field isn’t meant to solve geopolitics. It’s meant to make you feel the weight of it, to witness effort. It is meant toshow you how to recognize repetition. To see one person straining against something impossibly large, and maybe recognize yourself.\n\nThe humanities, at their best, don’t offer answers. They offer perspective. Sometimes that perspective looks like a Renaissance painting of an animal the artist had clearly never seen. Sometimes it looks like a conceptual grant proposal written in twelve fonts. Sometimes it looks like someone sweating behind an inflatable Earth.\n\nNonetheless, it reminds us of something vital:\n\nHumans don’t just survive crises.\nWe interpret them.\nWe exaggerate them.\nWe choreograph them.\n\nWe turn them into spectacle so we can process the weight without collapsing under it.\n\nSo yes, this week in arts and humanities may look strange, outlandish, and mildly unhinged.\n\nIn a world that often feels unmanageable, watching someone physically move the planet, even symbolically, feels oddly reassuring.\n\nAt least someone’s pushing.",
+    "series": "Arts & Humanities"
+  },
+  {
+    "date": "2026-02-03",
+    "title": "The Art of Cutting Culture",
+    "topic": "How an Administration Turned Its Back on America’s Arts and Humanities",
+    "body": "In the spring of 2025, something quietly seismic happened in the landscape of American culture.  Federal funding for the arts and humanities, long a modest but vital support system for museums, theaters, historical research, community projects, and education, was abruptly slashed.  The Trump  Administration restructured and, in some cases, nearly eliminated our arts programs in America. Why? What had once been a steady, bipartisan commitment became the target of dramatic budget rewrites and ideological reprioritization.\n\nThis wasn’t just a line item in a meaningless spreadsheet. It was a reconfiguration of how America values its cultural memory, its storytellers, and the glue that holds community identity together.\n\nGrants were cancelled, staff slashed, and agencies were shrunk down to nothing.\n\nMost visibly, the National Endowment for the Humanities (NEH), the federal agency tasked with supporting historical research, literacy programs, cultural heritage, and community arts, suffered deep cuts. Around 1,200 previously approved grants were canceled, many of which had been awarded through a competitive process and were expected to support programming across all 50 states.\n\nThose terminations weren’t symbolic; they were real dollars and real opportunities that disappeared overnight. Cultural groups in places like Illinois and Colorado suddenly lost millions in expected funding, forcing them to revise or cancel exhibitions, educational programs, museum outreach, and public history projects. \n\nIn some states, entire councils that had planned summer exhibits, lectures, historical tours, and community education moments were told their funding was simply gone. Later‑night emails announced that grants from earlier fiscal years would not be paid, even though they had already been vetted and awarded. \n\nThe National Endowment for the Arts (NEA) fared no better. Hundreds of arts grants, from theater companies,  music programming, to community arts festivals, were rescinded mid‑cycle. The agency was forced to alter priorities and was prepared to implement budget directives that would eventually propose eliminating the NEA. \n\nThese moves came in tandem with steep staff reductions, in some cases up to 75–80 % of NEH employees receiving reduction notices, and the resignation or departure of senior leadership at arts agencies amid the shifts. \n\nThe official rationale from the White House has centered on shrinking the size of the federal government, reducing “waste,” and refocusing cultural funding toward projects celebrating certain historical narratives. Particularly patriotic themes directed at national anniversaries and the administration’s own initiatives. (\n\nYet for those on the ground, arts leaders, teachers, historians, librarians, museum directors, and nonprofit organizers, this has felt less like pruning and more like the uprooting of living institutions. State humanities councils, small museums, and rural arts groups that have relied on federal support for decades suddenly face budget shortfalls that private sponsorship cannot easily fill. \n\nOne executive director described unexpected grant terminations as arriving “in the dead of night,” a phrase that captures not just the timing but the shock to communities that counted on those funds to educate, entertain, preserve, and connect.\n\nWhere Congress once provided modest line‑item funding, sometimes referred to as “decimal dust” in the federal budget because it was such a tiny fraction of total spending, those dollars now risk disappearing entirely, with ripple effects that reach far beyond the agencies themselves. \n\nThe losses stretch across the cultural ecosystem:\n\nMuseums lose support for exhibitions and outreach programs. \nPublic libraries and archives lose funding for preservation and education. \nHumanities councils across every state face cuts that could limit community lectures, local history projects, literacy initiatives, and school partnerships. \nUniversities, especially in less wealthy regions, lose grants that fund research, student opportunities, and regional heritage work. \nArts organizations, musical, theatrical, literary, and folkloric, have seen program budgets slashed or eliminated. \n\nThese programs aren’t fringe interests. Many of them support jobs in rural communities, help veterans heal through writing and performance, preserve endangered cultural practices, bring art and history to children who might otherwise never see it, and sustain neighborhoods economically through tourism and creative economies. \n\nHumanities groups have not taken these changes lying down. Lawsuits have been filed alleging that executive actions exceeded authority and undermined congressionally mandated funding for state councils and research projects. \n\nA federal court in New York even blocked the cancellation of certain humanities research grants rooted in academic freedom and constitutional concerns. \n\nThese legal efforts signal that the core of the dispute is not just about money, but about who decides how a nation remembers, interrogates, and represents its own story.\n\nCutting federal support for arts and humanities programs isn’t just a budgetary adjustment; it’s a cultural shift. These agencies have historically been catalysts for public engagement with art, history, literature, philosophy, language, pedagogy, and identity, areas that help a diverse country understand itself as more than a collection of economic actors.\n\nWhen the arts and humanities are defunded, the loss isn’t merely creative or academic; it is social, weakening the connective tissue of communities and reducing opportunities for collective reflection.\n\nIn an era of global competition, technological disruption, and political polarization, whether America invests even modestly in the arts and humanities is a statement about what the nation chooses to value. Rollbacks on funding are not just about shrinking government; they are about shrinking the space where cultural inquiry, empathy, and shared heritage can flourish.\n\nUnlike many other budgetary cuts, this one can’t simply be fixed with a tax break or a startup loan. Once a museum closes, a historical archive is lost, or a community theater folds, those resources are gone for good.\n\nWhen a leader eliminates the arts, it reveals their lack of creativity and authenticity.",
+    "series": "Arts  & Humanities",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRek9y-LpNWp0DBttfTKuj1aS1YnquE01Cipp61qgBXBTzRbbcyzhQSVRaKB5IO_IwTQTBNtjqfZNxy/pub"
+  },
+  {
+    "date": "2026-01-29",
+    "title": "Intellectual Theft Myth of the past, and Reality of the Future",
+    "topic": "Tesla and Einstein",
+    "body": "In the age of viral content, it’s easy to stumble across claims that make our brains spin faster than a particle accelerator: “Einstein stole Tesla’s work.” At first glance, it’s a satisfying story; intellectual property theft in our day and time is part of our everyday life. A maverick inventor crushed by a glamorous theoretician, but the truth, as always, is more complicated and far more interesting.\n\nNikola Tesla and Albert Einstein were both geniuses, but they were geniuses of very different kinds. Tesla was an inventor and engineer, a master of practical experimentation. He brought alternating current to life, developed electric motors, and envisioned wireless power transmission. Einstein, by contrast, was a theoretical physicist, building abstract mathematical models of the universe. His papers on relativity, the photoelectric effect, and statistical mechanics reshaped our understanding of reality, but they drew on decades of prior theoretical work: Maxwell, Lorentz, Minkowski, and Newton. None of which depended on Tesla’s inventions.\n\nThe myth of theft gains traction because Tesla, a man ahead of his time, struggled with recognition. His business failures and poor self-promotion left him underappreciated in his lifetime, while Einstein’s theories catapulted him to global fame. Add to that the modern appetite for stories where the “underdog genius” is trampled by institutionalized brilliance, and the narrative practically writes itself.\n\nYet when historians and scientists examine the records, letters, and published works, they find no evidence that Einstein appropriated Tesla’s ideas. Tesla did criticize relativity later in life, but these were philosophical disagreements rather than technical challenges. Meanwhile, Einstein openly cited the scientists and equations he built upon. The real story isn’t theft, it’s how society values different kinds of genius, often favoring theoretical elegance over practical invention, recognition over experimentation.\n\nThis distinction matters in education. Too often, science is taught as a parade of solitary geniuses, with Nobel Prizes and fame as the final verdict of brilliance. The more important lesson is subtler: innovation takes many forms, and recognition is not always proportional to impact. Students should learn to appreciate both Tesla’s hands-on genius and Einstein’s theoretical insight. Critically understanding the ways history and institutions shape which voices are amplified and which are overlooked.\n\nIn an era of social media outrage and oversimplified narratives, the Tesla-Einstein myth is a perfect cautionary tale: questioning authority is good, curiosity is essential, but evidence must guide our conclusions. Appreciating nuance is not a compromise; it is the very essence of education.  \n\nAs we move forward into the future, it is important to recognize those who originate ideas. Many large corporations today have hundreds of innovative people creating amazing products and groundbreaking technologies. Inventors and creators who never receive credit for their work. Billionaire owners of those companies step into the limelight, neglecting to honor those who helped them get there.",
+    "series": "Humanities"
+  },
+  {
+    "date": "2026-01-22",
+    "title": "Hybrid Creators, Reprogrammed Art Schools",
+    "topic": "The Artist Is Now a Small Studio",
+    "body": "Who gets left outside the gallery doors?\n\nOnce upon a time, an artist could answer the question “What do you do?” with a single noun: Painter, Composer, Sculptor, or maybe, if things got wild, multimedia artist.  Which was art world code for “don’t ask me to explain.”\n\nThat era is over.\n\nToday’s artist is more likely to sound like a startup pitch: composer-coder, visual artist-engineer, choreographer-systems designer, studio-as-organism. This isn’t theoretical. It’s already happening, on museum floors, in performance spaces, inside browsers, and across glowing walls of LEDs.\n\nTake teamLab, the Tokyo-based collective whose immersive digital environments have become global pilgrimage sites. Their work isn’t “made” so much as orchestrated: hundreds of artists, programmers, architects, animators, mathematicians, and hardware engineers collaborate to produce living environments that respond to bodies, weather, and time. No single author. No finished state. The art blooms, decays, and recomposes as you move through it.\n\nOr look at whose work fuses minimalist composition, mathematical data, and blindingly precise visuals. His installations feel less like concerts and more like standing inside a thinking machine. Music, data visualization, and architecture collapse into one sensory system. Asking whether he’s a musician or a visual artist misses the point. He’s designing perception itself.\n\nThen there’s Holly Herndon, whose albums are inseparable from the machine learning systems she helps design. Her work treats AI not as a gimmick but as a vocal collaborator, trained, constrained, and aesthetically shaped. Authorship here isn’t lost, it’s negotiated. The “song” is as much a process as a product.\n\nOr Refik Anadol, whose data-driven installations turn archives, climate data, and collective memory into continuously evolving visual environments. His studio looks less like an atelier and more like a research lab. Painters once mixed pigments; now they train models.\n\nThe pattern is clear: these artists don’t just make artifacts. They build systems that make artifacts, experiences that unfold differently every time. The artwork is no longer the painting on the wall.  It’s the invisible architecture deciding what could appear on that wall at all.\n\nWhich brings us to education.\n\nArt schools were built to teach mastery of media: oil painting, violin, sculpture, and darkroom photography. Critique focused on craft, composition, and personal voice. How do you grade a living system? How do you critique an artwork that mutates after the semester ends?\n\nIncreasingly, art education is being forced to rewire itself. Coding appears alongside life drawing. Sound design sits next to sculpture. Students are expected to understand not just form, but infrastructure: software frameworks, sensors, data ethics, and collaboration workflows. The solitary genius gives way to the project lead, the facilitator, the translator between disciplines.\n\nThis can be exhilarating. It can also be brutal.\n\nHere is the sharp question we don’t like to ask out loud: Who gets excluded by this new model?\n\nHybrid art favors those with access to technology, to education, to time, to institutional support. Learning to code, build hardware, or train models isn’t just intellectually demanding; it’s resource-intensive. Not every artist can afford the software, the equipment, or the unpaid experimentation required to stay “multidisciplinary.”\n\nThere’s also a quieter exclusion. Not every mind wants to be a systems architect. Some artists think best in depth, not breadth. Some need slowness, solitude, and repetition. When the culture celebrates flexibility and hybridity above all else, specialization can start to look like failure rather than choice.\n\nCollaboration, for all its virtues, can dilute voices that already struggle to be heard. When authorship becomes collective, power doesn’t magically disappear; it just becomes harder to see.\n\nSo yes, the artist is evolving into something more fluid, more technical, more collaborative. Art is becoming alive, reactive, and environmental. That’s thrilling, but it’s not neutral.\n\nThe challenge ahead isn’t to decide whether this transformation is good or bad; it’s to decide how wide we leave the door.\n\nIf the future artist is part composer, part coder, part philosopher, then the future art world must also be part school, part commons, part support system. Otherwise, we risk building a beautiful, interactive, ever-changing cultural landscape that only a few are equipped to enter.\n\nThat would be the cruelest irony of all: art that evolves endlessly, while its definition of who gets to make it quietly narrows.\n\nThe system, after all, is only as ethical as the conditions under which it runs.",
+    "series": "Art & Humanities"
+  },
+  {
+    "date": "2026-01-18",
+    "title": "The Price of Passion",
+    "topic": "Why Being a Professional Artist Is Harder Than You Think",
+    "body": "Art has always been a beacon of human expression, a way to capture beauty, tell stories, provoke thought, and inspire change. From the gallery walls of Paris to the streets of New York, from concert halls to online platforms, art shapes our world. Yet, behind every brushstroke, every musical note, every dance move or written word, lies a reality that is often far less glamorous than the Instagram posts or museum labels suggest: being a professional artist is incredibly hard.\n\nThe Myth of the “Starving Artist”\n\nThe stereotype of the starving artist isn’t just a cliché; it’s grounded in truth. While the world celebrates artistic genius, most artists struggle with financial instability. Unlike salaried professions, artists rarely have a predictable paycheck. Income comes in fits and starts: a commission here, a performance fee there, a grant if you’re lucky. One month, a painter may sell a series of works; the next, they may not earn a single dollar. A musician might land a gig at a local venue, while another month, the stage remains empty.\n\nThis unpredictability forces many artists into portfolio careers, juggling multiple income streams to survive. Some teach classes, freelance, sell merchandise, or even take day jobs unrelated to their art. Financial stress isn’t just inconvenient; it can affect creativity itself, making it hard to focus when bills are overdue and deadlines loom.\n\nTalent Alone Isn’t Enough\n\nIt’s tempting to think that raw talent guarantees success, but in the modern art world, skill is only part of the equation.\n\nTo thrive, artists must also master the business of art:\n\nMarketing & Branding: Social media, personal websites, email newsletters, and online marketplaces are essential tools for visibility. You can be the most skilled painter in your city, but without an audience, your work may go unseen.\n\nNetworking & Relationships: Galleries, curators, collectors, agents, and fellow artists play a huge role in who gets noticed. Personal connections often open doors that talent alone cannot.\n\nGrants & Residencies: Winning a grant or residency can provide financial stability and validation, but these opportunities are highly competitive. Thousands of applications often compete for a handful of awards.\n\nEven the most gifted artists can struggle to gain recognition if they lack these strategic tools. In today’s arts landscape, being creative is only half the battle; being entrepreneurial is just as critical.\n\nThe Financial Reality\n\nProfessional artists face financial pressures unlike many other careers:\n\nHigh Cost of Materials: Painters need paints and canvases, digital artists invest in software and hardware, musicians buy instruments and recording equipment, and performers pay for rehearsal spaces and costumes. These costs add up fast.\n\nEducation & Training: Conservatories, art schools, and workshops can cost tens of thousands of dollars. Scholarships help, but competition is fierce, and student debt is common.\n\nHealthcare & Benefits: Unlike corporate jobs, many artists lack employer-provided healthcare, retirement plans, or paid leave. This forces them to juggle insurance premiums, retirement savings, and emergency funds on a variable income.\n\nThe financial instability isn’t just stressful; it can shape the type of art that gets made. Artists sometimes produce work they believe is more “marketable” rather than work that truly reflects their creative vision, creating a tension between survival and authenticity.\n\n\nThe pressure of artistic careers can take a toll on mental health. Rejection is routine: gallery shows aren’t approved, grants aren’t awarded, performances are canceled. This, coupled with financial stress and social isolation, can lead to anxiety, depression, and burnout. Artists must learn to balance their passion with self-care, and many turn to community support, mentorship, or therapy to navigate these pressures.\n\nIronically, the very qualities that make an artist exceptional, like sensitivity, emotional depth, and imagination, can also make them more vulnerable to these challenges.\n\nStrategies for Survival and Success\n\nDespite the hurdles, artists develop strategies to survive and thrive:\n\n1. Diversifying Income: Teaching, freelance work, commissions, selling online, and public art projects all help stabilize income.\n2. Building an Online Presence: Social media and personal websites allow direct access to audiences and collectors, bypassing traditional gatekeepers.\n3. Networking: Collaborations, exhibitions, and arts communities provide exposure and opportunities for growth.\n4. Applying for Grants & Residencies: While competitive, these provide financial support, prestige, and time to focus on creative work.\n5. Professional Discipline: Treating art as a career, scheduling studio time, setting deadlines, and maintaining a consistent practice help balance creativity with productivity.\n\nThese strategies require time, energy, and business acumen, in addition to talent, making the life of a professional artist a constant balancing act.\n\n\nEven with the challenges, being a professional artist offers rewards that few other careers can match:\n\nCreative Freedom: Artists have the power to tell stories, challenge perceptions, and explore new ideas.\nCultural Impact: Art can inspire movements, spark social change, and connect people across cultures.\nPersonal Fulfillment: Mastering a craft and expressing one’s vision provides intrinsic satisfaction and meaning that transcends financial gain.\n\nIn short, art is a labor of love where success is measured not only by money or fame, but by influence, legacy, and the ability to create work that resonates.\n\nThe challenges artists face aren’t just personal; they reflect a broader societal issue. Artists are cultural workers, yet society often undervalues their labor. Funding for arts programs, grants, and residencies is limited, and public perception frequently underestimates the effort required to sustain an artistic career.\n\nSupporting artists isn’t just about charity; it’s about sustaining the cultural fabric of our communities. Affordable arts education, grants, exhibition spaces, and fair compensation models help ensure that creativity continues to flourish. When artists struggle, society loses more than livelihoods; it loses voices, perspectives, and stories.\n\nBeing a professional artist is a path of passion, perseverance, and resilience. It is financially uncertain, highly competitive, and emotionally demanding, yet it remains one of the most vital careers in society. Artists illuminate the world, challenge norms, and remind us of our shared humanity.\n\nFor those considering this path, the message is clear: talent is necessary, but not sufficient. Success requires entrepreneurial savvy, networking, discipline, and adaptability. For society, the takeaway is equally important: supporting artists isn’t a luxury; it’s an investment in the human spirit.\n\nArt may not guarantee comfort, security, or fame, but for those who pursue it, it offers something far more enduring: the power to create meaning, inspire others, and leave a mark on the world.",
+    "series": "Art"
+  },
+  {
+    "date": "2026-01-10",
+    "title": "The Life Between",
+    "topic": "The Chevalier d’Éon and the Art of Becoming",
+    "body": "In eighteenth century France, an age obsessed with appearances, rank, and rigid categories, one person made a quiet spectacle of living beyond them.\n\nCharles Geneviève Louis Auguste André Timothée d’Éon de Beaumont, known to history as the Chevalier d’Éon, was a diplomat, soldier, master swordsman, and royal spy.  The subject of one of Europe’s most enduring social mysteries. For decades, polite society argued, wagered, and whispered over a question that seemed to unnerve the Enlightenment itself:\n\nWas d’Éon a man or a woman?\n\nThe answer, as history reveals, is far more interesting than either option alone.\n\nBorn in 1728 in Burgundy, d’Éon was educated, articulate, and brilliant. Traits that quickly caught the attention of the French crown. By their twenties, d’Éon had entered the Secret du Roi, King Louis XV’s covert intelligence network, operating parallel to official diplomacy.\n\nEspionage in the eighteenth century was theater: coded letters, false identities, salons thick with intrigue. D’Éon excelled at it.\n\nMost famously, d’Éon was sent to Russia under diplomatic cover, disguised as a woman.  The mission was to gain access to Empress Elizabeth’s inner court. Whether this disguise was a strategic improvisation or something more intentional remains debated, but it worked. D’Éon returned to France with intelligence that strengthened France’s geopolitical position and cemented its reputation as a remarkably effective operative.\n\nIdentity had become a tool: something worn, adjusted, and deployed.\n\nLater, d’Éon served openly as a male officer during the Seven Years’ War, fighting bravely and earning the Cross of Saint Louis, one of France’s highest military honors. There was no ambiguity here: sword drawn, uniform worn, rank acknowledged.\n\nYet the relationship with the French state soured. D’Éon possessed sensitive documents and secrets, dangerous leverage in a monarchy built on image and control. When political tides shifted, d’Éon found themselves both indispensable and inconvenient.\n\nExile followed. So did public fascination.\n\nIn London, where d’Éon lived for many years, speculation exploded. Newspapers debated d’Éon’s sex. Aristocrats placed bets. Doctors published theories. The public watched closely, unsettled not because d’Éon was scandalous, but because they refused to be easily classified.\n\nEventually, after negotiations with the French crown, d’Éon made a remarkable announcement: they would live henceforth as a woman.\n\nKing Louis XVI agreed on one condition: d’Éon must dress as a woman permanently.\n\nWhat followed was not masquerade but commitment. D’Éon adopted women’s dress, lived socially as a woman, and insisted sometimes forcefully that this identity be respected. When they returned to France, the court complied. The state that once demanded certainty now enforced ambiguity.\n\nLife, Not Symbol\n\nModern readers are often tempted to retroactively assign labels: transgender, nonbinary, gender-fluid. But doing so risks flattening a life that unfolded in a very different conceptual world.\n\nEighteenth-century Europe lacked today’s language for gender identity. What it had instead were roles, appearances, and legal expectations, and d’Éon navigated all three with remarkable agency.\n\nWhat is clear is this: d’Éon did not live as a joke, a trick, or a curiosity. They lived deliberately, at personal cost, in a way that unsettled rigid systems of power and identity.\n\nWhen d’Éon died in 1810, a post-mortem examination declared their anatomy male, an announcement that delighted gamblers and disappointed philosophers. But it solved nothing.\n\nThe Chevalier d’Éon forces us to confront an uncomfortable truth:\nHuman identity has always been more complex than the categories societies build to contain it.\n\nLong before modern debates about gender, d’Éon demonstrated that identity could be strategic, lived, and internally coherent, even when it defied public consensus. Their life sits at the intersection of espionage, performance, politics, and self-determination.\n\nThey were not simply “ahead of their time.”\nThey were of their time, revealing its contradictions.\n\nIn an era that prized Enlightenment reason, d’Éon exposed how fragile certainty can be, and how deeply people fear what refuses to settle neatly into a box.\n\nThat may be the Chevalier’s greatest legacy: not as an icon of one idea or another, but as a reminder that history is full of people who lived in the margins. Not because they were confused, but because the world was.\n\nAnd still is.",
+    "series": "A Spy in Plain Sight"
+  },
+  {
+    "date": "2026-01-03",
+    "title": "When Entertainment Stops Protecting Children",
+    "topic": "The Exploitation  of Children",
+    "body": "There is a line every society claims it will never cross: the exploitation of children. And yet, time and again, the entertainment industry edges dangerously close to it, sometimes stepping over it while insisting everything is legal, artistic, or misunderstood.\n\nHollywood has immense cultural power. It shapes norms, influences fashion, defines maturity, and tells young people who they are supposed to be. That power comes with responsibility. When children are placed into adult narratives, styled to appear older than they are, or framed in ways that invite inappropriate attention, the issue is no longer creativity. It is protection.\n\nThis is not about hidden symbols or sensational accusations. It is about patterns. Patterns in costuming that mirror adult trends. Patterns in camera framing that prioritize appearance over innocence. Patterns in marketing that blur the boundary between childhood and adulthood because “provocative youth sells.” When these patterns repeat, they deserve scrutiny.\n\nChildren cannot consent to being commodified. They cannot fully understand the long-term consequences of public exposure, sexualized commentary, or being frozen in a digital archive that follows them for life. Adults can. And when adults design, approve, and profit from portrayals that place children in ethically questionable positions, the responsibility rests squarely with them.\n\nThe industry often responds by pointing to parental consent, labor laws, and ratings systems. But legality is not morality. A contract does not equal protection. A rating does not account for how a child under 18 years old is framed, discussed, or consumed by audiences. And history has shown again and again that safeguards tend to appear only after damage is done.\n\nWe should listen to former child performers who have spoken about pressure to grow up too fast, confusion over adult predatory attention, and the absence of meaningful protection. Their stories are not attacks on art; they are warnings about power imbalance. When children speak up later, we should not dismiss them as exceptions. We should ask why the system allowed those experiences in the first place.\n\nThis is not a call to censor creativity or ban storytelling. It is a call to raise standards, strengthen protections, and shift the industry’s default from “Is this allowed?” to “Is this right?” It is a call for independent child advocates on sets, stricter limits on how minors are styled and marketed, and accountability when boundaries are crossed.\n\nProtecting children should never be in question. Holding powerful industries accountable should never be taboo. If the entertainment world truly values young talent, then safeguarding their dignity, development, and well-being must come before ratings, profit, or applause.\n\nThe debate is not whether Hollywood creates art. The debate is whether it is doing enough to protect the most vulnerable people within it. If the answer is anything less than an unequivocal yes, then society has both the right and the obligation to demand better.\n\nBecause children are not content.\nThey are not brands.\nAnd they are not collateral damage.\n\nThey are owed unequivocal protection.",
+    "series": "Entertainment",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vSdxqpsqXn4D0N9R2yd1iNAxPwNYlOUCSXWi6Sk0x2xM0X2iptIk0ey7VEs5vvLYZ0eA0rh3edrJ9Ei/pub"
+  },
+  {
+    "date": "2025-12-30",
+    "title": "Living Smart, Sleek, and Slightly Bionic",
+    "topic": "The Future of Lifestyle",
+    "body": "Welcome to 2035, or at least a version of the future where your coffee machine knows your mood better than your partner does. Lifestyle is no longer just about what you eat or how often you hit the gym. It’s about living smart, sustainable, connected, and occasionally pretending you’re not completely dependent on AI.\n\nThe first big shift? Health is hyper-personalized. Forget generic diets; your genetic makeup, microbiome, and sleep patterns will tell you exactly how many almonds to eat at 10:32 a.m. Wearable tech won’t just count steps, it will correct your posture, alert you when your stress hormones spike, and guilt-trip you into meditating for five minutes before your morning meeting.\n\nWork-life balance? It’s evolving into “work-life synergy.” Offices are optional, deadlines are often handled asynchronously by AI colleagues, and humans are free to focus on creativity, empathy, and the occasional existential crisis. Robots may handle your spreadsheet, but you get to write the next viral podcast or sculpt your emotional resilience.\n\nSocial life will also get a digital facelift. Virtual reality hangouts, AI-powered dating, and global friend circles mean you can attend a Parisian café, a beach in Bali, and a concert in Tokyo all in the same hour. Just don’t forget to stretch your legs occasionally, or your avatar might end up fitter than you.\n\nSustainability will stop being a choice and become a default lifestyle feature. Homes, wardrobes, and even food will be optimized for minimal waste. Minimalism meets maximal tech: your walls may change color on command, your wardrobe adapts to the weather, and your fridge orders groceries before you realize you’re out of kale.\n\nBut perhaps the most important trend of all? Mindfulness in a hyperconnected world. With AI managing your schedules, health, and social life, the real challenge will be remembering how to be human. Future lifestyle is about thriving amid abundance, tech, and choice, while occasionally laughing at the fact that your smartwatch just told you to breathe.\n\nIn short, the future of lifestyle promises to be smarter, sleeker, greener, and slightly bionic. And if we play our cards right, it’ll be a life where convenience meets creativity without forgetting the joy of simply doing nothing and doing it well.  Would creativity, the arts, and the humanities become extinct in this world? Is it really living smart?",
+    "series": "Living Smart?"
+  },
+  {
+    "date": "2025-12-27",
+    "title": "When the Machine Meets the Muse: The AI Art Revolution",
+    "topic": "AI Is Stealing the Muse:",
+    "body": "The art world is in the middle of a seismic shift. No longer is creativity confined to paint, clay, or pixels crafted by human hands alone. Today, AI-assisted design and digital art are changing the rules of the game. Artists are no longer just creators; they are collaborators with algorithms, guiding machines to generate visuals that would have been impossible, or at least unimaginable, just a few years ago.\n\nThis isn’t the quirky “AI doodle” you see floating online. Major studios, advertising agencies, and gaming companies are hiring professionals who can take AI-generated concepts and turn them into polished commercial pieces. Motion graphics, interactive installations, animated sequences, branding visuals.  AI is now an integral tool for production pipelines. Artists who master these technologies are not only more marketable, but they are commanding higher salaries and standing out in a hyper-competitive market.\n\nThen there’s the ethical angle. AI models are trained on existing artworks, often without the consent of original artists. This raises debates about intellectual property, creative theft, and the value of human labor. Some creators feel threatened, arguing that the more AI is used in production, the less demand there will be for traditional skills honed over years or even decades.\n\nYet, the opportunity is undeniable. AI allows artists to iterate faster, experiment with impossible combinations, and expand visual storytelling in ways previously unattainable. It’s not replacing human creativity; it’s amplifying it, demanding that artists learn new skills and embrace a hybrid workflow where imagination and technology intersect.\n\nThe question for the next decade is not whether AI belongs in art; it already does. The real debate is about how we define authorship, value, and originality in a world where the artist and the algorithm are co-creators. Those who adapt will thrive. Those who resist may find themselves asking, “Was this the future I wanted, or the future I ignored?”\n\nFrom Instagram graphics to blockbuster animations, AI can now generate designs faster, cheaper, and often flashier than a human can. Agencies and studios aren’t asking if artists want to use AI; they’re demanding it. If you can’t prompt a machine like a pro, you risk being left behind while algorithms churn out work that clients drool over.\n\nAnd make no mistake: this isn’t harmless tech. AI is disrupting careers. Traditional illustrators, concept artists, and graphic designers are suddenly competing against a machine trained on the labor of countless human artists, often without consent. Skills honed over the years can now be outpaced by a computer in minutes. The question is brutal: if the algorithm can do it, why pay a human?\n\nEthics? That’s a minefield. Who owns AI art? Who gets credit? Who gets royalties? And if AI is trained on stolen or uncredited work, are we celebrating innovation or rewarding theft? Some call it evolution; others call it plagiarism dressed in code.\n\nThe soul of art itself is at stake. Creativity has always been human, messy, and emotional. But when a prompt plus an algorithm can generate a portfolio in seconds, what’s left of human imagination? Will the next generation of artists be creators, or mere curators of AI output?\n\nHere’s the hard truth: adapt, learn, integrate, or risk obsolescence. AI isn’t the future, it’s the present. It’s a revolution, a threat, and a tool all at once. The war for creativity has begun, and only the boldest, smartest, most adaptable artists will survive. The rest? They’ll watch as algorithms turn their craft into a memory on a hard drive.\n\nArt was once untouchable, sacred. Today, it’s a battlefield, and the machines aren’t slowing down.",
+    "series": "Creative Arms Race"
+  },
+  {
+    "date": "2025-12-22",
+    "title": "The Loss of Historical Memory in a Fast-Media Culture",
+    "topic": "When History Becomes Entertainment",
+    "body": "Historical memory plays a central role in shaping how societies understand themselves. It is a reflection of the values, and the responsibility to the past. Unlike history as an academic discipline; which emphasizes evidence, contextualization, and debate.  Historical memory is a cultural process shaped by narrative, repetition, and media. In the digital age, this process has been profoundly altered. Short-form media platforms such as TikTok, Instagram Reels, and YouTube Shorts increasingly function as primary sources of historical information, particularly for younger audiences. While these platforms have expanded access to historical content, they have also transformed the way history is remembered, interpreted, and valued.\n\nFast-media culture reshapes historical memory by prioritizing entertainment, emotional immediacy, and algorithmic visibility over complexity, nuance, and scholarly rigor. As history becomes compressed into consumable content, it risks losing its interpretive depth. Fostering a culture in which the past is experienced as spectacle rather than understood as a contested and meaningful record. The consequences of this shift extend beyond misinformation; they threaten the public’s capacity for critical historical thinking and reflective civic engagement.\n\nScholars in the humanities have long distinguished between history as a discipline, and memory as a cultural phenomenon. Historian Pierre Nora famously described lieux de mémoire, or “sites of memory,” as symbolic places where collective memory is constructed and preserved, often independent of historical accuracy. For Nora, memory is emotional, selective, and shaped by present concerns.  Whereas history is analytical, critical, and rooted in evidence.\n\nSimilarly, historian Maurice Halbwachs argued that collective memory is socially framed, meaning that societies remember the past not as it was, but as it is useful or meaningful in the present. This insight is particularly relevant in the context of digital media, where historical narratives are continually reshaped to align with contemporary values, trends, and ideological positions.\n\nAcademic history, by contrast, relies on sustained engagement with primary sources, historiographical debate, and contextual interpretation. It resists easy conclusions and embraces ambiguity. When historical memory becomes detached from these practices, it risks becoming simplified, moralized, or distorted.\n\nFast-media platforms are defined by brevity, speed, and algorithmic prioritization. TikTok videos, for example, are typically under one minute long and are promoted based on engagement. Metrics such as likes, shares, and watch time drive accessibility.  Media theorist Marshall McLuhan’s assertion that “the medium is the message” is especially relevant here: the structure of the platform shapes not only what is communicated, but how it is understood.\n\nIn fast-media environments, content that provokes strong emotional reactions; shock, outrage, inspiration, is more likely to be amplified. As a result, historical narratives are often framed dramatically, with clear heroes and villains, simplified timelines, and definitive moral judgments. Complexity, uncertainty, and scholarly debate are ill-suited to this format and are  frequently omitted.\n\nCultural critic Neil Postman warned in Amusing Ourselves to Death that media environments oriented toward entertainment inevitably reshape public discourse. Although Postman wrote about television, his critique applies even more forcefully to digital platforms, where entertainment is not merely dominant but algorithmically enforced.\n\nTikTok has emerged as a prominent site of historical storytelling, with creators producing content on topics ranging from ancient civilizations to twentieth-century political events. Proponents argue that such content democratizes history by making it accessible and engaging. While this accessibility is significant, it comes at a cost.\n\nThe constraints of short-form video require creators to condense complex historical events into brief narratives, often without citations or acknowledgment of scholarly disagreement. Authority shifts from trained historians to influencers whose credibility rests on presentation style rather than expertise. This transformation reflects what historian Hayden White described as the narrative construction of history: the way storytelling choices shape meaning as much as facts themselves.\n\nIn fast-media history, chronology is often flattened, context is minimized, and causality is oversimplified. Structural factors such as economics, ideology, and power relations are frequently replaced with personalized or sensational explanations. Over time, this mode of engagement trains audiences to expect history to be immediate, emotionally satisfying, and easily digestible.\n\nThe conversion of history into entertainment alters not only content but perception. Cultural theorist Guy Debord’s concept of the “society of the spectacle” describes a world in which representation replaces reality and appearances overshadow substance. In such a society, history becomes less about understanding the past and more about consuming narratives that affirm identity or provoke reaction.\n\nWhen historical memory is shaped primarily by entertainment logic, it becomes vulnerable to presentism, the tendency to judge the past solely by contemporary values without understanding historical context. Moral clarity replaces moral inquiry. Ambiguity is treated as weakness rather than honesty. The past is no longer something to be studied, but something to be reacted to.\n\nThis shift does not merely distort individual facts; it changes how societies relate to history itself. The patience required for deep reading, sustained analysis, and critical reflection erodes, replaced by rapid consumption and instant judgment.\n\nThis does not mean that digital media should be rejected. Rather, it underscores the need for media literacy and historical thinking skills. Students must be taught not only historical facts, but how historical knowledge is produced, debated, and revised. Without this foundation, fast-media platforms risk becoming the primary arbiters of historical truth.\n\nThe loss of historical memory in a fast-media culture is not simply a technological problem, but a cultural and intellectual one. Short-form platforms like TikTok have reshaped how history is encountered, remembered, and valued, privileging entertainment over interpretation, and immediacy over depth. While these platforms increase access to historical narratives, they also encourage simplification, presentism, and the erosion of scholarly authority.\n\nPreserving historical memory requires more than correcting misinformation; it demands a renewed commitment to slow, critical engagement with the past. The humanities play a vital role in cultivating this engagement by teaching patience, complexity, and interpretive responsibility. In a culture that increasingly treats history as content, the challenge is not merely to remember more, but to remember better.",
+    "series": "values, responsibility,evidence, contextualization, and debate",
+    "link": "https://docs.https://docs.google.com/document/d/e/2PACX-1vSiFp67Grh8xk1NUqgyqBREoQW26LUY3vFzHf7zLQhvzmOWkDCoGIMs_3DOIZpwKH-TvFWuKZ9hVIuo/pub.com/document/d/e/2PACX-1vQD8OM1tcwuEAhReSsATGt3UwQbUQON9ZutBN94s15GCIFYx1Ud7GxfCf7D5-2LDfVUWxHIzOexb790/pub"
+  },
+  {
+    "date": "2025-12-17",
+    "title": "The Quiet Crisis of Artistic Labor",
+    "topic": "Why the Arts Are Becoming Unsustainable for Artists",
+    "body": "Across music, visual art, theater, film, dance, and writing, the arts are celebrated rhetorically while systematically undermined economically. We live in an era of unprecedented access to art, yet the people who create it are increasingly unable to survive through their work. This contradictory cultural abundance, paired with artistic precarity, is one of the most urgent and under-addressed issues in the arts today.\n\nAt the center of this crisis is the normalization of unpaid or underpaid creative labor. Artists are routinely asked to perform “for exposure,” to submit work without compensation, or to accept contracts that strip them of rights in exchange for minimal pay. Internships, residencies, open calls, festivals, and even prestigious institutions often rely on this model, effectively restricting artistic careers to those with independent wealth or external financial support. The result is a narrowing of whose voices get heard, dressed up as meritocracy.\n\nDigital platforms have intensified the problem. Streaming services, social media, and online galleries have radically expanded audiences, but they have also decimated traditional revenue models. Musicians can accumulate millions of streams and still struggle to pay rent. Visual artists watch their work circulate endlessly online while galleries close and physical exhibition opportunities shrink. Writers are expected to maintain a constant online presence while freelance pay stagnates or disappears entirely. The attention economy rewards visibility, not sustainability.\n\nThis economic pressure reshapes the art itself. Artists increasingly tailor their work to algorithms, trends, and virality rather than risk, experimentation, or depth. Long-form, challenging, or culturally specific work is often sidelined in favor of content that performs well quickly. Over time, this erodes artistic diversity and reduces art to a form of disposable entertainment rather than a space for critique, memory, and imagination.\n\nCompounding the issue is the myth that suffering is intrinsic to artistic legitimacy. Society continues to romanticize the “starving artist,” treating financial instability as proof of authenticity rather than evidence of systemic failure. This narrative excuses exploitation and obscures the fact that great art has historically thrived when artists had patronage, institutional support, or stable means, not when they were pushed to burnout.\n\nThe consequences extend beyond artists themselves. When creative careers become inaccessible, entire communities lose representation. Marginalized voices, regional cultures, experimental forms, and intergenerational knowledge quietly disappear. The arts become less reflective of society as a whole and more aligned with the tastes and values of those who can afford to participate.\n\nAddressing this issue requires more than individual resilience. It calls for structural change: fair pay standards, transparency in contracts, stronger public funding for the arts, ethical platform models, and education that prepares artists not only to create but to survive. It also requires audiences and institutions to confront an uncomfortable truth: that enjoying art while ignoring the conditions of its creation is a form of complicity.\n\nThis is not a niche concern. The arts shape how societies understand themselves, process trauma, imagine futures, and preserve meaning. When artists are squeezed out, culture becomes thinner, safer, and less honest. If we care about the vitality of the arts, we must stop treating artistic labor as optional, ornamental, or disposable and start treating it as essential.",
+    "series": "music, visual art, theater, film, dance, and writing"
+  },
+  {
+    "date": "2025-12-12",
+    "title": "The Silent Erosion of Culture",
+    "topic": "The Defunded Arts",
+    "body": "Imagine a city where the theaters are dark, galleries are empty, and music programs in schools have become memories. Across the country, the arts once a vibrant heartbeat of community life are quietly being defunded. It’s not always a headline-grabbing story, but the consequences ripple through every corner of society.\n\nPublic funding for arts programs has dwindled year after year. Once thriving school music departments are now just a memory in the minds of alumni. Local theaters, dance troupes, and community galleries struggle to survive without grants or sponsorships, their stages silenced not by lack of talent, but by lack of support. For students in low-income areas, an arts education is increasingly a luxury, not a right, denying generations the chance to explore creativity, express themselves, or find solace in music, painting, and performance.\n\nYet, the arts are far more than decoration or pastime. They are a vital component of community identity, an engine for local economies, and a buffer against the mental strain of modern life. Studies show that creative engagement strengthens cognitive development in children, combats stress in adults, and builds empathy across communities. By cutting funding, society is not just losing paintings on walls or performances on stage, it’s losing human connection, cultural memory, and the very tools that allow imagination to flourish.\n\nIt’s tempting to dismiss art as nonessential during tight budgets. But the truth is the opposite: when the arts are underfunded, the whole ecosystem suffers. Economically, cities lose tourism dollars, small businesses connected to cultural production falter, and aspiring artists are forced to abandon their craft. Socially, communities lose a safe space to convene, to challenge, to dream, and to heal.\n\nIf we truly care about the health of society; culturally, psychologically, and economically, we must stop treating art as expendable. Reinvesting in creative programs is not a luxury; it is a necessity for vibrant, resilient communities. Every mural, concert, and classroom performance represents not just an artist’s vision, but the collective soul of the community. By protecting and funding the arts, we protect ourselves; our imagination, our empathy, and our capacity to envision a better world.",
+    "series": "Political Policy"
+  },
+  {
+    "date": "2025-12-10",
+    "title": "The Vanishing Map of Culture",
+    "topic": "How America Lost Its Cultural Literacy",
+    "body": "In an age of infinite information, it seems almost paradoxical that our collective understanding of the humanities, literature, history, philosophy, art, languages, and culture is fading more quietly than ever. The decline is not loud. It does not trend on social media. It does not rise to the level of political talking points or national outrage.\n\nIt’s a soft disappearance, like a light dimming in a room where everyone assumes someone else will eventually change the bulb.\n\nAnd yet, the humanities were once considered essential to forming a democratic citizenry. Thomas Jefferson, who helped imagine the American educational ideal, believed that a nation could only remain free if its citizens were broadly educated not only in science and political theory, but in art, rhetoric, and classical thought. Alexis de Tocqueville praised the early United States for its uniquely literate public sphere: newspapers everywhere, libraries in unexpected towns, debates in taverns. A young democracy thrived because its people were curious.\n\nToday, that curiosity is shrinking, not because people are less intelligent, but because the humanities have been pushed to the margins of public conversation. They’ve become the hidden rooms in the intellectual house: still there, but rarely entered, rarely dusted off, rarely seen.\n\nCultural literacy once meant a shared grounding in ideas and references that allowed people from different communities to speak to each other with a common intellectual vocabulary. It meant that a metaphor from Shakespeare or a reference to Greek myth wasn’t a private password but a public language.\n\nNow, the shared map has fragmented.\n\nStudents often graduate high school without reading a full novel. College humanities departments have been downsized or dissolved. Funding for the arts has been cut repeatedly, especially at the state level. And digital spaces engineered for speed, distraction, and novelty encourage a rapid forgetting of anything that doesn’t yield instant gratification.\n\nThe result is subtle but consequential: we lose the ability to recognize ourselves in the mirror of history, to see the patterns repeating, or to understand the symbolic frameworks that once shaped our world.\n\nWithout those references, society becomes rootless.\n\nA person without cultural grounding becomes easier to manipulate, easier to overwhelm, easier to pacify. A population without history becomes vulnerable to the same mistakes, the same demagogues, the same false simplifications.\n\nIt is easy to dismiss the humanities as “nice but not necessary,” yet their disappearance carries real danger. They teach a set of skills that no algorithm, no corporate training, and no quick-fix credential can replace:\n\nReading a novel is one of the few experiences where you inhabit the consciousness of another human being. It is a rehearsal for empathy. Without it, our capacity to imagine the pain or dignity of others shrinks.\n\nIt is important to fine-tune our ability to detect manipulation and to reason with critical thinking.\n\nPropaganda thrives where critical thinking disappears. History is full of warnings, but only if people know it. Without historical literacy, the present becomes a permanent state of amnesia ripe for exploitation.\n\nPhilosophy teaches us to ask:\nWhy do we believe what we believe?\nWhat is justice?\nWhat is freedom?\nWhat is a life well lived?\n\nWhen public discourse lacks these questions, it devolves into slogans.\n\nScience and technology build the tools of society, but the humanities define what those tools are for. Without imagination and meaning, innovation becomes directionless, impressive, but empty.\n\nThrough the humanities, we learn the appreciation of beauty, lineage, and human expression.\n\nA civilization that stops valuing its art begins to lose its sense of identity. Cultural memory erodes. The aesthetic dimension of life, the part that nourishes the soul, dims.\n\nWhy This Disappearance Isn’t in the Headlines\n\nThe decline of the humanities isn’t sensational. There are no dramatic images to accompany it. No disaster footage. No scandal. It is a slow drip, not a flood. It’s the kind of problem that takes decades to reveal its consequences, and those consequences, once visible, are difficult to reverse.\n\nMainstream media focuses on immediacy: elections, conflicts, scandals, and economic shocks. But the humanities operate on long timelines. They shape the architecture of understanding, not the churn of the news cycle.\n\nAnd perhaps the most uncomfortable truth is this: a population deeply versed in the humanities is harder to mislead. Harder to distract. Harder to pacify with entertainment or partisan spectacle.\n\nPower rarely celebrates what makes citizens more discerning.\n\nA Society That Remembers the Humanities Remembers Itself\n\nWhat would it look like to reclaim the humanities?\nIt would start with a shift in values: recognizing that the arts and humanities are not luxuries but the very tools that allow us to navigate complexity.\n\nImagine:\n\nSchools where literature is not treated as an afterthought, but as a lens for understanding human behavior.\n\nPublic libraries that are vibrant community hubs, not relics struggling for funding.\n\nCitizens who know enough history to recognize when it is being weaponized.\n\nA cultural landscape where beauty, depth, and imagination are part of everyday life.\n\nA society that invests in the humanities invests in its own memory, its own conscience, and its own future.\n\nEven now, in small pockets across the country, people are fighting quietly to keep them alive:\nteachers who insist on teaching real books,\nstudents who fall in love with philosophy,\nlocal theatres performing classic plays,\ncommunity art centers offering workshops,\nlibraries hosting conversations about history or poetry.\n\nThe revival is possible. The ember is still alive.\nBut it requires acknowledging that we are on the verge of losing something irreplaceable, not a set of academic subjects, but a part of our collective soul.",
+    "series": "Arts, Literature, History"
+  },
+  {
+    "date": "2025-11-22",
+    "title": "Music, Art, Fashion and Technology - Merging",
+    "topic": "Fashion and Culture",
+    "body": "Fashion and culture in 2025 are blending nostalgia, sustainability, and innovation. Retro “granny print” patterns are coming back, while designers are upcycling vintage materials and using AI to create unique, ethical designs. People are increasingly drawn to meaningful, environmentally conscious fashion choices.\nLuxury culture is evolving with immersive experiences and interactive pop-ups, like those in Singapore, that combine fashion, art, and storytelling. Customizable and regionally inspired styles are becoming popular, emphasizing ethical craftsmanship and transparent production.\nMusic, art, and technology are also merging. Exhibitions like G‑Dragon’s “Übermensch” combine multimedia, sculpture, and interactive installations, while AI-driven tools are helping generate culturally rich, creative fashion designs. Overall, modern culture emphasizes expression, sustainability, and the fusion of technology with art.\nThe merging of music, art, and technology is not just a technical shift; it’s a cultural transformation. It redefines what it means to create, to perform, to experience art. In 2025, we see this transformation accelerating: immersive art spaces, AI‑augmented creation, democratized interfaces, and hybrid forms are challenging old hierarchies and expanding who can be an artist.\nAt best, this could lead to a more inclusive, experimental, borderless creative culture, one where art and music adapt to the digital era without losing soul. But at worst, it could commodify creativity, diminish the role of human labor, and homogenize expression under algorithmic optimization.\nThe coming decade will likely decide which path prevails, one shaped by human‑machine symbiosis and inclusive creativity, or by technocratic efficiency and economic pressures.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vSW8sVCKAgVPCGnnOqofMv44_j4Q1SgcNnhuouGkPhEyz5krTZlfg80rVcbz6rGzU4kiPurjfhHmCDY/pub",
+    "series": "creativity, digital era, music, homogenizing, expression"
+  },
+  {}
+];
+
+// ======================================================
+// 2. STATE
+// ======================================================
+let filtered = comments.slice();
+let showingDetail = null;
+
+// ======================================================
+// 3. FILTERING
+// ======================================================
+function filterComments() {
+  const dateVal   = document.getElementById("dateSearch").value;
+  const topicVal  = document.getElementById("topicSearch").value.trim().toLowerCase();
+  const seriesVal = document.getElementById("seriesSearch").value.trim().toLowerCase();
+
+  filtered = comments.filter(c => {
+    if (!c || !c.title) return false;
+
+    const dateMatch = !dateVal || c.date === dateVal;
+
+    const topicMatch = !topicVal || (
+      (c.topic  && c.topic.toLowerCase().includes(topicVal)) ||
+      (c.title  && c.title.toLowerCase().includes(topicVal)) ||
+      (c.body   && c.body.toLowerCase().includes(topicVal))
+    );
+
+    const seriesMatch = !seriesVal || (
+      c.series && c.series.toLowerCase().includes(seriesVal)
+    );
+
+    return dateMatch && topicMatch && seriesMatch;
+  });
+
+  showingDetail = null;
+  renderList();
+}
+
+// ======================================================
+// 4. LIST RENDER
+// ======================================================
+function renderList() {
+  const list   = document.getElementById("commentList");
+  const detail = document.getElementById("commentDetail");
+  if (!list || !detail) return;
+
+  detail.innerHTML = "";
+  list.innerHTML = "";
+
+  if (!filtered.length) {
+    list.innerHTML = `<li><span class="comment-title">No entries found.</span></li>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const li = document.createElement("li");
+    li.onclick = () => showDetail(c);
+
+    const snippet = c.body
+      ? c.body.slice(0, 120) + (c.body.length > 120 ? "…" : "")
+      : "";
+
+    const topic  = c.topic  || "";
+    const series = c.series || "";
+    const date   = c.date   || "";
+
+    const metaText = [topic, series ? `Series: ${series}` : "", date]
+      .filter(Boolean).join(" • ");
+
+    li.innerHTML = `
+      <div class="comment-title">${escapeHtml(c.title || "")}</div>
+      <div class="comment-meta">${escapeHtml(metaText)}</div>
+      <div class="comment-body">${escapeHtml(snippet)}</div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// ======================================================
+// 5. DETAIL VIEW → POPUP MODAL
+// ======================================================
+function showDetail(c) {
+  showingDetail = c;
+
+  const backdrop = document.getElementById("modalBackdrop");
+  const modal    = document.getElementById("articleModal");
+  const titleEl  = document.getElementById("modalTitle");
+  const metaEl   = document.getElementById("modalMeta");
+  const bodyEl   = document.getElementById("modalBody");
+  const linkRow  = document.getElementById("modalLinkRow");
+
+  const topic  = c.topic  || "";
+  const series = c.series || "";
+  const date   = c.date   || "";
+
+  const metaText = [topic, series ? `Series: ${series}` : "", date]
+    .filter(Boolean).join(" • ");
+
+  titleEl.textContent = c.title || "";
+  metaEl.textContent  = metaText;
+  bodyEl.textContent  = c.body || "";
+  linkRow.innerHTML   = "";
+
+  if (c.link) {
+    const btn = document.createElement("button");
+    btn.className = "open-link-btn";
+    btn.textContent = "Open Full Article";
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      window.open(c.link, "_blank");
+    });
+    linkRow.appendChild(btn);
+  }
+
+  backdrop.classList.remove("hidden");
+  modal.classList.remove("hidden");
+
+  // Center the modal initially
+  const rect = modal.getBoundingClientRect();
+  const left = Math.max(14, (window.innerWidth - rect.width) / 2);
+  const top  = Math.max(24, (window.innerHeight - rect.height) / 4);
+  modal.style.left = left + "px";
+  modal.style.top  = top  + "px";
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.add("hidden");
+  document.getElementById("articleModal").classList.add("hidden");
+}
+
+// ======================================================
+// 6. DRAGGABLE MODAL
+// ======================================================
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+function initDrag() {
+  const modal  = document.getElementById("articleModal");
+  const header = document.getElementById("modalHeader");
+  if (!modal || !header) return;
+
+  header.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    const rect = modal.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", function(e) {
+    if (!isDragging) return;
+    const modal = document.getElementById("articleModal");
+    if (!modal) return;
+
+    let left = e.clientX - dragOffsetX;
+    let top  = e.clientY - dragOffsetY;
+
+    const maxLeft = window.innerWidth  - modal.offsetWidth;
+    const maxTop  = window.innerHeight - modal.offsetHeight;
+
+    if (left < 7) left = 7;
+    if (top  < 7) top  = 7;
+    if (left > maxLeft - 7) left = maxLeft - 7;
+    if (top  > maxTop  - 7) top  = maxTop  - 7;
+
+    modal.style.left = left + "px";
+    modal.style.top  = top  + "px";
+  });
+
+  window.addEventListener("mouseup", function() {
+    isDragging = false;
+  });
+}
+
+// ======================================================
+// 7. UTILS
+// ======================================================
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ======================================================
+// 8. INIT
+// ======================================================
+filterComments();
+initDrag();
+</script>
+</body>
+</html>
