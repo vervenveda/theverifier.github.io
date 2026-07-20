@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My App Portfolio</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            padding: 20px;
+            text-align: center;
+        }
+        .app-container {
+            width: 90%;
+            max-width: 1000px;
+            height: 600px; /* Adjust height based on your apps */
+            margin: 40px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Welcome to My App Showcase</h1>
+        <p>Scroll down to interact with my projects!</p>
+    </header>
+
+    <!-- First App Box -->
+    <div class="app-container">
+        <iframe src="app1/index.html" title="First Application"></iframe>
+    </div>
+
+    <!-- Second App Box -->
+    <div class="app-container">
+        <iframe src="app2/index.html" title="Second Application"></iframe>
+    </div>
+
+</body>
+</html>
