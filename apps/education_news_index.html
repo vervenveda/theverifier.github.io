@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Education News App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --bg:#f4f4f4; --text:#222; --card:#fff; --accent:#4a7efc; --muted:#667085;
+    --chip:#eef2ff; --chipText:#273a9b;
+  }
+  .dark{
+    --bg:#111; --text:#f0f0f0; --card:#1c1c1c; --accent:#6ba3ff; --muted:#a2adbd;
+    --chip:#1b2340; --chipText:#cfe0ff;
+  }
+  body{
+    margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background:var(--bg); color:var(--text);
+    transition:background .3s, color .3s;
+  }
+  header{
+    padding:15px;
+    background:var(--accent);
+    color:#fff;
+    font-weight:800;
+    text-align:center;
+    font-size:1.35em;
+    letter-spacing:.2px;
+  }
+
+  .tabs{
+    display:flex; gap:10px; overflow-x:auto;
+    background:var(--card);
+    padding:10px;
+    border-bottom:1px solid rgba(0,0,0,0.08);
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab{
+    padding:8px 14px;
+    border-radius:20px;
+    background:var(--accent);
+    color:#fff;
+    font-size:.92em;
+    cursor:pointer;
+    white-space:nowrap;
+    user-select:none;
+    display:flex; align-items:center; gap:8px;
+  }
+  .tab.secondary{ background:transparent; color:var(--text); border:1px solid rgba(0,0,0,.15); }
+  .dark .tab.secondary{ border-color:rgba(255,255,255,.18); }
+  .badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:18px; height:18px; padding:0 6px;
+    border-radius:999px;
+    background:rgba(255,255,255,.25);
+    color:#fff; font-size:.78em; font-weight:800;
+  }
+
+  #wrap{ max-width:980px; margin:0 auto; }
+
+  #newsCard{
+    background:var(--card);
+    margin:14px 14px 10px;
+    padding:16px 16px 14px;
+    border-radius:14px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.12);
+    transition:opacity .5s ease, transform .5s ease;
+    min-height:210px;
+  }
+  #title{
+    font-size:1.18em;
+    font-weight:900;
+    line-height:1.2;
+    margin-bottom:10px;
+  }
+  #metaRow{
+    display:flex; flex-wrap:wrap; gap:8px;
+    color:var(--muted); font-size:.92em;
+    margin-bottom:12px;
+  }
+  .chip{
+    background:var(--chip);
+    color:var(--chipText);
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:.84em;
+    font-weight:700;
+  }
+  .chip.match{ opacity:.95; }
+  #desc{
+    opacity:.92;
+    line-height:1.45;
+  }
+  #desc small{ color:var(--muted); }
+
+  .controls{
+    margin:10px 14px 18px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:space-evenly;
+  }
+  button{
+    background:var(--accent);
+    border:none;
+    padding:11px 16px;
+    color:#fff;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:1em;
+    font-weight:800;
+  }
+  button.secondary{
+    background:transparent;
+    color:var(--text);
+    border:1px solid rgba(0,0,0,.15);
+  }
+  .dark button.secondary{ border-color:rgba(255,255,255,.18); }
+
+  #favoritesPanel, #settingsPanel, #alertsPanel{
+    margin:14px;
+    background:var(--card);
+    padding:14px;
+    border-radius:14px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    display:none;
+  }
+  .panelTitle{
+    font-weight:900;
+    margin:0 0 10px;
+    font-size:1.05em;
+  }
+  .row{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    margin:10px 0;
+  }
+  input[type="text"], textarea, select{
+    background:transparent;
+    color:var(--text);
+    border:1px solid rgba(0,0,0,.18);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:1em;
+    width:min(520px, 100%);
+  }
+  .dark input[type="text"], .dark textarea, .dark select{
+    border-color:rgba(255,255,255,.18);
+  }
+  textarea{ min-height:90px; resize:vertical; }
+  label{ font-weight:800; }
+  .hint{ color:var(--muted); font-size:.92em; margin-top:4px; }
+  .listItem{
+    padding:12px 12px;
+    border-radius:12px;
+    background:rgba(0,0,0,0.03);
+    margin:10px 0;
+  }
+  .dark .listItem{ background:rgba(255,255,255,0.06); }
+  .listItem b{ display:block; margin-bottom:6px; }
+  .listActions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+  .miniBtn{
+    padding:9px 12px; border-radius:10px; font-size:.95em;
+  }
+
+  /* toast */
+  #toast{
+    position:fixed;
+    left:14px;
+    right:14px;
+    bottom:14px;
+    max-width:980px;
+    margin:0 auto;
+    background:var(--card);
+    color:var(--text);
+    box-shadow:0 12px 26px rgba(0,0,0,0.22);
+    border-radius:14px;
+    padding:12px 14px;
+    z-index:9999;
+    display:none;
+  }
+  #toast strong{ display:block; margin-bottom:4px; }
+  #toast .small{ color:var(--muted); font-size:.92em; }
+
+  @media (max-width:520px){
+    #newsCard{ margin:12px 12px 10px; padding:14px; }
+    .controls{ margin:10px 12px 18px; }
+  }
+</style>
+</head>
+
+<body>
+<header>🎓 Education News</header>
+
+<div id="wrap">
+  <div class="tabs">
+    <div class="tab" data-cat="general">All</div>
+    <div class="tab" data-cat="schools">Schools</div>
+    <div class="tab" data-cat="higher">Higher Ed</div>
+    <div class="tab" data-cat="policy">Education Policy</div>
+
+    <div class="tab secondary" onclick="toggleAlerts()">
+      🔔 Alerts <span class="badge" id="alertsBadge">0</span>
+    </div>
+    <div class="tab secondary" onclick="toggleFavorites()">⭐ Favorites</div>
+    <div class="tab secondary" onclick="toggleSettings()">⚙️ Settings</div>
+    <div class="tab secondary" onclick="toggleDark()">🌙/☀️</div>
+    <div class="tab secondary" onclick="toggleFullscreen()">⛶</div>
+  </div>
+
+  <div id="newsCard" onclick="openCurrentLink()" title="Click to open source article">
+    <div id="title">Loading education news…</div>
+    <div id="metaRow"></div>
+    <div id="desc"></div>
+  </div>
+
+  <div class="controls">
+    <button onclick="prev()">⬅ Prev</button>
+    <button onclick="readAloud()">🔊 Read</button>
+    <button class="secondary" onclick="openCurrentLink()">🔗 Open</button>
+    <button onclick="saveFavorite()">⭐ Save</button>
+    <button onclick="next()">Next ➡</button>
+  </div>
+
+  <div id="alertsPanel">
+    <div class="panelTitle">🔔 Keyword Alerts</div>
+    <div class="hint">These are new articles since your last refresh that matched your keywords.</div>
+    <div id="alertsList"></div>
+    <div class="row">
+      <button class="miniBtn" onclick="clearAlerts()">Clear Alerts</button>
+      <button class="miniBtn secondary" onclick="loadNews({force:true})">Refresh Now</button>
+    </div>
+  </div>
+
+  <div id="favoritesPanel">
+    <div class="panelTitle">⭐ Favorites</div>
+    <div id="favoritesList"></div>
+    <div class="row">
+      <button class="miniBtn" onclick="clearFavorites()">Clear Favorites</button>
+    </div>
+  </div>
+
+  <div id="settingsPanel">
+    <div class="panelTitle">⚙️ Settings</div>
+
+    <div class="row">
+      <label for="refreshSelect">Auto-refresh:</label>
+      <select id="refreshSelect">
+        <option value="0">Off</option>
+        <option value="60">Hourly</option>
+        <option value="180">Every 3 hours</option>
+        <option value="360">Every 6 hours</option>
+        <option value="720">Every 12 hours</option>
+        <option value="1440">Daily</option>
+      </select>
+      <button class="miniBtn" onclick="applySettings()">Save</button>
+      <button class="miniBtn secondary" onclick="loadNews({force:true})">Refresh Now</button>
+    </div>
+
+    <div class="row">
+      <label for="keywordsBox">Keyword triggers:</label>
+      <textarea id="keywordsBox" placeholder="Comma or new-line separated keywords (e.g., teacher pay, school safety, curriculum, AI tutoring)"></textarea>
+      <div class="hint">Tip: multi-word phrases work. Matches create alerts and can be highlighted on the card.</div>
+    </div>
+
+    <div class="row">
+      <label for="keywordMode">Keyword behavior:</label>
+      <select id="keywordMode">
+        <option value="highlight">Highlight matches (recommended)</option>
+        <option value="only">Show only matching articles</option>
+      </select>
+
+      <label style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="notifyToggle" />
+        Desktop notifications
+      </label>
+    </div>
+
+    <div class="hint">
+      Note: auto-refresh + alerts work while this page is open. True background refresh requires a PWA/service-worker setup.
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+/* ===========================
+   FEEDS (Education)
+=========================== */
+const FEEDS = [
+  "https://feeds.bbci.co.uk/news/education/rss.xml",
+  "https://www.edweek.org/rss",
+  "https://www.insidehighered.com/rss/news",
+  "https://www.chronicle.com/section/news/6/feed",
+  "https://www.theguardian.com/education/rss",
+];
+
+/* ===========================
+   STORAGE KEYS
+=========================== */
+const CACHE_KEY    = "eduNewsCache:v2";
+const FAV_KEY      = "eduNewsFavs:v2";
+const SETTINGS_KEY = "eduNewsSettings:v2";
+const SEEN_KEY     = "eduNewsSeenIds:v2";
+const ALERTS_KEY   = "eduNewsAlerts:v2";
+
+/* ===========================
+   DEFAULT SETTINGS
+=========================== */
+const DEFAULT_SETTINGS = {
+  refreshMins: 360, // every 6 hours by default
+  keywords: ["teacher", "curriculum", "school safety", "student debt", "AI", "special education"],
+  keywordMode: "highlight", // "highlight" | "only"
+  notify: false
+};
+
+let settings = loadSettings();
+
+/* ===========================
+   APP STATE
+=========================== */
+let allArticles = [];     // full dataset
+let articles = [];        // filtered by category + keywordMode
+let index = 0;
+let currentCategory = "general";
+let refreshTimer = null;
+
+/* ===========================
+   UTIL: simple toast
+=========================== */
+function toast(title, msg){
+  const t = document.getElementById("toast");
+  t.innerHTML = `<strong>${escapeHtml(title)}</strong><div class="small">${escapeHtml(msg || "")}</div>`;
+  t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 4200);
+}
+
+/* ===========================
+   UTIL: strip html
+=========================== */
+function htmlToText(html){
+  const div = document.createElement("div");
+  div.innerHTML = html || "";
+  return (div.textContent || "").replace(/\s+/g," ").trim();
+}
+
+/* ===========================
+   CATEGORIZATION (heuristics)
+=========================== */
+function categorize(text){
+  const t = (text || "").toLowerCase();
+
+  const higher = [
+    "higher ed","higher education","university","college","campus","undergraduate","graduate",
+    "phd","tuition","student debt","faculty","tenure","community college"
+  ];
+  const schools = [
+    "k-12","k12","school","schools","district","principal","teacher","teachers","student","students",
+    "classroom","kindergarten","elementary","middle school","high school","superintendent","school board"
+  ];
+  const policy = [
+    "department of education","legislation","bill","policy","policies","federal","state",
+    "supreme court","lawsuit","ban","standards","curriculum mandate","funding","voucher","charter",
+    "regulation","union","strike","collective bargaining"
+  ];
+
+  const hasAny = (arr) => arr.some(w => t.includes(w));
+
+  if (hasAny(higher)) return "higher";
+  if (hasAny(policy)) return "policy";
+  if (hasAny(schools)) return "schools";
+  return "general";
+}
+
+/* ===========================
+   KEYWORDS / MATCHING
+=========================== */
+function normalizeKeywords(list){
+  return (list || [])
+    .map(s => String(s).trim().toLowerCase())
+    .filter(Boolean)
+    .filter(s => s.length >= 2);
+}
+
+function parseKeywordsFromBox(){
+  const raw = (document.getElementById("keywordsBox").value || "");
+  const parts = raw
+    .split(/[\n,]+/g)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return normalizeKeywords(parts);
+}
+
+function matchKeywordsForArticle(a){
+  const keys = normalizeKeywords(settings.keywords);
+  if (!keys.length) return [];
+  const hay = ((a.title||"") + " " + htmlToText(a.desc||"") + " " + (a.source||"")).toLowerCase();
+  const matches = [];
+  for (const k of keys){
+    if (hay.includes(k)) matches.push(k);
+  }
+  return matches;
+}
+
+/* ===========================
+   FETCH RSS via AllOrigins
+=========================== */
+async function fetchRSS(url){
+  const res = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(url));
+  const data = await res.json();
+  const xml = new DOMParser().parseFromString(data.contents, "text/xml");
+
+  const channelTitle = xml.querySelector("channel > title")?.textContent?.trim() || sourceFromUrl(url);
+
+  const items = [...xml.querySelectorAll("item")].map(item => {
+    const title = item.querySelector("title")?.textContent?.trim() || "";
+    const desc  = item.querySelector("description")?.textContent || "";
+    const link  = item.querySelector("link")?.textContent?.trim() || "";
+    const guid  = item.querySelector("guid")?.textContent?.trim() || "";
+    const pub   = item.querySelector("pubDate")?.textContent?.trim() || "";
+    const pubMs = pub ? Date.parse(pub) : NaN;
+
+    const id = (guid || link || (title + "|" + channelTitle)).slice(0, 500);
+
+    const combined = `${title} ${htmlToText(desc)}`;
+    const cat = categorize(combined);
+
+    return {
+      id,
+      title,
+      desc,
+      link,
+      source: channelTitle,
+      pubDate: pub || "",
+      pubMs: Number.isFinite(pubMs) ? pubMs : 0,
+      category: cat,
+      matches: [] // fill later
+    };
+  });
+
+  return items.filter(x => x.title && (x.link || x.id));
+}
+
+function sourceFromUrl(url){
+  try{
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./,"");
+  }catch{
+    return "Source";
+  }
+}
+
+/* ===========================
+   LOAD / CACHE / DEDUPE
+=========================== */
+function loadCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  }catch{ return null; }
+}
+
+function saveCache(items){
+  try{
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      fetchedAt: Date.now(),
+      items
+    }));
+  }catch{}
+}
+
+function getSeenSet(){
+  try{
+    const raw = localStorage.getItem(SEEN_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(arr) ? arr : []);
+  }catch{
+    return new Set();
+  }
+}
+
+function saveSeenSet(set){
+  try{
+    localStorage.setItem(SEEN_KEY, JSON.stringify([...set].slice(-4000)));
+  }catch{}
+}
+
+function getAlerts(){
+  try{
+    const raw = localStorage.getItem(ALERTS_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  }catch{
+    return [];
+  }
+}
+
+function saveAlerts(arr){
+  try{
+    localStorage.setItem(ALERTS_KEY, JSON.stringify(arr.slice(0, 300)));
+  }catch{}
+}
+
+async function loadNews(opts = {}){
+  const force = !!opts.force;
+  const cache = loadCache();
+
+  // If not forcing and cache is "fresh enough", just use it
+  if (!force && cache?.items?.length){
+    allArticles = cache.items;
+    applyMatchesAndFilters();
+    showArticle();
+    return;
+  }
+
+  let temp = [];
+  for (const feed of FEEDS){
+    try{
+      const items = await fetchRSS(feed);
+      temp.push(...items);
+    }catch(e){
+      console.warn("RSS error", feed, e);
+    }
+  }
+
+  if (!temp.length){
+    if (cache?.items?.length){
+      allArticles = cache.items;
+      applyMatchesAndFilters();
+      showArticle();
+      toast("Offline / RSS blocked", "Showing saved cache.");
+    }else{
+      toast("No news loaded", "RSS fetch failed. Try again later.");
+    }
+    return;
+  }
+
+  // Dedupe by id (or fallback title+link)
+  const map = new Map();
+  for (const it of temp){
+    const key = it.id || (it.title + "|" + it.link);
+    if (!map.has(key)) map.set(key, it);
+  }
+  temp = [...map.values()];
+
+  // Sort newest first (if pubDate missing, it sinks)
+  temp.sort((a,b) => (b.pubMs||0) - (a.pubMs||0));
+
+  allArticles = temp;
+
+  // keyword matches + alerts for new items
+  const seen = getSeenSet();
+  const alerts = getAlerts();
+  let newAlertsCount = 0;
+
+  for (const a of allArticles){
+    a.matches = matchKeywordsForArticle(a);
+
+    if (!seen.has(a.id)){
+      // mark seen regardless
+      seen.add(a.id);
+
+      // if keyword match, add to alerts
+      if (a.matches.length){
+        alerts.unshift({
+          id: a.id,
+          title: a.title,
+          link: a.link,
+          source: a.source,
+          pubMs: a.pubMs,
+          pubDate: a.pubDate,
+          category: a.category,
+          matches: a.matches
+        });
+        newAlertsCount++;
+      }
+    }
+  }
+
+  saveSeenSet(seen);
+  saveAlerts(alerts);
+  updateAlertsUI();
+
+  saveCache(allArticles);
+  applyMatchesAndFilters();
+  index = 0;
+  showArticle();
+
+  if (newAlertsCount > 0){
+    toast("New keyword matches", `${newAlertsCount} new article(s) matched your keywords.`);
+    maybeNotify(`Education Alerts: ${newAlertsCount} match(es)`, "Open the app to review.");
+  }else{
+    toast("Updated", "Education news refreshed.");
+  }
+}
+
+/* ===========================
+   FILTERS + UI
+=========================== */
+function applyMatchesAndFilters(){
+  // category filter
+  const catFiltered = allArticles.filter(a => {
+    if (currentCategory === "general") return true;
+    return a.category === currentCategory;
+  });
+
+  // keyword mode
+  if (settings.keywordMode === "only"){
+    articles = catFiltered.filter(a => (a.matches && a.matches.length));
+  }else{
+    articles = catFiltered.slice();
+  }
+
+  if (!articles.length){
+    // still set to avoid crashes
+    articles = catFiltered.slice();
+  }
+
+  if (index >= articles.length) index = 0;
+  updateAlertsUI();
+}
+
+function formatDate(ms, fallback){
+  if (ms && ms > 0){
+    try{
+      return new Date(ms).toLocaleString(undefined, {year:"numeric", month:"short", day:"2-digit"});
+    }catch{}
+  }
+  return fallback || "";
+}
+
+function showArticle(direction = 1){
+  if (!articles.length){
+    document.getElementById("title").textContent = "No articles loaded yet.";
+    document.getElementById("desc").textContent = "Try Refresh Now in Settings.";
+    document.getElementById("metaRow").innerHTML = "";
+    return;
+  }
+
+  const card = document.getElementById("newsCard");
+  card.style.opacity = 0;
+  card.style.transform = `translateX(${direction * 50}px)`;
+
+  setTimeout(() => {
+    const a = articles[index];
+
+    document.getElementById("title").textContent = a.title || "(untitled)";
+
+    // meta + chips
+    const meta = [];
+    meta.push(`<span class="chip">${escapeHtml(a.category || "general")}</span>`);
+    meta.push(`<span class="chip">${escapeHtml(a.source || "source")}</span>`);
+    const d = formatDate(a.pubMs, a.pubDate);
+    if (d) meta.push(`<span class="chip">${escapeHtml(d)}</span>`);
+
+    // matches chips
+    if (a.matches && a.matches.length && settings.keywordMode === "highlight"){
+      const uniq = [...new Set(a.matches)].slice(0, 5);
+      for (const m of uniq){
+        meta.push(`<span class="chip match">🔎 ${escapeHtml(m)}</span>`);
+      }
+    }
+    document.getElementById("metaRow").innerHTML = meta.join(" ");
+
+    // desc (keep HTML, but trim to something readable)
+    const text = htmlToText(a.desc || "");
+    const short = text.length > 700 ? text.slice(0, 700) + "…" : text;
+
+    document.getElementById("desc").innerHTML = short
+      ? `<div>${escapeHtml(short)}</div><small>Tap card to open the original source.</small>`
+      : `<div><small>No description provided.</small></div>`;
+
+    card.style.opacity = 1;
+    card.style.transform = "translateX(0)";
+  }, 260);
+}
+
+function next(){
+  if (!articles.length) return;
+  index = (index + 1) % articles.length;
+  showArticle(+1);
+}
+function prev(){
+  if (!articles.length) return;
+  index = (index - 1 + articles.length) % articles.length;
+  showArticle(-1);
+}
+
+function openCurrentLink(){
+  if (!articles.length) return;
+  const a = articles[index];
+  if (a?.link) window.open(a.link, "_blank");
+}
+
+/* ===========================
+   SPEECH
+=========================== */
+function readAloud(){
+  if (!articles.length) return;
+  const a = articles[index];
+  const descText = htmlToText(a.desc || "");
+  const msg = new SpeechSynthesisUtterance(`${a.title || ""}. ${descText}`);
+  speechSynthesis.cancel();
+  speechSynthesis.speak(msg);
+}
+
+/* ===========================
+   FAVORITES
+=========================== */
+function saveFavorite(){
+  if (!articles.length) return;
+  const a = articles[index];
+  let favs = [];
+  try{ favs = JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); }catch{}
+  if (!Array.isArray(favs)) favs = [];
+
+  // dedupe
+  if (!favs.some(x => x && x.id === a.id)){
+    favs.unshift({
+      id:a.id, title:a.title, link:a.link, desc:a.desc, source:a.source, pubMs:a.pubMs, pubDate:a.pubDate, category:a.category
+    });
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs.slice(0, 300)));
+    toast("Saved", "Added to Favorites.");
+  }else{
+    toast("Already saved", "This article is already in Favorites.");
+  }
+  renderFavorites();
+}
+
+function renderFavorites(){
+  const box = document.getElementById("favoritesList");
+  let favs = [];
+  try{ favs = JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); }catch{}
+  if (!Array.isArray(favs) || !favs.length){
+    box.innerHTML = `<div class="hint">No favorites yet.</div>`;
+    return;
+  }
+  box.innerHTML = favs.map(f => {
+    const d = formatDate(f.pubMs, f.pubDate);
+    return `
+      <div class="listItem">
+        <b>${escapeHtml(f.title || "")}</b>
+        <div class="hint">${escapeHtml((f.source||"") + (d ? " • " + d : "") + (f.category ? " • " + f.category : ""))}</div>
+        <div class="listActions">
+          <button class="miniBtn" onclick="window.open('${escapeAttr(f.link||"")}', '_blank')">Open</button>
+          <button class="miniBtn secondary" onclick="removeFavorite('${escapeAttr(f.id||"")}')">Remove</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function removeFavorite(id){
+  let favs = [];
+  try{ favs = JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); }catch{}
+  favs = (Array.isArray(favs) ? favs : []).filter(x => x && x.id !== id);
+  localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  renderFavorites();
+}
+
+function clearFavorites(){
+  if (!confirm("Clear all favorites?")) return;
+  localStorage.removeItem(FAV_KEY);
+  renderFavorites();
+}
+
+/* ===========================
+   ALERTS UI
+=========================== */
+function updateAlertsUI(){
+  const alerts = getAlerts();
+  const badge = document.getElementById("alertsBadge");
+  badge.textContent = String(Math.min(alerts.length, 99));
+  renderAlerts();
+}
+
+function renderAlerts(){
+  const box = document.getElementById("alertsList");
+  const alerts = getAlerts();
+  if (!alerts.length){
+    box.innerHTML = `<div class="hint">No keyword alerts yet. Add keywords in Settings, then refresh.</div>`;
+    return;
+  }
+  box.innerHTML = alerts.slice(0, 80).map(a => {
+    const d = formatDate(a.pubMs, a.pubDate);
+    const m = (a.matches || []).slice(0, 6).join(", ");
+    return `
+      <div class="listItem">
+        <b>${escapeHtml(a.title || "")}</b>
+        <div class="hint">${escapeHtml((a.source||"") + (d ? " • " + d : "") + (a.category ? " • " + a.category : ""))}</div>
+        <div class="hint">Matched: ${escapeHtml(m || "(keyword)")}</div>
+        <div class="listActions">
+          <button class="miniBtn" onclick="window.open('${escapeAttr(a.link||"")}', '_blank')">Open</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function clearAlerts(){
+  if (!confirm("Clear all alerts?")) return;
+  localStorage.removeItem(ALERTS_KEY);
+  updateAlertsUI();
+}
+
+/* ===========================
+   PANELS + TOGGLES
+=========================== */
+function hideAllPanels(){
+  document.getElementById("favoritesPanel").style.display = "none";
+  document.getElementById("settingsPanel").style.display  = "none";
+  document.getElementById("alertsPanel").style.display    = "none";
+}
+function toggleFavorites(){
+  const p = document.getElementById("favoritesPanel");
+  const open = (p.style.display === "block");
+  hideAllPanels();
+  if (!open){
+    renderFavorites();
+    p.style.display = "block";
+    p.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+}
+function toggleSettings(){
+  const p = document.getElementById("settingsPanel");
+  const open = (p.style.display === "block");
+  hideAllPanels();
+  if (!open){
+    hydrateSettingsUI();
+    p.style.display = "block";
+    p.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+}
+function toggleAlerts(){
+  const p = document.getElementById("alertsPanel");
+  const open = (p.style.display === "block");
+  hideAllPanels();
+  if (!open){
+    updateAlertsUI();
+    p.style.display = "block";
+    p.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+}
+
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
+
+function toggleFullscreen(){
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+/* ===========================
+   CATEGORY TABS
+=========================== */
+document.querySelectorAll(".tab[data-cat]").forEach(tab => {
+  tab.onclick = () => {
+    currentCategory = tab.dataset.cat;
+    applyMatchesAndFilters();
+    index = 0;
+    showArticle();
+  };
+});
+
+/* ===========================
+   AUTO-REFRESH SCHEDULER
+=========================== */
+function applyAutoRefresh(){
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = null;
+
+  const mins = Number(settings.refreshMins || 0);
+  if (!mins || mins <= 0) return;
+
+  refreshTimer = setInterval(() => {
+    loadNews({force:true});
+  }, mins * 60 * 1000);
+}
+
+// If user returns to tab, refresh if stale past refreshMins
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  const cache = loadCache();
+  const mins = Number(settings.refreshMins || 0);
+  if (!mins || mins <= 0) return;
+  const ageMs = cache?.fetchedAt ? (Date.now() - cache.fetchedAt) : Infinity;
+  if (ageMs > mins * 60 * 1000) loadNews({force:true});
+});
+
+/* ===========================
+   SETTINGS
+=========================== */
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return structuredClone(DEFAULT_SETTINGS);
+    const parsed = JSON.parse(raw);
+    return {
+      refreshMins: Number(parsed.refreshMins ?? DEFAULT_SETTINGS.refreshMins),
+      keywords: Array.isArray(parsed.keywords) ? parsed.keywords : DEFAULT_SETTINGS.keywords,
+      keywordMode: (parsed.keywordMode === "only" ? "only" : "highlight"),
+      notify: !!parsed.notify
+    };
+  }catch{
+    return structuredClone(DEFAULT_SETTINGS);
+  }
+}
+
+function saveSettings(){
+  try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch{}
+}
+
+function hydrateSettingsUI(){
+  document.getElementById("refreshSelect").value = String(settings.refreshMins || 0);
+  document.getElementById("keywordMode").value = settings.keywordMode || "highlight";
+  document.getElementById("keywordsBox").value = (settings.keywords || []).join(", ");
+  document.getElementById("notifyToggle").checked = !!settings.notify;
+}
+
+function applySettings(){
+  settings.refreshMins = Number(document.getElementById("refreshSelect").value || 0);
+  settings.keywordMode = document.getElementById("keywordMode").value === "only" ? "only" : "highlight";
+  settings.keywords = parseKeywordsFromBox();
+  settings.notify = !!document.getElementById("notifyToggle").checked;
+
+  saveSettings();
+  applyAutoRefresh();
+
+  // re-evaluate matches + filters on current dataset
+  for (const a of allArticles){
+    a.matches = matchKeywordsForArticle(a);
+  }
+  applyMatchesAndFilters();
+  showArticle();
+
+  if (settings.notify) requestNotifyPermission();
+  toast("Saved", "Settings updated.");
+}
+
+function requestNotifyPermission(){
+  try{
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default"){
+      Notification.requestPermission().catch(()=>{});
+    }
+  }catch{}
+}
+
+function maybeNotify(title, body){
+  try{
+    if (!settings.notify) return;
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "granted"){
+      new Notification(title, { body });
+    }
+  }catch{}
+}
+
+/* ===========================
+   SWIPE NAV
+=========================== */
+let startX = 0;
+document.addEventListener("touchstart", e => startX = e.touches[0].clientX, {passive:true});
+document.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - startX;
+  if (dx > 40) prev();
+  if (dx < -40) next();
+});
+
+/* ===========================
+   HTML ESCAPE
+=========================== */
+function escapeHtml(str){
+  return String(str ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+function escapeAttr(str){
+  return escapeHtml(str).replace(/'/g,"&#39;");
+}
+
+/* ===========================
+   STARTUP
+=========================== */
+(function init(){
+  // load cache immediately (fast startup)
+  const cache = loadCache();
+  if (cache?.items?.length){
+    allArticles = cache.items;
+    // ensure matches exist for current settings
+    for (const a of allArticles){
+      a.matches = matchKeywordsForArticle(a);
+      if (!a.category){
+        a.category = categorize((a.title||"") + " " + htmlToText(a.desc||""));
+      }
+    }
+    applyMatchesAndFilters();
+    showArticle();
+    updateAlertsUI();
+  }
+
+  // apply settings UI + timers
+  applyAutoRefresh();
+  if (settings.notify) requestNotifyPermission();
+
+  // fetch fresh in background on load (doesn't block UI)
+  loadNews({force:true});
+})();
+</script>
+</body>
+</html>
