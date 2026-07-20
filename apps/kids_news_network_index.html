@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Kids News Network — Sovereign Edition</title>
+
+<!-- Optional font (kept): lightweight, widely available fallback -->
+<style>
+  @font-face {
+    font-family: "FuturaLight";
+    src: local("Futura Light"), local("Futura-Light"),
+         url("https://fonts.gstatic.com/s/questrial/v16/QdVUSTchPBm7nuUeVfL7Qw.woff2") format("woff2");
+    font-weight: 300;
+  }
+
+  :root{
+    --bg:#020b29;         /* deep space blue */
+    --ink:#e8f0ff;        /* soft ivory-blue */
+    --muted:#bcd3ff;      /* gentle accent */
+    --accent:#2757ff;     /* buttons */
+    --accent-2:#3c6dff;
+    --card:rgba(255,255,255,0.05);
+    --card-br:rgba(255,255,255,0.09);
+    --ring:#4da3ff;
+    --radius:12px;
+    --shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.55;
+    font-family:"FuturaLight","Questrial",Arial,system-ui,sans-serif;
+  }
+
+  header{
+    position:sticky; top:0; z-index:5;
+    background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.25));
+    border-bottom:2px solid var(--ring);
+    padding:18px 16px;
+    text-align:center;
+    backdrop-filter: blur(6px);
+  }
+  header h1{margin:0; font-size:2rem; color:#9cd3ff; letter-spacing:.5px}
+  header .sub{margin-top:4px; color:var(--muted); font-size:.95rem}
+
+  main{max-width:980px; margin:0 auto; padding:18px 16px}
+
+  .btn{
+    display:inline-block; appearance:none; user-select:none;
+    background:var(--accent); color:var(--ink);
+    padding:10px 16px; margin:6px 0; border-radius:10px; border:0; cursor:pointer; text-decoration:none;
+    font-weight:600; font-size:1rem; box-shadow:var(--shadow);
+    transition:transform .15s ease, background .15s ease, opacity .2s ease;
+  }
+  .btn:hover{ background:var(--accent-2); transform: translateY(-2px); }
+  .btn.ghost{ background:transparent; border:1px solid var(--ring); box-shadow:none; }
+  .btn.small{ padding:7px 10px; font-size:.9rem; border-radius:9px; }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--card-br);
+    border-radius:var(--radius);
+    padding:16px;
+    margin:14px 0;
+    box-shadow:var(--shadow);
+  }
+  h2{margin:.2rem 0 10px; color:#b0d8ff; font-size:1.25rem}
+
+  .news-box{
+    border:1px solid var(--card-br);
+    background:rgba(255,255,255,0.05);
+    border-radius:10px;
+    padding:12px;
+    margin:10px 0;
+  }
+  .news-title{ font-weight:800; margin-bottom:6px }
+  .news-meta{ opacity:.8; font-size:.9rem; display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:14px }
+  @media (max-width:720px){ .two-col{ grid-template-columns:1fr } }
+
+  .toolbar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,0.06); border:1px solid var(--card-br);
+    padding:6px 10px; border-radius:999px; color:#d7e6ff; font-size:.92rem;
+  }
+  .muted{ color:var(--muted) }
+
+  .field{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .field label{
+    font-size:.95rem;
+  }
+  .field select,
+  .field input{
+    background:rgba(0,0,0,0.25);
+    color:var(--ink);
+    border:1px solid var(--card-br);
+    border-radius:9px;
+    padding:8px 10px;
+    min-width:180px;
+  }
+
+  /* collapsible admin */
+  details.admin summary{
+    cursor:pointer; list-style:none; padding:8px 0; color:#b0d8ff; font-weight:700;
+  }
+  details.admin[open]{ border-top:1px dashed var(--card-br); padding-top:8px }
+
+  footer{ text-align:center; opacity:.7; padding:26px 10px; font-size:.95rem }
+
+  /* Soft news list */
+  .soft-list{
+    list-style:none;
+    margin:8px 0 0;
+    padding-left:0;
+    font-size:.95rem;
+  }
+  .soft-list li{ margin-bottom:6px; }
+  .soft-list a{
+    color:#9cd3ff;
+    text-decoration:none;
+  }
+  .soft-list a:hover{ text-decoration:underline; }
+
+  /* Fact of the day */
+  .fact-text{
+    margin-top:8px;
+    font-size:.96rem;
+    color:var(--ink);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kids News Network</h1>
+  <div class="sub">Student-friendly, ad-light science & space news — refreshed automatically</div>
+</header>
+
+<main>
+  <!-- Intro + Portal + Reading Level -->
+  <section class="card">
+    <p>Welcome to the student news center where young reporters can stay curious, stay informed, and explore the world safely.</p>
+    <a class="btn" href="https://www.khaemenesacademy.org/studentportal" target="_blank" rel="noopener">Go to Student Portal</a>
+    <span class="pill">Status: <span id="statusText">Loading…</span></span>
+    <span class="pill">Auto-refresh: <span id="refreshCountdown" class="muted">—</span></span>
+
+    <div class="field" style="margin-top:10px;">
+      <label for="readingLevel">Reading Level:</label>
+      <select id="readingLevel">
+        <option value="younger">Younger (approx. 7–10)</option>
+        <option value="middle">Middle (approx. 11–13)</option>
+        <option value="teen">Teen (approx. 14+)</option>
+      </select>
+      <span class="muted">Affects curated soft-news links and Fact of the Day.</span>
+    </div>
+  </section>
+
+  <!-- Fact of the Day -->
+  <section class="card">
+    <h2>✨ Fact of the Day</h2>
+    <p class="muted">A quick, kid-friendly highlight from our soft news sources.</p>
+    <div id="factText" class="fact-text">Loading fact…</div>
+    <button class="btn small ghost" id="btnNewFact" style="margin-top:10px;">New Fact</button>
+  </section>
+
+  <section class="two-col">
+    <!-- Headlines -->
+    <div class="card">
+      <h2>📡 Today’s Top Headlines</h2>
+      <div class="toolbar">
+        <button class="btn small" id="btnRefreshHeadlines">Refresh</button>
+        <span class="pill">Sources: <span class="muted">NASA, NOAA, ESA (APOD) + curated soft news</span></span>
+      </div>
+      <div id="headlines" style="margin-top:10px"></div>
+    </div>
+
+    <!-- Categories -->
+    <div class="card">
+      <h2>🗂 Choose a News Category</h2>
+      <div class="toolbar" style="margin-bottom:10px">
+        <button class="btn small" data-cat="science">Science</button>
+        <button class="btn small" data-cat="animals">Animals</button>
+        <button class="btn small" data-cat="space">Space</button>
+        <button class="btn small" data-cat="world">World</button>
+        <button class="btn small" data-cat="inspiration">Inspiration</button>
+      </div>
+      <div id="categoryNews"></div>
+    </div>
+  </section>
+
+  <!-- Soft news hub (direct links) -->
+  <section class="card">
+    <h2>🌈 Kid-Friendly News & Science Sites</h2>
+    <p class="muted">Use these trusted sites for extra stories and research. Links open in a new tab.</p>
+    <ul class="soft-list">
+      <li><a href="https://www.bbc.co.uk/newsround" target="_blank" rel="noopener">BBC Newsround</a> — daily UK and world news explained for children.</li>
+      <li><a href="https://www.dogonews.com" target="_blank" rel="noopener">DOGOnews</a> — student-friendly news and features about science, world events, and fun topics.</li>
+      <li><a href="https://www.snexplores.org" target="_blank" rel="noopener">Science News Explores</a> — in-depth science reporting written for young people.</li>
+      <li><a href="https://www.timeforkids.com" target="_blank" rel="noopener">TIME for Kids</a> — current events and features from TIME’s kids edition.</li>
+      <li><a href="https://climatekids.nasa.gov" target="_blank" rel="noopener">NASA Climate Kids</a> — games, videos, and stories about Earth and climate science.</li>
+    </ul>
+  </section>
+
+  <!-- Admin (sovereign controls) -->
+  <section class="card">
+    <details class="admin">
+      <summary>⚙️ Admin — Sovereign Settings (Worker URL, NASA key, Auto-refresh)</summary>
+      <div class="field" style="margin-top:8px">
+        <label>Worker URL</label>
+        <input id="cfgWorker" type="text" placeholder="https://kids-rss.yourname.workers.dev" />
+        <button class="btn small" id="btnSaveCfg">Save</button>
+        <button class="btn small ghost" id="btnTestProxy">Test Proxy</button>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>NASA APOD key</label>
+        <input id="cfgApod" type="text" placeholder="DEMO_KEY (or your api.nasa.gov key)" />
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Auto-refresh</label>
+        <select id="cfgEvery">
+          <option value="0">Off</option>
+          <option value="5">Every 5 minutes</option>
+          <option value="10" selected>Every 10 minutes</option>
+          <option value="15">Every 15 minutes</option>
+          <option value="30">Every 30 minutes</option>
+          <option value="60">Every 60 minutes</option>
+        </select>
+        <button class="btn small" id="btnApplyRefresh">Apply</button>
+        <span class="muted">Applies to Headlines and the last opened Category</span>
+      </div>
+      <div id="sourceStatus" style="margin-top:10px" class="muted"></div>
+      <div style="margin-top:14px; font-size:.92rem; opacity:.85">
+        <strong>Note:</strong> The Worker must strictly allow these feeds (edit in Worker code):
+        <ul>
+          <li>https://www.nasa.gov/rss/dyn/breaking_news.rss</li>
+          <li>https://www.noaa.gov/rss-feed.xml</li>
+          <li>https://www.esa.int/Education/Teachers_Corner/(offset)/0?rss=true</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    Kids News Network © 2026 — Powered by The Verifier • Sovereign Edition (no third-party proxies)
+  </footer>
+</main>
+
+<!-- ===================== APP SCRIPT (vanilla, sovereign) ===================== -->
+<script>
+(function(){
+'use strict';
+
+/* ========= CONFIG & STATE ========= */
+const LS_CFG_KEY   = 'knn_cfg_v1';
+const LS_CACHE_KEY = 'knn_cache_v1';
+const LS_LEVEL_KEY = 'knn_level_v1';
+
+const DEFAULT_CFG = {
+  workerUrl: '',             // your Cloudflare Worker URL here
+  apodKey: 'DEMO_KEY',       // replace with your api.nasa.gov key when ready
+  everyMins: 10              // auto-refresh interval (0 = off)
+};
+
+const FEEDS = {
+  headlines: [
+    { label: "NASA — Breaking News", url: "https://www.nasa.gov/rss/dyn/breaking_news.rss", via: "rss" },
+    { label: "NOAA — News Releases", url: "https://www.noaa.gov/rss-feed.xml", via: "rss" },
+    { label: "NASA — Astronomy Picture of the Day", via: "apod" }
+  ],
+  science: [
+    { label: "NOAA — News Releases", url: "https://www.noaa.gov/rss-feed.xml", via: "rss" },
+    { label: "ESA — Education", url: "https://www.esa.int/Education/Teachers_Corner/(offset)/0?rss=true", via: "rss" },
+    { label: "NASA — Breaking News", url: "https://www.nasa.gov/rss/dyn/breaking_news.rss", via: "rss" }
+  ],
+  space: [
+    { label: "NASA — Breaking News", url: "https://www.nasa.gov/rss/dyn/breaking_news.rss", via: "rss" },
+    { label: "NASA — APOD", via: "apod" },
+    { label: "ESA — Education", url: "https://www.esa.int/Education/Teachers_Corner/(offset)/0?rss=true", via: "rss" }
+  ],
+  animals: [],      // use curated soft-news mocks
+  world: [],        // use curated soft-news mocks
+  inspiration: []   // use curated soft-news mocks
+};
+
+// Curated soft-news mocks with real outbound links + reading levels
+const MOCK = {
+  headlines: [
+    {
+      title: "BBC Newsround — Top Stories",
+      link: "https://www.bbc.co.uk/newsround",
+      desc: "BBC Newsround shares daily news in kid-friendly language.",
+      source: "BBC Newsround",
+      level: "younger"
+    },
+    {
+      title: "DOGOnews — Kids News Articles",
+      link: "https://www.dogonews.com",
+      desc: "DOGOnews offers fun and educational current events for kids.",
+      source: "DOGOnews",
+      level: "younger"
+    },
+    {
+      title: "Science News Explores — Latest",
+      link: "https://www.snexplores.org/latest",
+      desc: "Science News Explores dives deep into science stories for students.",
+      source: "Science News Explores",
+      level: "middle"
+    },
+    {
+      title: "TIME for Kids — News",
+      link: "https://www.timeforkids.com",
+      desc: "TIME for Kids shares world news and stories written just for young readers.",
+      source: "TIME for Kids",
+      level: "middle"
+    },
+    {
+      title: "NASA Climate Kids",
+      link: "https://climatekids.nasa.gov",
+      desc: "NASA Climate Kids explains Earth and climate science with simple stories and games.",
+      source: "NASA Climate Kids",
+      level: "younger"
+    }
+  ],
+  science: [
+    {
+      title: "Science News Explores — Science Topics",
+      link: "https://www.snexplores.org/topic/science-news",
+      desc: "Explore science topics and articles designed for curious students.",
+      source: "Science News Explores",
+      level: "middle"
+    },
+    {
+      title: "NASA Climate Kids — Science Center",
+      link: "https://climatekids.nasa.gov/menu/science/",
+      desc: "Learn how Earth systems work through short, easy-to-read science stories.",
+      source: "NASA Climate Kids",
+      level: "younger"
+    },
+    {
+      title: "DOGOnews — Science",
+      link: "https://www.dogonews.com/category/science",
+      desc: "Discover new inventions, discoveries, and experiments in kid-friendly articles.",
+      source: "DOGOnews",
+      level: "younger"
+    }
+  ],
+  animals: [
+    {
+      title: "DOGOnews — Animals & Wildlife",
+      link: "https://www.dogonews.com/category/animals",
+      desc: "Read about animals, wildlife rescues, and amazing creature facts.",
+      source: "DOGOnews",
+      level: "younger"
+    },
+    {
+      title: "Science News Explores — Animals",
+      link: "https://www.snexplores.org/topic/animals",
+      desc: "Find evidence-based stories about animals and ecosystems.",
+      source: "Science News Explores",
+      level: "middle"
+    }
+  ],
+  world: [
+    {
+      title: "BBC Newsround — World News",
+      link: "https://www.bbc.co.uk/newsround",
+      desc: "Newsround summarizes important world events in a way children can understand.",
+      source: "BBC Newsround",
+      level: "younger"
+    },
+    {
+      title: "DOGOnews — World",
+      link: "https://www.dogonews.com/category/world",
+      desc: "Global stories and events explained for students.",
+      source: "DOGOnews",
+      level: "middle"
+    },
+    {
+      title: "TIME for Kids — World News",
+      link: "https://www.timeforkids.com/explore-all/news",
+      desc: "Search TIME for Kids stories to see what is happening around the globe.",
+      source: "TIME for Kids",
+      level: "middle"
+    }
+  ],
+  inspiration: [
+    {
+      title: "DOGOnews — Good News & Fun",
+      link: "https://www.dogonews.com",
+      desc: "Look for uplifting and fun stories about kids and communities.",
+      source: "DOGOnews",
+      level: "younger"
+    },
+    {
+      title: "TIME for Kids — Community & Kindness",
+      link: "https://www.timeforkids.com/tag/community/",
+      desc: "Stories that highlight young people making a positive difference.",
+      source: "TIME for Kids",
+      level: "middle"
+    }
+  ]
+};
+
+const FACT_GROUPS = ['headlines','science','space','animals','world','inspiration'];
+
+let CFG = loadCfg();
+let lastOpenedCategory = 'science';
+let readingLevel = loadReadingLevel();
+let refreshTimer = null;
+let countdownTimer = null;
+let countdownSecs = 0;
+
+/* ========= DOM SHORTCUTS ========= */
+const $   = sel => document.querySelector(sel);
+const $id = id  => document.getElementById(id);
+
+/* ========= UTIL ========= */
+function saveCfg(){ localStorage.setItem(LS_CFG_KEY, JSON.stringify(CFG)); }
+function loadCfg(){
+  try{ return Object.assign({}, DEFAULT_CFG, JSON.parse(localStorage.getItem(LS_CFG_KEY)||'{}')); }
+  catch(e){ return {...DEFAULT_CFG}; }
+}
+function loadCache(){
+  try{ return JSON.parse(localStorage.getItem(LS_CACHE_KEY)||'{}'); }
+  catch(e){ return {}; }
+}
+function saveCache(cache){ try{ localStorage.setItem(LS_CACHE_KEY, JSON.stringify(cache)); }catch(e){} }
+function stripHTML(s){ return String(s||'').replace(/<[^>]+>/g,''); }
+function fmtDate(d){ return d ? d.toLocaleDateString() : ''; }
+function setStatus(msg){ $id('statusText').textContent = msg; }
+function setSourceStatus(html){ $id('sourceStatus').innerHTML = html; }
+function clamp(n,lo,hi){ return Math.max(lo,Math.min(hi,n)); }
+
+function loadReadingLevel(){
+  try{
+    const v = localStorage.getItem(LS_LEVEL_KEY);
+    return (v === 'middle' || v === 'teen' || v === 'younger') ? v : 'younger';
+  }catch(e){
+    return 'younger';
+  }
+}
+function saveReadingLevel(){
+  try{ localStorage.setItem(LS_LEVEL_KEY, readingLevel); }catch(e){}
+}
+
+/* ========= MOCK HELPERS ========= */
+function getMockItemsForGroup(group){
+  const arr = MOCK[group] || [];
+  if(!arr.length) return [];
+  const level = readingLevel;
+  return arr.slice().sort((a,b)=>{
+    const aMatch = a.level === level ? 1 : 0;
+    const bMatch = b.level === level ? 1 : 0;
+    if(aMatch !== bMatch) return bMatch - aMatch; // preferred level first
+    return (a.title||'').localeCompare(b.title||'');
+  });
+}
+
+function getAllMockItems(){
+  const res = [];
+  FACT_GROUPS.forEach(g=>{
+    const mg = MOCK[g] || [];
+    mg.forEach(it => res.push(it));
+  });
+  return res;
+}
+
+/* ========= CARDS ========= */
+function card(item){
+  const wrap = document.createElement('div'); wrap.className='news-box';
+  const title = document.createElement('div'); title.className='news-title'; title.textContent = item.title || 'Untitled';
+  const text  = document.createElement('div'); text.textContent = item.desc || '';
+  const meta  = document.createElement('div'); meta.className='news-meta';
+  meta.innerHTML = `
+    ${item.source ? `<span>${item.source}</span>`:''}
+    ${item.date ? `<span>• ${fmtDate(item.date)}</span>`:''}
+    ${item.link ? `<a class="btn small" href="${item.link}" target="_blank" rel="noopener">Read</a>`:''}
+  `;
+  wrap.appendChild(title); wrap.appendChild(text); wrap.appendChild(meta);
+  return wrap;
+}
+
+/* ========= FACT OF THE DAY ========= */
+function makeFactSentence(item){
+  const desc = (item.desc || '').trim();
+  if(desc){
+    const cleaned = desc.replace(/\s+/g,' ');
+    if(/[.?!]$/.test(cleaned)) return 'Did you know? ' + cleaned;
+    return 'Did you know? ' + cleaned + '.';
+  }
+  let t = (item.title || '').trim();
+  if(t.includes('—')) t = t.split('—')[1].trim();
+  if(!t) t = 'there are lots of new stories for kids to explore today';
+  const lower = t.charAt(0).toLowerCase() + t.slice(1);
+  if(/[.?!]$/.test(lower)) return 'Today’s fact: ' + lower;
+  return 'Today’s fact: ' + lower + '.';
+}
+
+function updateFactOfDay(){
+  const el = $id('factText');
+  if(!el) return;
+  const all = getAllMockItems();
+  if(!all.length){
+    el.textContent = 'Fact of the Day will appear here when soft news sources are configured.';
+    return;
+  }
+  const levelPool = all.filter(it => !it.level || it.level === readingLevel);
+  const pool = levelPool.length ? levelPool : all;
+  const item = pool[Math.floor(Math.random()*pool.length)];
+  if(!item){
+    el.textContent = 'Fact of the Day will appear here.';
+    return;
+  }
+  const sentence = makeFactSentence(item);
+  el.innerHTML = '';
+  const span = document.createElement('span');
+  span.textContent = sentence + ' ';
+  el.appendChild(span);
+  if(item.link){
+    const a = document.createElement('a');
+    a.href = item.link;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = 'Read more';
+    a.style.color = '#9cd3ff';
+    el.appendChild(a);
+  }
+}
+
+/* ========= FETCHERS ========= */
+async function fetchRSS(url){
+  if(!CFG.workerUrl){ throw new Error('Worker URL not set'); }
+  const r = await fetch(`${CFG.workerUrl}?url=${encodeURIComponent(url)}`);
+  if(!r.ok) throw new Error('RSS proxy error');
+  const data = await r.json();
+  const items = (data.items||[]).map(it=>{
+    const title = stripHTML(it.title);
+    const link  = (it.link||'').trim();
+    const rawd  = it.pubDate ? new Date(it.pubDate) : null;
+    const desc  = stripHTML(it.description||'').slice(0, 240) + (it.description ? '…' : '');
+    return { title, link, date: rawd, desc };
+  });
+  return items;
+}
+
+async function fetchAPOD(){
+  const r = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${encodeURIComponent(CFG.apodKey||'DEMO_KEY')}`);
+  if(!r.ok) throw new Error('APOD error');
+  const j = await r.json();
+  return [{
+    title: stripHTML(j.title||'Astronomy Picture of the Day'),
+    link: j.hdurl || j.url || '',
+    date: j.date ? new Date(j.date) : null,
+    desc: stripHTML((j.explanation||'')).slice(0,240)+'…'
+  }];
+}
+
+/* ========= RENDER GROUP ========= */
+async function loadFeedGroup(targetEl, group){
+  targetEl.innerHTML = '';
+  const plugins = FEEDS[group] || [];
+  const cache = loadCache();
+  const cacheKey = `group_${group}`;
+
+  const collected = [];
+  const srcStatus = [];
+
+  if(plugins.length === 0){
+    // use curated soft-news mocks when there are no live feeds defined
+    const itemsArr = getMockItemsForGroup(group);
+    itemsArr.forEach(item => {
+      collected.push({
+        title: item.title,
+        link: item.link || '',
+        date: null,
+        desc: item.desc || '',
+        source: item.source || '(demo)'
+      });
+    });
+  } else {
+    for(const s of plugins){
+      try{
+        const items = s.via === 'apod' ? await fetchAPOD() : await fetchRSS(s.url);
+        items.forEach(x=> collected.push({ ...x, source:s.label }));
+        srcStatus.push(`<div>✅ Loaded: <strong>${s.label}</strong> (${items.length})</div>`);
+      }catch(e){
+        srcStatus.push(`<div>⚠️ Failed: <strong>${s.label}</strong> — ${e.message}</div>`);
+      }
+    }
+  }
+
+  if(!collected.length){
+    // try cache as last resort
+    const cached = cache[cacheKey] || [];
+    if(cached.length){
+      cached.forEach(it=> targetEl.appendChild(card({
+        ...it, date: it.date ? new Date(it.date) : null
+      })));
+      setStatus('Showing cached stories (offline or sources unavailable)');
+      setSourceStatus(srcStatus.join(''));
+      return;
+    }
+
+    // ultimate fallback: curated mocks for this group or for headlines
+    const fallbackItems = (MOCK[group] || MOCK['headlines'] || []);
+    if(!fallbackItems.length){
+      targetEl.innerHTML = "<div class='muted'>No news available right now.</div>";
+    } else {
+      fallbackItems.forEach(item=>{
+        targetEl.appendChild(card({
+          title: item.title,
+          link: item.link || '',
+          date: null,
+          desc: item.desc || '',
+          source: item.source || '(demo)'
+        }));
+      });
+    }
+    setStatus('Using demo items (set Worker URL for live feeds)');
+    setSourceStatus(srcStatus.join(''));
+    return;
+  }
+
+  // sort newest first when dates exist, otherwise keep as is
+  collected.sort((a,b)=>(b.date?.getTime()||0)-(a.date?.getTime()||0));
+  const top = collected.slice(0,10);
+  top.forEach(item=> targetEl.appendChild(card(item)));
+
+  // cache for resilience
+  cache[cacheKey] = top.map(it=>({ ...it, date: it.date ? it.date.toISOString() : null }));
+  saveCache(cache);
+
+  setStatus('Live');
+  setSourceStatus(srcStatus.join(''));
+}
+
+/* ========= PAGE HOOKS ========= */
+async function loadHeadlines(){
+  const box = $id('headlines');
+  box.innerHTML = '';
+  await loadFeedGroup(box, 'headlines');
+}
+
+async function loadCategory(cat){
+  lastOpenedCategory = cat;
+  const box = $id('categoryNews');
+  box.innerHTML = '';
+  await loadFeedGroup(box, cat);
+  window.scrollTo({ top: box.getBoundingClientRect().top + window.scrollY - 16, behavior:'smooth' });
+}
+
+/* ========= AUTO-REFRESH ========= */
+function clearTimers(){
+  if(refreshTimer){ clearInterval(refreshTimer); refreshTimer=null; }
+  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer=null; }
+  $id('refreshCountdown').textContent = '—';
+}
+function startAutoRefresh(){
+  clearTimers();
+  const mins = Number(CFG.everyMins||0);
+  if(!mins){ return; }
+  const ms = clamp(mins,1,240)*60*1000;
+  countdownSecs = ms/1000;
+
+  const tick = ()=>{
+    countdownSecs--;
+    if(countdownSecs<=0){
+      // refresh both panels
+      loadHeadlines();
+      loadCategory(lastOpenedCategory);
+      countdownSecs = ms/1000;
+    }
+    const m = Math.floor(countdownSecs/60), s = countdownSecs%60;
+    $id('refreshCountdown').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+
+  countdownTimer = setInterval(tick, 1000);
+  refreshTimer   = setInterval(()=>{}, ms); // holder; actual refresh happens in tick()
+  tick(); // show initial countdown
+}
+
+/* ========= ADMIN & READING LEVEL WIRING ========= */
+function hydrateAdmin(){
+  $id('cfgWorker').value = CFG.workerUrl || '';
+  $id('cfgApod').value   = CFG.apodKey   || 'DEMO_KEY';
+  $id('cfgEvery').value  = String(CFG.everyMins||0);
+}
+
+function initReadingLevelUI(){
+  const sel = $id('readingLevel');
+  if(!sel) return;
+  sel.value = readingLevel;
+  sel.addEventListener('change', ()=>{
+    readingLevel = sel.value || 'younger';
+    saveReadingLevel();
+    updateFactOfDay();
+    // Refresh soft-news ordering in both panels
+    loadHeadlines();
+    loadCategory(lastOpenedCategory);
+  });
+}
+
+$id('btnSaveCfg').onclick = ()=>{
+  CFG.workerUrl = $id('cfgWorker').value.trim();
+  CFG.apodKey   = $id('cfgApod').value.trim() || 'DEMO_KEY';
+  saveCfg();
+  setStatus(CFG.workerUrl ? 'Ready (Proxy set)' : 'Using demo links — set Worker URL for live feeds');
+};
+$id('btnApplyRefresh').onclick = ()=>{
+  CFG.everyMins = Number($id('cfgEvery').value||0);
+  saveCfg(); startAutoRefresh();
+};
+$id('btnTestProxy').onclick = async ()=>{
+  const ok = CFG.workerUrl;
+  if(!ok){ alert('Please enter and save your Worker URL first.'); return; }
+  try{
+    const test = 'https://www.nasa.gov/rss/dyn/breaking_news.rss';
+    const r = await fetch(`${CFG.workerUrl}?url=${encodeURIComponent(test)}`);
+    if(!r.ok){ throw new Error('HTTP '+r.status); }
+    const j = await r.json();
+    alert('Proxy OK. Items: '+((j.items||[]).length));
+  }catch(e){
+    alert('Proxy failed: '+e.message);
+  }
+};
+
+// Buttons
+$id('btnRefreshHeadlines').onclick = loadHeadlines;
+document.querySelectorAll('[data-cat]').forEach(b=>{
+  b.addEventListener('click', ()=> loadCategory(b.getAttribute('data-cat')));
+});
+$id('btnNewFact').onclick = updateFactOfDay;
+
+/* ========= BOOT ========= */
+async function boot(){
+  hydrateAdmin();
+  initReadingLevelUI();
+  setStatus(CFG.workerUrl ? 'Ready (Proxy set)' : 'Using demo links — set Worker URL for live feeds');
+  await loadHeadlines();
+  await loadCategory('science');
+  updateFactOfDay();
+  startAutoRefresh();
+}
+boot();
+
+})();
+</script>
+
+<!-- ===================== APPENDIX: Worker code (for convenience) =====================
+Deploy this in Cloudflare → Workers → Create → paste → Deploy.
+Then set the Worker URL in Admin above. You control the allowlist.
+---------------------------------------------------------------------------------------
+export default {
+  async fetch(req) {
+    const url = new URL(req.url);
+    const feed = url.searchParams.get("url");
+    const allow = [
+      "https://www.nasa.gov/rss/dyn/breaking_news.rss",
+      "https://www.noaa.gov/rss-feed.xml",
+      "https://www.esa.int/Education/Teachers_Corner/(offset)/0?rss=true"
+    ];
+    if (!feed || !allow.includes(feed)) {
+      return new Response(JSON.stringify({ error: "Feed not allowed" }), {
+        status: 400,
+        headers: { "content-type":"application/json", "access-control-allow-origin":"*" }
+      });
+    }
+    const r = await fetch(feed, { headers: { "User-Agent": "KidsNews/1.0" } });
+    const xml = await r.text();
+    const items = [...xml.matchAll(/<item>([\\s\\S]*?)<\\/item>/g)].slice(0, 12).map(m => {
+      const get = (tag) => (m[1].match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"))||[])[1]?.replace(/<!\\[CDATA\\[|\\]\\]>/g,"")?.trim() || "";
+      return { title:get("title"), link:get("link"), pubDate:get("pubDate"), description:get("description") };
+    });
+    return new Response(JSON.stringify({ items }), {
+      headers: { "content-type":"application/json", "access-control-allow-origin":"*" }
+    });
+  }
+}
+------------------------------------------------------------------------------------- -->
+</body>
+</html>
