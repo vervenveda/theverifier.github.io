@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor's Choice</title>
+<style>
+  body {
+    background: #FFFEFA;
+    font-family: 'Futura Light', serif;
+    color: #1a1a1a;
+    margin: 7px;
+    padding: 14px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 8px 0 3px;
+    color: #2b2323;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 1.4rem;
+    color: #634d1b;
+    margin-bottom: 14px;
+  }
+  #app {
+    max-width: 666px;
+    margin: auto;
+    background: #f7f7f7;
+    padding: 24px 7vw 14px;
+    border-radius: 7px;
+    box-shadow: 3px 3px 13px #00000018;
+  }
+  .search-row {
+    display: flex;
+    gap: 11px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-row label {
+    font-size: 0.99em;
+    margin: 3px 7px 11px 0;
+  }
+  .search-row input,
+  .search-row select {
+    font-size: 1em;
+    padding: 2px 24px;
+    border-radius: 7px;
+    border: 2px solid #b9a785;
+    min-width: 0;
+  }
+
+  .comment-list {
+    margin: 9px;
+    padding: 3px;
+    list-style: none;
+  }
+  .comment-list li {
+    background: #E8E8E8;
+    border-radius: 7px;
+    margin-bottom: 4px;
+    padding: 14px 14px 11px;
+    box-shadow: 0 1px 7px #dfd4a012;
+    cursor: pointer;
+    transition: box-shadow 0.13s, background 0.13s;
+  }
+  .comment-list li:hover {
+    box-shadow: 1px 1px 7px #e1cc8415;
+    background: #E8E8E8;
+  }
+  .comment-title {
+    font-size: 1.19em;
+    font-weight: bold;
+    color: #83692e;
+  }
+  .comment-meta {
+    color: #8e753c;
+    font-size: 0.98em;
+    margin-bottom: 11px;
+  }
+  .comment-body {
+    font-size: 1.08em;
+    margin-top: 7px;
+    color: #8e753c;
+  }
+
+  /* We keep this, but the main article now appears in a popup */
+  .comment-detail {
+    display: none;
+  }
+
+  /* ---------- Modal + Overlay ---------- */
+  .hidden {
+    display: none !important;
+  }
+
+  #modalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.33);
+    z-index: 777;
+  }
+
+  #articleModal {
+    position: fixed;
+    max-width: 777px;
+    width: calc(100% - 48px);
+    background: #E8E8E8;
+    border-radius: 14px;
+    box-shadow: 0 11px 33px #00000044;
+    padding: 24px;
+    z-index: 778;
+    cursor: default;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 11px;
+    margin-bottom: 11px;
+    cursor: move; /* drag handle */
+  }
+
+  .modal-title {
+    font-size: 1.33rem;
+    font-weight: bold;
+    color: #83692e;
+  }
+
+  .modal-meta {
+    font-size: 0.95rem;
+    color: #8e753c;
+    margin-bottom: 11px;
+  }
+
+  .modal-close-btn {
+    border: none;
+    background: #b99b53;
+    color: #FFFEFA;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .modal-close-btn:hover {
+    background: #8e753c;
+  }
+
+  .modal-body {
+    font-size: 1.02rem;
+    color: #2b2323;
+    white-space: pre-wrap; /* respect your paragraphs */
+    max-height: 66vh;
+    overflow-y: auto;
+  }
+
+  .modal-link-row {
+    margin-top: 14px;
+  }
+
+  .open-link-btn {
+    background: #b99b53;
+    color: #2b2323;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 8px 0 0 0;
+  }
+  .open-link-btn:hover {
+    background: #8e753c;
+    color: #FFFEFA;
+  }
+
+  @media (max-width:555px) {
+    #app {
+      padding: 14px 7vw 14vw;
+    }
+    .comment-list li {
+      padding: 7px 7vw 11px;
+    }
+    #articleModal {
+      width: calc(100% - 28px);
+      padding: 18px;
+    }
+    .modal-body {
+      max-height: 60vh;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>Animals & Biodiversity</h1>
+<div class="subtitle">
+  News Commentary<br>
+  Browse by date, topic, or series.
+</div>
+
+<div id="app">
+  <div class="search-row">
+    <label for="dateSearch">Date:</label>
+    <input type="date" id="dateSearch" onchange="filterComments()" />
+    </div>
+
+    <label for="topicSearch">Topic:</label>
+    <input type="text" id="topicSearch"
+           placeholder="e.g. Wildlife, extinction, Deforestry, Marine Life"
+           oninput="filterComments()"/> 
+    <br>
+    <label for="seriesSearch">Series:</label>
+    <input type="text" id="seriesSearch"
+           placeholder="e.g. Species, Ecosystem, Earths Habitat"
+           oninput="filterComments()" />
+  </div>
+
+  <ul class="comment-list" id="commentList"></ul>
+  <div id="commentDetail"></div>
+</div>
+
+<!-- Modal + Backdrop -->
+<div id="modalBackdrop" class="hidden"></div>
+<div id="articleModal" class="hidden">
+  <div class="modal-header" id="modalHeader">
+    <div class="modal-title" id="modalTitle"></div>
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
+  </div>
+  <div class="modal-meta" id="modalMeta"></div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-link-row" id="modalLinkRow"></div>
+</div>
+
+<script>
+// ======================================================
+// 1. HARD-CODED DATA SOURCE
+// ======================================================
+let comments = [
+  {
+    "date": "2026-06-15",
+    "title": "The Quiet Wild",
+    "topic": "Industry or Ecology",
+    "body": "There is a kind of intelligence in the natural world that does not speak out loud.\n\nIt moves in migrations, in nesting cycles, in breeding seasons timed to light and temperature, and with a memory older than civilization itself. Caribou do not vote on infrastructure projects. Birds do not file environmental impact statements. Polar bears do not submit public comments.\n\nYet, their lives are profoundly shaped by human decisions made thousands of miles away.\n\nWhen policymakers discuss opening remote regions—places like Arctic refuges, desert basins, and offshore waters- the language is usually industrial: resources, reserves, development zones, energy independence.\n\nBut in the field, the language is biological.\n\nIt is stress. It is displacement. It is survival.\n\nThe invisible footprint\n\nModern oil and gas development does not arrive quietly.\n\nBefore a single well is drilled, the landscape is mapped with seismic testing. Heavy vehicles move across tundra or desert soils that may take decades to recover. Roads and pads are carved into ecosystems that were once continuous and undisturbed.\n\nWildlife responds immediately, even when humans do not notice.\n\nNoise alters migration paths. Light changes feeding behavior. Human presence alone can push animals away from traditional routes and nesting grounds.\n\nAccording to the U.S. Fish and Wildlife Service, oil and gas operations can fragment habitat, introduce contamination risks, and cause direct disturbance that leads to stress, injury, or population decline in wildlife populations.\n\nThe effect is not always dramatic in a single moment. It is cumulative. It is slow. It is ecological drift.\n\nThe Arctic example\n\nNowhere is this more visible than in sensitive northern ecosystems such as the Arctic National Wildlife Refuge.\n\nThis is a landscape where caribou have followed the same calving grounds for thousands of years, and where polar bears depend on undisturbed coastal areas to build dens. Scientists have warned that disruption in these areas can affect reproduction and survival rates, particularly for species already stressed by climate change. \n\nIn such environments, even small infrastructure changes, such as roads, pipelines, and drilling pads, can have outsized effects because they intersect with tightly synchronized natural cycles.\n\nA migration route is not just a path. It is a memory system encoded in generations of animal behavior.\n\nWhat policy cannot easily be measured?\n\nEnvironmental assessments often try to quantify impact in acres disturbed or emissions produced.\n\nBut wildlife does not experience the world in those units.\n\nA caribou herd does not register “partial habitat fragmentation,” it registers whether a corridor is usable or not. A nesting bird does not calculate “noise threshold exceedance,” it abandons a site when conditions feel unsafe.\n\nThis is where the gap between policy language and ecological reality becomes most visible.\n\nHuman systems measure efficiency and output; natural systems measure continuity.\n\nThere is tension at the center of modern energy legislation.\n\nSupporters of drilling in remote regions often argue economic necessity, energy independence, and national strategy. Opponents emphasize biodiversity loss, cultural impacts on Indigenous communities, and long-term environmental cost. Both sides tend to speak past each other because they are not describing the same kind of value system.\n\nOne is industrial and immediate; the other is ecological and intergenerational.\n\nIn between are the animals themselves. They are silent victims in a debate they cannot enter.\n\nIt is easy to forget how far away these places are from daily life.\n\nMost people will never see a tundra migration or a polar bear den. They will encounter these ecosystems only through images, maps, or policy debates, and yet, distance does not equal separation.\n\nThe same systems that support industrial development in remote regions also shape global climate patterns, ocean chemistry, and biodiversity networks that eventually circle back into agriculture, weather, and human stability.\n\nThe wild is not separate from the world; it is part of it.\n\nEvery era defines itself by what it chooses to expand into and what it chooses to leave undisturbed.\n\nIndustrial development asks a simple question: what can be extracted?\n\nEcology asks a more difficult question: what must remain intact for life to continue as it is?\n\nBetween those questions lies the future of many species that do not have a voice in policy debates, but whose presence defines whether ecosystems remain whole or become far less resilient.",
+    "series": "Biodiversity"
+  },
+  {
+    "date": "2026-04-06",
+    "title": "A Symbol of Freedom, Resilience and Untamed Spirit of America",
+    "topic": "American Ingenuity, Ethics, and Governance.",
+    "body": "I had a suitcase filled to the brim with every wild horse book a little girl could read. My imagination carried me across the plains, racing alongside foals and mustangs, feeling the wind in my hair and the thunder of hooves beneath me. When I was 11, I met Tony, who would be my pony for a little while, and together we trotted through imaginary open plains, galloping as if we were part of a herd. Those memories captured the essence of freedom and the untamed spirit of the American West.  A vision that has stayed with me ever since.\n\nYet the reality of wild horses today is far more complicated than the stories of my childhood. Tens of thousands of these animals are being rounded up, removed, and relocated under programs managed by the Bureau of Land Management (BLM). Helicopter driven roundups, emergency removals, and long-term holding facilities are now a regular part of wild horse management, sparking fierce debate over ethics, ecology, and economics.\n\nThe BLM argues that population control is essential. Herds can grow by 15–20% annually, and in areas stressed by drought, invasive plants, and overgrazing, unchecked populations can degrade fragile ecosystems. Roundups, they contend, prevent starvation, disease, and environmental collapse. The financial and logistical burden is massive: housing and caring for removed horses costs taxpayers hundreds of millions of dollars each year. Adoption programs cannot keep pace, leaving the agency with difficult choices about which horses remain in the wild. From this perspective, the roundups are a pragmatic, if imperfect solution.\n\nOpponents however, argue that these methods are inhumane. The trauma of helicopter captures, long-distance transport, and confinement is well documented, with injuries and fatalities an unfortunate but common consequence. Critics point out that adoption programs in the past have sometimes funneled horses into harmful situations, creating what some called a “pipeline to slaughter.” Animal welfare advocates urge a different path: fertility control, smaller-scale targeted management, and science-driven, humane interventions that slow population growth without traumatizing the animals.\n\nThis tension between efficiency and ethics mirrors a broader challenge in American governance: balancing competing interests with limited resources, and navigating the political, financial, and social consequences of every decision. Wild horses occupy public lands alongside livestock, wildlife, and recreational users, and management decisions inevitably touch all these stakeholders. There are no easy answers but there are opportunities for innovation.\n\nThat is precisely the kind of challenge I intend to address in my 2028 presidential campaign. My vision is bipartisan: to negotiate compromises that honor ecological needs, public land users, and the welfare of wild horses alike. I will explore innovative solutions such as expanded fertility programs, technology-assisted population tracking, and incentives for adoption that ensure horses go to safe, permanent homes. By bringing science, ethics, and collaboration to the table, we can create a management strategy that reflects both practicality and compassion.\n\nWild horses have long been a symbol of freedom, resilience, and the untamed spirit of America. As someone who grew up racing across the plains in my imagination, I understand the profound cultural and emotional significance they hold. Our responsibility is to ensure that this freedom is preserved, not just in stories or memories, but in the real landscapes where these animals run.\n\nThe challenge is complex, but the principle is simple: effective policy should reflect compromise, innovation, and care. If we succeed, wild horses can continue to gallop across our public lands as symbols of freedom, while our management practices demonstrate the best of American ingenuity, ethics, and governance.",
+    "series": "Wild Horses"
+  },
+  {
+    "date": "2026-02-20",
+    "title": "Not  A Mascot,  A Warning",
+    "topic": "The Florida Panther",
+    "body": "Somewhere in Southwest Florida, fewer than 230 Panthers move through the brush.\n\nThey are not mythical, or symbolic. They are real, and they are running out of room.\n\nThe Florida panther once roamed across the southeastern United States. Today, it survives in a thin slice of South Florida, largely confined below the Caloosahatchee River. Biologists estimate only about 120–230 adults remain in the wild.\n\nThat’s not a thriving population, it’s a margin of error.\n\nWhile we celebrate new rooftops, widened highways, and master-planned communities, the panther’s range shrinks.  Not dramatically, not overnight, but incrementally, permit by permit.\n\nWhen a tract of scrub or forest is cleared, it’s often described as “unused.”\n\nTo a panther, that land is territory; hunting ground, a dispersal corridor, and a genetic lifeline.\n\nPanthers require vast, connected landscapes. Fragment those landscapes with subdivisions and multilane roads, and you don’t just reduce acreage, you isolate individuals. Isolation leads to inbreeding. Inbreeding weakens resilience. Weak resilience invites extinction.\n\nThis isn’t theoretical. In the 1970s, the panther population collapsed to a few dozen animals. It required emergency genetic intervention to prevent total loss.\n\nWe are not far enough from that cliff to act casual.\n\nToday, for  the Florida Panther, roads are the real predator.  Vehicle collisions are the leading known cause of panther deaths. Each year, cars and trucks kill dozens of them.\n\nEvery new roadway through wild habitat is not just transportation infrastructure, it is a mortality risk. Every widened corridor increases speed, traffic volume, and the odds of impact.\n\nWe know how to mitigate this. Wildlife underpasses, strategic fencing, and corridor planning works.\n\nThe question is not whether solutions exist, it is whether we prioritize them before or after the damage.\n\nFlorida is growing, that will not stop.\n\nOutward sprawl into prime habitat is a decision.\n\nWe can:\n\nFocus development inward, where infrastructure already exists.\n\nPermanently protect connected corridors through programs like the Florida Wildlife Corridor Act.\n\nRequire wildlife-sensitive planning before approving large-scale projects.\n\nBuild crossings and design roads that acknowledge we share this landscape.\n\nWe can continue pretending that conservation and development occupy separate worlds.\n\nThe panther is not just a charismatic animal. It is what ecologists call an umbrella species. Protect enough habitat for a top predator, and you protect water quality, wetlands, native plants, and dozens of other species along the way.\n\nIf the panther cannot survive Florida’s growth model, that tells us something profound about that model.\n\nYou cannot pave over wetlands, fragment forests, and widen highways indefinitely in a peninsula surrounded by rising seas, and call it sustainable.\n\nExtinction wouldn’t happen dramatically. There would be no single headline that reads: “Last Panther Gone.”\n\nThere would simply be fewer sightings, fewer cubs, and then silence.\n\nFuture generations would see the animal only on license plates and sports logos.\n\nWe would tell them, perhaps awkwardly, that we couldn’t quite find the balance between real estate momentum and ecological restraint.\n\nIf we are serious about that identity, then protecting the Florida panther is not sentimental environmentalism, it is a test of whether growth in this state can be intelligent, restrained, and forward-thinking.\n\nIf there isn’t room for 300 large cats in a state of 22 million people, the issue isn’t space,\nit’s priorities.",
+    "series": "Animals & Biodiversity"
+  },
+     {
+    "date": "2026-02-04",
+    "title": "🧨🧨🧨 Bill 433 and Senate Bill 290",
+    "topic": "Free Speech Infringement",
+    "body": "Florida doesn’t usually announce civil-rights rollbacks with sirens and headlines; it doesn’t need to. Instead, it hides them in plain sight, folded neatly into technical, “routine” legislation that few people are expected to read closely.\n\nHouse Bill 433 and Senate Bill 290 are perfect examples.\n\nThey are sold to the public as agriculture and consumer-services bills. On the surface, they fund programs, tweak regulations, and adjust land-use policy. However, buried inside these sprawling packages is something far more dangerous: a quiet expansion of civil liability that targets speech on matters of public concern: food safety, farming practices, and environmental health.\n\nThis is not how a healthy democracy legislates.\n\nAt issue is an expansion of Florida’s agricultural disparagement law. Historically, this law applied narrowly to false claims about perishable food products. Even then, it was controversial. The new language removes that limitation and broadens who can sue and what speech can trigger liability, including statements about agricultural products and practices tied to food safety.\n\nSpeech about pesticides, GMOs, environmental contamination, water quality, and food safety is not fringe speech. It is core political and public-interest speech. It is the kind of speech the First Amendment exists to protect, especially when it challenges powerful interests.\n\nYet these bills move Florida in the opposite direction. They expand the ability of large producers, Corporations, and trade associations to drag critics into court over statements they claim are “false.”  Shifting risk and cost onto journalists, scientists, advocates, and ordinary citizens. Even when lawsuits fail, the threat alone is enough to silence people without legal teams or deep pockets.\n\nThat’s not theoretical. It’s called \"a chilling effect,\" and courts have warned about it for decades.\n\nSupporters will say this is about stopping misinformation, but Florida already has defamation laws, fraud laws, and consumer protection laws. What these bills do is not fill a legal gap; they lower the threshold for punishment when speech becomes inconvenient.\n\nNotice how it’s done.\n\nThis provision isn’t introduced as a standalone bill. There is no floor debate devoted solely to its constitutional consequences. It’s buried in an omnibus package, moved through committees focused on agriculture and budgets, not civil liberties or constitutional law. That’s not transparency; it is insulation and fraud.\n\nIf lawmakers truly believed this provision could withstand public scrutiny on its own merits, they would not need to hide it among forestry rules and loan repayment programs.\n\nThis approach matters because rights are not usually lost all at once. They are narrowed incrementally, redefined quietly, and justified administratively. A word removed here, standing expanded there. Liability broadened just enough to shift behavior.\n\nThe result is a system where powerful entities gain new legal weapons, while everyone else learns to stay quiet.\n\nThis should concern Floridians across the political spectrum. You do not need to agree on pesticides, GMOs, vaccines, or environmental policy to recognize the danger of government-enabled speech suppression. Today it’s agriculture. Tomorrow it could be energy, pharmaceuticals, or technology. Once the precedent is set, the subject matter changes, the mechanism does not.\n\nCivil rights are not just about voting booths and courtroom doors. They are about the right to speak, to question, to criticize, and to warn the public without fear of being buried under legal threats.\n\nFlorida’s lawmakers should not be laundering speech-restricting provisions through technical bills and hoping no one notices. That’s not leadership, it’s avoidance and corruption.\n\nIf these provisions are truly necessary, then lawmakers should defend them openly, in standalone legislation, with full constitutional analysis and public debate. Until then, Floridians should treat HB 433 and SB 290 for what they are: a quiet step toward narrowing who gets to speak freely, and who pays the price for doing so.\n\nWhen civil rights are being trimmed behind closed doors, silence is exactly what those doors are designed to produce.\n\nFlorida lawmakers still have time to correct this. \n\nIf the intent of HB 433 and SB 290 is truly to support agriculture without infringing on constitutional rights, then the speech-related provisions should be removed or rewritten to meet established First Amendment standards, including clear, narrow definitions and strict scienter requirements. \n\nIf that cannot be done, the provisions should be stripped entirely. Protecting farmers does not require weakening free speech, and no policy goal justifies expanding civil liability in ways that invite constitutional conflict. \n\nThe responsible course is simple: fix it in the open, or don’t pass it at all.",
+    "series": "2026 legislative Session",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRCXxp2CV3iL3I1DVYqtODUE9DsmIx5KbzhrTVfoa8XSLOCZajhkVQ3ZRuuhd2dQEzRlP9jrpKZ2RGQ/pub"
+  },
+  {
+    "date": "2026-01-22",
+    "title": "Intelligence, boredom, and why eight arms are too many for captivity",
+    "topic": "The Octopus Has Left the Tank (Again)",
+    "body": "Every few months, a familiar headline resurfaces: Octopus Escapes Aquarium. The details vary; unscrewed lids, unplugged filters, midnight crawls across damp floors, but the subtext is always the same. Somewhere, an octopus looked around its tank, decided “no,” and acted accordingly.\n\nAt first, these stories sound like novelty news. A clever animal! A mischievous mollusk! Cue the delighted human laughter. If you sit with the pattern long enough, the joke starts to feel pointed. Octopuses aren’t just escaping by accident. They’re problem-solving their way out. Repeatedly. Sometimes methodically. Sometimes creatively. Occasionally, with what can only be described as spiteful flair.\n\nWhich raises an awkward question: what exactly did we think would happen when we put one of the most cognitively flexible animals on Earth into a glass box?\n\nOctopuses are not smart in the way dogs are smart, or in the way primates are smart. They’re smart in a way that makes neuroscientists squint and philosophers reach for aspirin. Roughly half a billion neurons power their bodies, but more than half of those neurons live in their arms. Each arm can sense, explore, and react semi-independently. An octopus doesn’t merely have limbs; it delegates cognition to them. Thinking, for an octopus, is something that happens everywhere at once.\n\nThis decentralized intelligence allows them to do remarkable things: open jars, use tools, learn by watching, remember solutions, and improvise when blocked. They don’t just solve puzzles; they redesign the puzzle when the rules annoy them. When an octopus escapes a tank, it’s not panicking. It’s executing a plan that worked yesterday and might work again tonight.\n\nAnd yes, sometimes they come back.\n\nScientists tend to avoid emotional language, but aquariums report something suspiciously close to boredom. Octopuses dismantle equipment. They fiddle with objects that offer no food reward. They interact differently with different people. Some are shy, some are aggressive, and some are pranksters. These are not the hallmarks of a purely instinct-driven creature. They suggest an animal that experiences its environment as something to engage with, or to be dissatisfied by.\n\nBoredom is a particularly revealing state. You don’t get bored unless you have expectations. You don’t have expectations unless you have some internal model of how the world could be. Once you have that, a tank stops being a habitat and starts being a limitation.\n\nWhat makes octopus intelligence especially unsettling is that it shouldn’t exist, at least according to our old evolutionary comfort zones. They’re solitary. They live short lives. They don’t raise their young. By all familiar rules, this is not where a mind like this is supposed to show up.\n\nYet, here it is. Eight arms, three hearts, blue blood, and a brain that refuses to stay politely centralized. An animal that treats obstacles as suggestions.\n\nThis is why governments have begun legally recognizing octopuses as sentient beings, granting them protections once reserved for vertebrates. It’s not sentimentality, it’s evidence. Pain learning, memory, problem-solving, and personality. The data keeps pointing in the same direction: something is happening inside that body that deserves moral consideration.\n\nSo when an octopus unscrews a lid, short-circuits a light, and slithers off toward a neighboring tank with better snacks, maybe the story isn’t “Look how clever.” Maybe it’s “Look how constrained.”\n\nOctopuses are not trying to overthrow aquariums. They’re not plotting escapes in the cinematic sense. They’re doing something both simpler and more profound: exploring the boundaries of their world and pushing when those boundaries feel wrong.\n\nWhich should make us pause.\n\nBecause if intelligence can evolve so differently from our own and still arrive at curiosity, frustration, and agency, then intelligence itself is bigger, stranger, and more widespread than we like to admit. The octopus doesn’t just challenge our understanding of animals. It challenges our assumptions about minds.\n\nUntil we reckon with that, don’t be surprised if the tanks keep turning up empty.\n\nAfter all, if you had eight arms, a distributed brain, and a deep sense that the world was larger than the box you were given, wouldn’t you at least try the lid? 🐙",
+    "series": "Animals & Biodiversity"
+  },
+  {
+    "date": "2026-01-17",
+    "title": "The Empire Beneath Your Feet",
+    "topic": "Ant Life",
+    "body": "It’s easy to underestimate ants. They’re small, they march in lines, and they tend to appear right when you drop food on the floor. Beneath that humble exterior lies something far more unsettling, and impressive. Ants don’t just survive in the world, they organize it.\n\nLong before humans figured out agriculture, ants were already farming.\n\nSome ant species raise aphids the way humans raise cattle. They protect them, herd them, move them to fresh feeding grounds, and even defend them from predators. In exchange, the aphids secrete a sugary substance called honeydew, which the ants collect by gently stroking them with their antennae. Yes, this is commonly described by scientists as “milking,” and no, that’s not an exaggeration.\n\nIf that sounds eerily familiar, it’s because it is.\n\nAnts have developed a mutually beneficial agricultural system that mirrors livestock farming.  Complete with protection, management, and resource extraction, and they do it without barns, fences, or spreadsheets.\n\nThe ant empire doesn’t stop at farming.\n\nSome ant species engage in organized warfare, launching coordinated raids against rival colonies. These aren’t chaotic skirmishes. They involve strategy, division of labor, and timing. In certain species, victorious ants steal the larvae or pupae of their enemies.  Effectively, adopting and raising them as thier own inside the colony. When these kidnapped ants mature, they work in the community along side their captors, unaware they were ever part of another society.\n\nOther ants practice monoculture farming, cultivating specific fungi underground as their primary food source. Leafcutter ants, for example, don’t eat the leaves they harvest. They use them to grow fungus gardens, carefully removing contaminants and maintaining optimal conditions. If the fungus fails, the colony starves.\n\nSound familiar? It’s agriculture, specialization, and economic dependence on a microscopic scale.\n\nWhat makes all of this astonishing isn’t just the behavior itself. It’s the organization. Ant colonies operate as superorganisms, where individual ants function like cells in a larger body. No single ant understands the full system, yet together they build roads, manage food supplies, regulate temperature, fight wars, and sustain populations that can number in the millions.\n\nThere are no kings issuing commands, no written laws, or education system. Just instinct, communication through chemical signals, and millions of years of evolution fine-tuning cooperation into something that looks suspiciously like civilization.\n\nWhich raises an uncomfortable question for humans:\nIf ants can farm, wage war, enslave rivals, and build agricultural economies without consciousness as we define it, what does that say about the roots of our own societies?\n\nEmpires aren’t just human inventions.\nPerhaps they’re a natural outcome of organization, scarcity, and survival.\n\nThe next time you see ants marching across the sidewalk, consider that you are looking at one of the most successful empires Earth has ever known, one that existed long before us and may very well outlast us.\n\nTiny creatures. Big lessons.",
+    "series": "Animal Life & Biodiversity"
+  },
+  {
+    "date": "2026-01-16",
+    "title": "Productivity at What Cost?",
+    "topic": "America’s GMO Gamble",
+    "body": "We like to tell ourselves that genetically modified crops are miracles of science, seeds that resist pests, withstand herbicides, and promise higher yields for a growing nation. In some ways, that is true. Bt corn has reduced some insecticide use. Virus-resistant papaya saved an industry. But truth rarely fits neatly into a soundbite.\n\nThe story that goes untold is the one of chemical dependency, biodiversity loss, and corporate consolidation. Monocultures of GMO corn, soybeans, and cotton now dominate our fields, stretching endlessly under a cloud of glyphosate spray. Superweeds have evolved to survive, demanding even more toxic chemicals. Pollinators lose their habitat, soil loses its vitality, yet the narrative of progress marches on, unchallenged. All while the cost is quietly paid by our environment, our farmers, and our future.\n\nGMOs in America are not just crops; they are a mirror of our priorities. Efficiency trumps resilience, and corporate contracts replace farmer autonomy. Profit replaces precaution. Small towns see their family farms absorbed into industrial-scale agriculture, while public attention focuses on the convenience of cheap corn syrup, soy protein, and feed for livestock.\n\nMeanwhile, the regulatory system treats these crops as if they are safe. The only relevant question we can ask is, “Are they even safe to eat?”  Safety to consume does not measure the ecological consequences, the chemical exposure, or the erosion of rural communities. We have separated the food from the land that grows it, and now the land itself is paying the price.\n\nThis is not a call to reject technology. It is a call to responsibility, balance, and accountability. We can innovate without stripping life from our soil. We can feed a growing population without sacrificing biodiversity. We can embrace the promise of science without surrendering our environment to corporate convenience.\n\nAmerica’s GMO fields are a warning. They are not merely seeds in the ground; they are choices. The consequences of those choices will outlast the harvest.",
+    "series": "Biodiversity",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRyIdQzfFwPZIteW9wk6Wj8umQJK4YdOritrT5BiB_qrpmIvk5ISZPSre2TECd6A2yrM7MjgGLfyyqT/pub"
+  },
+  {
+    "date": "2026-01-14",
+    "title": "We’re Making “Cyborg Babies,” and Nobody Told Us",
+    "topic": "Plastic Babies",
+    "body": "In Italy, scientists discovered microplastics inside unborn babies. Yes, those same microplastics we thought were just floating in oceans or stuck in yogurt packaging are now cozying up in humans before we even take our first breath.\n\nThe lead researcher called it a “cyborg baby.” Dramatic? Sure. But he’s not exaggerating the science.  We are literally mixing human cells with invisible shards of garbage, food wrappers, and disposable packaging. Congratulations, humanity: we’ve turned the next generation into part human, part plastic.\n\nHere’s the kicker: we have no idea what this means for health. Could it trigger inflammation? Could it affect development? Could it somehow make our immune systems freak out? We simply don’t know. Science is waving a big red flag, and we’re all running around trying to figure out what kind of microplastic cocktail we’re serving our children.\n\nMeanwhile, microplastics are everywhere. They’re in the fish we eat, the air we breathe, the water we drink. They’ve infiltrated ecosystems from plankton to whales. Now, apparently, from womb to world. This isn’t just an environmental problem; it’s a personal problem, a human problem, and a wake-up call.\n\nWe need to act. Governments, industries, and individuals alike must start cutting plastic use, improving recycling, and investing in clean alternatives. Ignoring this is like leaving a ticking time bomb in our kitchens and oceans, silently rewiring the blueprint of life.\n\nSo next time you toss a plastic bottle or swipe a microbead-laden face scrub, remember: it might just end up in the tiniest hands on Earth,  your children’s. We’re not just polluting the planet anymore. We’re polluting ourselves.\n\nIt’s time to wake up, rethink, and act before our babies become permanent members of the “Cyborg Club.”",
+    "series": "Biodiversity",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRRXW69TYMWKK7wAXu-lTitCUqY3IMFkPPXEYO636Fvqf9CqIgBRQkj4dwW4o0HHuUXRop72Ze648tZ/pub"
+  },
+  {
+    "date": "2026-01-13",
+    "title": "Preventative Healthcare for Dogs",
+    "topic": "Feeding Dogs Right Isn’t a Luxury",
+    "body": "For many dog owners, food is often an afterthought: a bag chosen based on price, branding, or habit. Yet what we pour into a dog’s bowl every day is one of the most powerful determinants of its long-term health. Feeding the right food isn’t about indulgence or trendiness. It’s about meeting biological needs that change throughout a dog’s life.\n\nDogs don’t need “more” food as they age; they need the right balance of nutrients at the right time. When those needs are ignored or misunderstood, the consequences emerge gradually; in weight gain, joint problems, digestive issues, skin conditions, and shortened lifespans. Many of the most common veterinary problems are not sudden illnesses, but the cumulative result of years of improper nutrition.\n\nNutrition Is Not One-Size-Fits-All\n\nA puppy’s body is in a state of rapid construction. Bones are lengthening, muscles are forming, organs are developing, and the brain is maturing. To support this, puppies require food that is energy-dense and rich in protein, fat, and carefully balanced minerals like calcium and phosphorus. Without these nutrients in the right proportions, growth can be compromised.  Especially in large breeds, where skeletal problems can have lifelong consequences.\n\nAdult dogs, by contrast, are no longer building new systems. Their nutritional goal is maintenance: sustaining muscle mass, supporting immune function, and providing enough energy for daily activity without excess. Feeding an adult dog a growth-focused diet long term may seem generous, but it can strain organs, promote obesity, and increase the risk of metabolic disease.\n\nSenior dogs often require yet another adjustment. Aging bodies process nutrients differently, burn fewer calories, and may benefit from diets that support joint health, cognitive function, and digestive efficiency. Ignoring these shifts doesn’t just reduce quality of life; it accelerates decline.\n\nThe Hidden Cost of “Good Enough” Feeding\n\nMany owners assume that if a food is labeled “complete and balanced,” it must be universally sufficient. In reality, those labels indicate minimum standards, not optimal ones for every dog. Feeding a dog the wrong food for its life stage or health condition doesn’t usually cause immediate failure; it causes slow deterioration.\n\nExcess weight alone is one of the clearest examples. Obesity in dogs is strongly linked to arthritis, diabetes, heart disease, and reduced lifespan. And obesity often isn’t caused by overfeeding treats alone, but by feeding calorie-dense food designed for a different stage of life. Nutrition mistakes don’t announce themselves loudly; they accumulate.\n\nThis is why proper feeding should be understood as preventive healthcare, not preference. The right diet can reduce inflammation, support immune resilience, and keep organs functioning efficiently well into old age.\n\nThe pet food aisle is crowded with claims: “premium,” “natural,” “ancestral,” “grain-free,” “holistic.” Some of these labels reflect legitimate choices; many are simply marketing. What matters more than buzzwords is whether a food is formulated to meet a dog’s actual physiological needs based on age, size, activity level, and health status.\n\nResponsible feeding requires owners to look beyond the front of the bag and understand why a food is designed the way it is. It also means recognizing that switching foods as a dog matures isn’t indulgent or manipulative; it’s biologically appropriate.\n\nFeeding Is an Ethical Responsibility\n\nDogs depend entirely on humans for nutrition. They cannot compensate for dietary imbalances or choose better options on their own. When we feed poorly out of convenience, misinformation, or habit, we are making a health decision on their behalf every single day.\n\nFeeding the right food doesn’t guarantee a long life, but feeding the wrong one almost guarantees preventable problems. Nutrition is not a cure-all, but it is the foundation upon which all other care rests.\n\nIn the end, choosing the right food is one of the simplest, most impactful ways to honor the responsibility of dog ownership. Not because dogs deserve luxury, but because they deserve health.",
+    "series": "Our Dogs Diet"
+  },
+  {
+    "date": "2026-01-10",
+    "title": "Elephants and Guitars",
+    "topic": "Ebony, and the Sound of the Forest",
+    "body": "When we think about the sound of a guitar, we imagine fingers on strings, wood resonating, music filling a room. What we rarely imagine is an elephant: slow-moving, ancient, deliberate, playing an invisible but essential role in that sound long before the instrument ever exists.\n\nYet for centuries, elephants have been doing exactly that.\n\nThe Ebony Tree’s Unlikely Partner\n\nEbony trees (Diospyros species), prized for their dense, dark heartwood, grow slowly, very slowly. Some take more than a century to mature. Their seeds are large, tough, and encased in fleshy fruit that most animals either can’t digest or won’t bother with.\n\nElephants, however, are perfectly designed for the job.\n\nThey consume the fruit whole. The seeds pass through their massive digestive systems intact, softened just enough to germinate. Then, over many miles, elephants deposit those seeds in nutrient-rich dung, far from the parent tree, exactly where young ebony trees have the best chance to survive.\n\nWithout elephants, ebony forests don’t just thin out.\nThey collapse over generations.\n\nFrom Forest Floor to Fretboard\n\nThe connection to guitars is not metaphorical; it’s literal.\n\nFor decades, high-quality ebony has been used for:\n\nFretboards\n\nBridges\n\nFingerboards\n\nTuning components\n\nEbony’s density resists wear, its smoothness enhances playability, and its stability keeps instruments in tune across climates. Many legendary instruments, from classical violins to modern electric guitars, depend on this wood.\n\nBut here’s the uncomfortable truth:\nNo elephants → no natural ebony regeneration → no future ebony.\n\nIn places where elephant populations have declined due to poaching and habitat loss, researchers have documented a sharp decrease in young ebony trees. The forest remembers the absence long after the animals are gone.\n\nThis realization has quietly reshaped the music world.\n\nInstrument makers like Taylor Guitars and conservation scientists have partnered in Africa and Asia to protect elephant habitats, not out of sentimentality, but out of biological necessity. Sustainable forestry programs now track seed dispersal, forest age, and animal movement patterns.\n\nA guitar, it turns out, is not just wood and wire.\n\nIt is:\n\nA forest timeline\n\nAn ecosystem contract\n\nA collaboration between species that never meet\n\nWhen a musician bends a note, they are touching a chain of events that may have begun with an elephant decades or centuries earlier.\n\nA Deeper Resonance\n\nThis story forces us to reconsider how we define “resources.” Ebony is not a commodity produced by trees alone. It is a relationship, maintained by animals, time, and intact landscapes.\n\nElephants don’t know they’re planting the future of music.\nThey’re just being elephants.\n\nAnd that may be the most humbling part:\nSome of the most beautiful human creations depend on wild systems functioning exactly as they have for millennia, without applause, without recognition, without us in charge.\n\nThe next time you hear a guitar sing, remember:\nSomewhere in that sound is the slow footstep of an elephant, crossing a forest, carrying a seed.",
+    "series": "Animals"
+  },
+  {
+    "date": "2026-01-04",
+    "title": "Hidden Toll on Birds and Bats",
+    "topic": "Not as Economically Safe as You Think",
+    "body": "Wind turbines are taking a heavy toll on wildlife, with hundreds of thousands of birds and bats killed annually in the United States alone. While many fatalities involve common species, raptors and  birds of conservation, such as Eagles, are disproportionately affected.  Several federally endangered bat species, such as the Indiana bat and Hawaiian hoary bat, have also been documented among turbine deaths. These fatalities are not just numbers; they threaten population stability for species that reproduce slowly or already have declining numbers. \n\nDespite legal protections, turbines remain a direct, human-caused hazard, highlighting a major ethical and ecological dilemma in the push for “clean” energy. Raptors, migratory birds, and sensitive bat populations are particularly vulnerable, with fatalities concentrated in key habitats and migration corridors. Wind turbines' impact on ecosystems can be disproportionate, especially when multiple large-scale wind farms fragment habitats and disrupt wildlife behavior.\n\nThe ethical question is clear: how much environmental sacrifice is acceptable in the name of “clean” energy? Unlike cats or cars, which are unavoidable hazards, turbine collisions are directly caused by human infrastructure choices. Yet mitigation efforts are limited, and many endangered species continue to be at risk.\n\nCall to Action: \n\nWe need smarter, wildlife-conscious energy planning. This includes developing turbine farms away from critical habitats, implementing shutdown protocols during high-risk migration periods, and investing in technology to reduce collisions. Conservation organizations, policymakers, and renewable energy developers must act now to ensure that the pursuit of clean energy does not come at the cost of vanishing species.",
+    "series": "Wind Power",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vStpLsoAyC0J6KYhDII-iCQ8hGeN2H_-zQscjwgzhe6GSrjAxAKV9gUnpWX52PLmvtgwVVy8fSULtuz/pub"
+  },
+  {
+    "date": "2025-12-29",
+    "title": "Ignored Dogs",
+    "topic": "When Barking Becomes a Public Nuisance",
+    "body": "A dog’s bark can be a joyful sound, a warning, a greeting, or even a comforting presence. But when it becomes relentless, day and night, it transforms from charm to chaos. Endless barking isn’t just a noise complaint; it’s a symptom of neglect, mismanagement, and a lack of responsibility.\n\nNeighbors feel trapped. Conversations are interrupted, sleep is stolen, and stress accumulates. Children studying for exams, elderly residents resting after surgeries, and anyone trying to enjoy a moment of peace bear the brunt of a problem that could be addressed with care and attention. Dogs aren’t malicious; they’re communicating, but constant barking is a cry that no one is listening to.\n\nPet owners have a responsibility. Training, attention, and proper exercise aren’t optional; they’re part of being a responsible guardian. Leaving dogs to bark endlessly isn’t a minor annoyance; it’s a community issue, a strain on relationships, and a hidden cruelty to the animal itself, trapped in a cycle of boredom, anxiety, and isolation.\n\nLocal laws and noise ordinances exist for a reason, but relying on them alone isn’t enough. True responsibility starts at home. A dog left to bark all day isn’t free; it’s neglected. Communities thrive when citizens act with care, respect, and mindfulness. The solution is simple: listen, train, and intervene before the sound of chaos becomes the soundtrack of the neighborhood.\n\nBecause in the end, a barking dog ignored is a community ignored, and no one wins in that scenario.",
+    "series": "Animal Control"
+  },
+  {
+    "date": "2025-12-27",
+    "title": "Quiet Victories in a Noisy World",
+    "topic": "We Still Have Reason for Hope",
+    "body": "It’s easy to feel discouraged when reading environmental headlines. Laws weakened. Habitats opened. Species pushed closer to the edge. The story often sounds the same: nature losing ground while human interests move faster and louder.\n\nBut that isn’t the whole story.\n\nBeneath the noise of political pressure and policy rollbacks, something else is happening around the globe. People are still fighting for species, adapting strategies, and quietly winning important battles. Conservation today isn’t perfect, but it’s far from powerless.\n\nIn the United States, the Endangered Species Act (ESA) is under increasing political pressure. Proposed rollbacks could weaken habitat protections and make it harder to list new species in danger. Critics are right to worry: laws matter, and losing them can have real consequences.\n\nBut the very fact that the ESA is debated so intensely is also proof of its strength. For decades, it has been one of the world’s most effective conservation tools, credited with preventing the extinction of hundreds of species. Scientists, conservation groups, Indigenous communities, and everyday citizens continue to defend it in courts, classrooms, and communities.\n\nThe fight for the ESA shows something important: protection doesn’t disappear quietly when people care loudly.\n\nThe rollback of habitat protections for the greater sage grouse is another setback. Millions of acres once managed for wildlife are now open to development, raising fears for not only the grouse but the entire sagebrush ecosystem.\n\nYet the story doesn’t end with policy changes.\n\nResearchers continue tracking sage grouse populations. Conservationists continue restoring habitat. States, tribes, and local groups are stepping in where federal protections weaken. Science doesn’t stop when politics shift, and neither does conservation work.\n\nNature’s defenders are playing the long game.\n\nSome of the most hopeful conservation stories don’t come from national laws but local decisions.\n\nOn Hawaii’s Big Island, officials banned the feeding of feral cats to protect endangered native birds like the nēnē goose. It’s a reminder that conservation isn’t always about choosing animals over animals; it’s about understanding ecosystems.\n\nThis policy doesn’t demonize cats; it acknowledges reality. In places with fragile native species, small human actions can have huge consequences. By addressing one pressure point, Hawaii is giving its native wildlife a better chance to survive.\n\nSometimes, protecting species starts with tough but thoughtful choices close to home.\n\nAnd then some moments cut through the worry entirely.\n\nIn New Zealand’s Zealandia sanctuary, a rare takahē chick was born to a pair once believed to be infertile. The takahē was thought extinct for decades before its rediscovery. Even now, only a few hundred remain.\n\nOne chick won’t save the species, but it symbolizes something powerful: conservation works, even when success seems unlikely.\n\nCareful breeding programs, protected habitats, long-term planning, and patience made that moment possible. It’s a reminder that extinction is not inevitable when effort continues.\n\nConservation success doesn’t always arrive as dramatic headlines. It shows up as:\n\nA law defended\n\nA habitat restored\n\nA policy adjusted\n\nA chick hatched\n\nA species holding on\n\nWhile setbacks are real, so is progress. Around the world, scientists, volunteers, Indigenous stewards, governments, and communities are choosing not to give up even when the odds are steep.\n\nThe planet’s biodiversity crisis is serious. But it is not a finished story.\n\nAnd as long as people keep noticing, protecting, and acting, there will still be room for hope.",
+    "series": "Endangered Species"
+  },
+  {
+    "date": "2025-12-24",
+    "title": "Saving The Animals and Species Recovery",
+    "topic": "Endangered Species",
+    "body": "Efforts to conserve, reintroduce, and rehabilitate endangered species are gaining unprecedented momentum worldwide. Organizations and governments are now focusing not just on preventing extinction, but on actively restoring species to their natural habitats.\n\nRewilding & Species Reintroduction: Projects are bringing animals like tortoises, condors, tamarins, sea turtles, and even extinct-in-the-wild birds back into ecosystems. Urban rewilding is also on the rise, with species returning to cities and restored wetlands.\n\nTechnological Innovations with AI, robotics, and genomic research are being used to monitor habitats, guide reintroduction efforts, and track endangered species. These tools allow conservationists to act faster and more effectively.\n\nLegislation & Funding, along with Laws and grants, are increasingly emphasizing species recovery, with dedicated funds supporting breeding, habitat restoration, and ecosystem rebuilding.\n\nEcosystem Impact and Reintroducing species is not only symbolic, but it also helps restore biodiversity, ecological balance, and essential ecosystem functions.\n\nThe combination of science, technology, and policy is transforming conservation. Projects now aim to revive ecosystems, rebuild wildlife populations, and create sustainable habitats. Success depends on global collaboration, careful planning, and ongoing monitoring, but the results are giving hope for the survival and flourishing of many species once at risk.",
+    "series": "Animals",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vTLRv1tQ3hsaTra0shr29p66nrmkRLoemZwdgjzEdhBWJroyUjNR6AURdXl1-gAF6hzTVxkIXYvFr4Q/pub"
+  },
+  {
+    "date": "2025-12-23",
+    "title": "Doing the Right Thing for Animals Shouldn’t Be This Hard",
+    "topic": "Spay and Neuter Programs or Lack Thereof",
+    "body": "For decades, millions of Americans heard the same closing line at the end of The Price Is Right: “Help control the pet population, have your pets spayed or neutered.” It was simple, direct, and impossible to forget. More importantly, it worked. Spaying and neutering became a cultural norm, not a fringe idea, and countless animals were spared lives of neglect, abandonment, or euthanasia.\n\nWhat’s easy to forget is that Bob Barker didn’t just say the words. He backed them up. Through his foundation, he helped fund low-cost spay and neuter programs across the country, making it possible for ordinary families to do the responsible thing without facing an impossible bill. Prevention wasn’t just encouraged, it was made accessible.\n\nToday, that accessibility is quietly disappearing.\n\nOver the past decade, the cost of spaying or neutering a pet has risen sharply. In many areas, prices at private veterinary clinics now reach several hundred dollars or more. This increase has happened even as the procedures themselves have become safer, faster, and more standardized. Veterinary medicine has advanced. Surgical risks are lower. Recovery is quicker. Yet the price tag has moved steadily in the upwards direction.\n\nEven when inflation is taken into account, today’s costs often exceed what inflation alone would explain. For many families, especially those already stretched thin, the decision to spay or neuter a pet is no longer a matter of responsibility, it’s a matter of affordability.\n\nThis isn’t just an individual problem. When spay and neuter services become too expensive or too hard to access, the consequences ripple outward. Fewer animals are fixed. Accidental litters increase. Shelters fill up. Rescue groups struggle to keep up. Communities end up paying more in the long run through animal control costs, overcrowded shelters, and preventable suffering.\n\nToo often, the conversation stops at personal responsibility. But responsibility without access isn’t responsibility at all. It’s wishful thinking. You can’t tell people to “do the right thing” and then make that right thing financially out of reach.\n\nWhat makes this situation especially frustrating is that we already know what works. We’ve seen it. Subsidized clinics, high-volume spay and neuter programs, and public investment dramatically reduced shelter intake and euthanasia rates in many parts of the country. Bob Barker’s advocacy helped prove that prevention, when supported, is both humane and cost-effective.\n\nSome of those programs still exist, but many are overwhelmed, underfunded, or booked months in advance. Others disappeared during the pandemic and never fully returned. As affordable options shrink, more people are forced into higher-cost private care or out of care altogether.\n\nThe result is a system where compassion increasingly depends on a credit card.\n\nIf we care about animal welfare, this needs to change. Spay and neuter should be treated as essential community infrastructure, not a luxury service. Investing in prevention saves money, reduces suffering, and eases the burden on shelters and municipalities alike. It is one of the rare solutions that benefits everyone involved; animals, people, and communities.\n\nThe message Bob Barker shared for decades is still true. The problem is that we’ve made it harder to follow.\n\nDoing the right thing for animals shouldn’t be this expensive. And it certainly shouldn’t be this easy to ignore. If Veterinarians are truly entering the field because they care about animals, then why are they taking deliberate steps further from true compassion and outreach for said animals?  If there's money for euthanization why can it not be used for spaying and neutering?  Make it make sense, Please.",
+    "series": "Subsidized clinics, high-volume spay and neuter programs, and public investment",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vQeO0BtOuJyMAJ6OeZ1aFt4IMsSeO4Uz9dIwamwh3SVeXB4v5wmWRtSDuZaapwXTD-XDp-4AHiSogBk/pub"
+  },
+  {
+    "date": "2025-12-19",
+    "title": "Just Because We Can Doesn’t Mean We Should; Yet",
+    "topic": "Gene Editing",
+    "body": "CRISPR has turned science fiction into laboratory routine. With a precision that would have been unimaginable a generation ago, scientists can now edit the very code of life. Diseases once considered inevitable, inherited blindness, fatal childhood disorders, and relentless degenerative conditions, suddenly look optional. This is a breathtaking achievement. It is also a terrifying responsibility.\n\nUsing gene editing to cure illness feels morally intuitive. Who wouldn’t want to spare a child from lifelong suffering? Who wouldn’t want to erase a mutation that guarantees pain or early death? In these cases, CRISPR appears not as a threat, but as an act of mercy, science at its most humane.\n\nBut history warns us that doors opened for the best reasons rarely close neatly.\n\nOnce gene editing moves beyond treating disease, it begins to blur into enhancement. Height. Intelligence. Physical appearance. Emotional traits shaped as much by culture and chance as by biology suddenly feel negotiable. What begins as healing risks becoming optimization, not to relieve suffering, but to engineer advantage.\n\nThe danger here is not just rogue scientists operating in secret labs. It is something quieter and far more pervasive: social pressure. If enhancement becomes possible, choosing not to edit may come to look irresponsible. Declining genetic “improvements” could be framed as negligence rather than restraint. Choice turns into expectation. Difference turns into a defect.\n\nParents may feel compelled to give their children every possible edge, not out of vanity, but fear that an unedited child will be left behind in schools, jobs, or society itself. Inequality, already deeply entrenched, could be written into DNA. Wealth would no longer just buy better opportunities; it would buy better biology.\n\nHuman history offers a stark warning. Whenever societies have decided which traits are desirable and which are not, the result has been exclusion, coercion, and suffering. Eugenics did not begin with cruelty; it began with confidence that science could perfect humanity if only the “right” traits were encouraged and the “wrong” ones discouraged.\n\nCRISPR forces us to confront an uncomfortable question: Does progress mean perfection, or does it mean compassion for imperfection? Is the goal of medicine to eliminate difference, or to relieve suffering while preserving human dignity?\n\nNone of this is an argument to halt scientific discovery. Knowledge cannot be uninvented. But restraint is not the enemy of progress; it is its conscience. The pace of technological capability has far outstripped our ethical consensus, and the consequences of getting this wrong are not reversible.\n\nThe real ethical challenge is not whether we can edit life. It is whether we can do so without losing sight of its inherent worth, without turning human variation into a problem to be solved, or dignity into a feature to be optimized.\n\nJust because we can reshape humanity does not mean we are ready to decide what it should become. Some powers demand not speed, but wisdom and patience enough to ask whether the future we can build is one we should live in.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vSSTR8GOZCGx8rmy__qyFlvAS-w_s_7wvhsGmBKhb6alg67vWIh4rb5u0lCkRGY2zF41LikLv0TGXja/pub",
+    "series": "science fiction, laboratory humans"
+  },
+  {
+    "date": "2025-12-12",
+    "title": "Rumors, and the Ethics of Animal Testing",
+    "topic": "Militarized Polar Bears?",
+    "body": "Polar Bears, Rumors, and the Ethics of Animal Testing\n\nThis story should be in the debunked column but unfortunately animal cruelty is real.\n\nIn the age of viral headlines and social media sensationalism, it’s easy to laugh at stories like “Russia is training polar bears to attack NATO troops in the Arctic.” It sounds absurd, almost cartoonish. Yet underneath the humor lies a deeper, uncomfortable question: how far might humans go in exploiting animals for purposes of power, conflict, or experimentation?\n\nWe cannot confirm whether polar bears are being used in this way. There is no verifiable on-the-ground reporting to substantiate the claim. But dismissing the story entirely risks ignoring a broader, very real issue: the ethical implications of animal testing and militarization of wildlife. Across the globe, animals are routinely subjected to experimentation, forced labor, and training in ways that compromise their welfare. From laboratory experiments to military training with dogs, pigeons, and other species, the history of human experimentation on animals is well-documented and deeply troubling.\n\nRather than treat the polar bear rumor as fact or as a joke, it is more responsible to see it as a mirror of our anxieties and ethical blind spots. It challenges us to ask: if a nation were attempting extreme experiments with animals, how would we know? How would we hold them accountable? And how do we confront the practices already occurring in our own backyard, in labs, farms, and testing facilities worldwide?\n\nFraming the story this way, we neither dismiss the possibility nor sensationalize it. Instead, we shine a light on the real, systemic animal welfare issues that deserve attention and we invite readers to engage critically with what they see online. The absurdity of the polar bear rumor becomes a starting point for a serious conversation about ethics, transparency, and responsibility in human-animal interactions.\n\nIn the end, the takeaway isn’t whether polar bears are on patrol, it’s that the world is full of real experiments, real cruelty, and real moral decisions that cannot be ignored simply because a story seems too wild to be true.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRW-KHv1tk3zl2xYqKP0C2IVC6PisHdbB8NQ76it5bdoONz34RkxN1H_eP4xVxsMU8vDloW-_ae9LaW/pub",
+    "series": "Polar Bears, Animal Testing, Military Training"
+  },
+  {
+    "date": "2025-12-11",
+    "title": "When Medicine Pollutes the Wild",
+    "topic": "Pharmaceuticals",
+    "body": "The pills we take to stay healthy are silently reshaping the world outside our windows. Antibiotics, painkillers, antidepressants, and hormones are making their way from our medicine cabinets into rivers, lakes, and soils. Wastewater treatment can’t remove them all. The result? Fish with twisted reproductive systems, birds weakened by toxic residues, and ecosystems destabilized by invisible chemical invaders.\n\nBig Pharma’s focus on profit ensures a steady flow of medications into society, but few question where these drugs end up. Improper disposal, overprescription, and industrial runoff turn life-saving compounds into ecological hazards. Antibiotic resistance isn’t just a hospital problem anymore; it’s spreading through wildlife populations, creating reservoirs of disease that could circle back to humans.\n\nOur environment is our lifeline. Contaminated rivers affect drinking water, fisheries, and food security. Collapsing wildlife populations threaten biodiversity, weakening the natural systems that clean our air, purify our water, and stabilize our climate. Public health, ecological health, and societal resilience are inseparable. When one falters, the others follow.\n\nNature gave us the solutions: preventive care, natural remedies, and careful stewardship of resources. Ignoring them in favor of unchecked pharmaceutical consumption isn’t just shortsighted, it's a threat to the very systems that sustain life.\n\nWe need policies that hold corporations accountable, programs that safely manage pharmaceuticals, and a public willing to rethink medicine’s footprint on the planet. Humanity and wildlife share one ecosystem. Polluting it with profit-driven medicine is a cost we can no longer afford.\n\nPharmaceuticals have a growing and concerning impact on wildlife and ecosystems. Here’s a detailed overview of how this happens and why it matters:\n\nDrugs enter rivers, lakes, and oceans through human excretion, improper disposal, and agricultural runoff.\n\nAntibiotics, hormones, antidepressants, and painkillers are among the most common contaminants.\n\nWastewater treatment plants often cannot fully remove these compounds, allowing them to persist in the environment.\n\nHormones from birth control pills and other drugs can disrupt reproduction in fish, amphibians, and other aquatic species. For example, exposure to estrogen can cause male fish to develop female characteristics, leading to population declines.\n\nAntibiotics in waterways can affect microbial communities, which are critical for nutrient cycling and healthy ecosystems.\n\nBehavior-altering drugs, like antidepressants, can change predator-prey interactions and feeding behavior in fish and amphibians.\n\nWildlife consuming contaminated water or prey can accumulate pharmaceuticals in their bodies.\n\nScavengers and predators, like birds of prey, can ingest medications through livestock or fish, affecting reproduction, growth, and immune function.\n\nAntibiotic residues can promote resistant bacteria in wildlife populations, potentially creating reservoirs for resistant pathogens.\n\nMany pharmaceuticals do not break down quickly and can accumulate in soil and organisms.\n\nChronic exposure may lead to long-term population declines, altered species interactions, and disrupted ecosystems.\n\nThese disruptions can cascade, affecting food webs and ecosystem services humans rely on, such as pollination, water purification, and fisheries.\n\nVultures in South Asia declined dramatically due to diclofenac, an anti-inflammatory drug given to livestock. Scavengers consuming treated livestock carcasses suffered kidney failure.\n\nFish feminization is widespread in European and North American rivers due to estrogenic compounds.\n\nAntibiotic-resistant bacteria have been detected in wildlife, showing that drug pollution crosses species boundaries.\n\nPharmaceuticals are not just a human or domestic animal issue; they are emerging contaminants threatening wildlife health and ecosystem stability. Misuse, overprescription, and improper disposal of medications extend their impact far beyond hospitals and homes, creating hidden ecological consequences that can eventually circle back to affect humans.",
+    "series": "Improper disposal, overprescription, and industrial runoff"
+  },
+  {
+    "date": "2025-12-10",
+    "title": "Our Planet on the Edge",
+    "topic": "Threats to Natural Resources",
+    "body": "The world’s natural resources are under siege. Forests, freshwater, soil, biodiversity, and entire ecosystems, the very foundations of life on Earth, are facing pressures unlike any in human history. These challenges are not isolated; they are interconnected, amplified by climate change, population growth, and unsustainable consumption. The stakes are high, and the clock is ticking.\n\nBiodiversity is vanishing at an alarming rate. Species across the globe are disappearing due to habitat destruction, pollution, overexploitation, and climate stress. When ecosystems collapse, essential services that humans rely on pollination, waterpurificationn and soil fertility, are thrown into jeopardy. The loss of even a single species can trigger cascading effects that ripple through food chains and habitats, ultimately threatening human survival.\n\nForests, the lungs of our planet, are in crisis. Tropical regions like the Amazon face relentless deforestation and degradation, reducing carbon storage, displacing wildlife, and destabilizing regional and global climate patterns. Forest loss increases the frequency and intensity of wildfires and droughts, creating a feedback loop of destruction that impacts both nature and communities.\n\nWetlands, from mangroves to peatlands, are disappearing at alarming rates. These ecosystems act as natural flood buffers, water purifiers, and carbon sinks while supporting fisheries that feed millions. Their loss carries not only environmental consequences but also staggering economic costs, potentially reaching tens of trillions of dollars if current trends continue.\n\nFreshwater scarcity is becoming a global crisis. Nearly one-quarter of freshwater species are at risk of extinction, and human access to clean water is increasingly threatened by pollution, overuse, dams, and invasive species. Without healthy water systems, agriculture, industry, and daily life all suffer, creating a dangerous feedback loop of stress on communities and ecosystems alike.\n\nSoil degradation compounds these challenges. Unsustainable farming practices, deforestation, and chemical overuse are stripping soil of fertility and causing runoff that contaminates waterways. Declining soil health jeopardizes food security and undermines the long-term productivity of agricultural systems worldwide.\n\nRising temperatures, shifting rainfall patterns, and extreme weather events intensify droughts, accelerate species extinction, and turn once-healthy forests into carbon sources rather than sinks. Ecosystem tipping points are approaching, and once crossed, the consequences could be irreversible.\n\nPollution is a pervasive danger. Chemicals, excessive nitrogen from fertilizers, and plastic contamination are disrupting soil, water, and marine ecosystems, reducing biodiversity, altering food chains, and directly impacting human health. At the same time, overexploitation through overfishing, excessive logging, mining, and water extraction places unsustainable pressure on already fragile systems. When natural resources are depleted faster than they can regenerate, both the environment and the economies that depend on it suffer.\n\nThese threats matter deeply. Ecosystem collapse undermines the natural services that sustain human life. Economic risks mount as degraded ecosystems reduce productivity, agricultural yields, and natural protection against disasters. Social inequality is magnified, as low-income communities are often the first and hardest hit by environmental decline. Climate change, pollution, and overuse interact to compound impacts, creating a dangerous cycle that requires immediate attention.\n\nThe urgency for action has never been greater. Protecting and restoring forests, wetlands, freshwater systems, and soils demands global coordination, investment, and a commitment to sustainable practices. Humanity’s survival, prosperity, and quality of life depend on it. Our planet’s natural resources are not infinite, and the time to safeguard them is now.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vQS7Iv4fF18AMtbKEKEp9NKnpYcG29vmy8yZlvFnZyFMh-PoTv7r1r5QwXb_LesDjchCGyvr35RnQNV/pub",
+    "series": "world’s natural resources"
+  },
+  {
+    "date": "2025-11-24",
+    "title": "Global Wildlife Populations",
+    "topic": "Species and Habitats",
+    "body": "Global wildlife populations continue to face serious declines. According to WWF, the average population of monitored species has fallen 73% since 1970, with the most dramatic losses in Latin America, Africa, and Asia. The primary drivers are habitat loss, overexploitation, invasive species, and disease. Migratory species are also under pressure, with nearly half declining and over 20% threatened with extinction.\n\nGenetic diversity is also shrinking, reducing species’ ability to adapt to environmental changes and increasing long-term vulnerability.\n\nConservation progress has been made:\n\nTerrestrial vertebrate protection has risen slightly, with a 6% increase in the Species Protection Index (SPI) for land species and a 4% increase for marine species.\n\nAdditional land and marine areas gained protected status in 2025.\n\nNotable species developments include:\n\nThe green sea turtle has recovered sufficiently to be downgraded from “Endangered” to “Least Concern.”\n\nThe greater one-horned rhino population in India and Nepal now exceeds 4,000.\n\nPangolins are receiving expanded protection under the U.S. Endangered Species Act.\n\nCaptive-bred greater adjutant storks were successfully released in Cambodia with GPS tracking.\n\nTechnological advances are improving monitoring and conservation:\n\nAI, drones, camera traps, and bioacoustic systems are being deployed to track species and habitats in real time.\n\nUrban biodiversity and invasive species monitoring benefit from these tools, while real-time detection systems (like for curlews) allow precise population tracking.\n\nChallenges remain:\n\nThe massive decline in populations and genetic diversity highlights ongoing risks to ecosystem stability.\n\nProtection remains uneven; many species still lack adequate safeguards.\n\nFunding for conservation falls far short of global needs, with an estimated $824 billion needed annually compared to the $143 billion currently invested.\n\nWildlife trafficking, poaching, and habitat degradation continue to threaten species, requiring ongoing international enforcement and policy action.",
+    "series": "Wildlife trafficking, poaching, and habitat degradation"
+  },
+  {
+    "date": "2025-11-22",
+    "title": "Birds Are Disappearing",
+    "topic": "Planet’s  Health",
+    "body": "Birds Are Disappearing. We Must Act Now\n\nAcross America, millions of birds are vanishing from our skies, wetlands, grasslands, and backyards. From grassland sparrows to coastal waterfowl, populations are plummeting. Many species have lost half or more of their numbers in the past 50 years. Bird sanctuaries, once safe havens, are under threat from habitat loss, pollution, climate change, and weak protections.\n\nThis isn’t just about losing the beauty of songbirds or the thrill of migration. Birds are critical to our ecosystems: they control pests, pollinate plants, disperse seeds, and signal the health of the environment we all depend on. When birds suffer, humanity suffers too.\n\nThe time to act is now. We cannot wait while ecosystems collapse and species vanish. Here’s what we must do:\n\nProtecting and restoring habitats, wetlands, grasslands, and marshes needs urgent legal and financial support.\n\nEnforce conservation laws, sanctuaries must remain true safe havens, free from loopholes that allow destruction.\n\nPlan development responsibly; every construction project or farmland conversion must account for ecological impact.\n\nEngage the public, support conservation groups, reduce pollution, avoid harmful pesticides, and advocate for bird-friendly policies.\n\nFight climate change. A stable climate is critical for birds, ecosystems, and humanity alike.\n\nBirds are not just creatures of the sky; they are a reflection of our planet’s health and our own future. Every delay risks more silence where their songs once rang. It is up to us to protect them for nature, for ourselves, and for generations to come.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRFGYWYCYaRP5wWaSSWGQMsjRlbczRs0X3N5JisaRzzjWWCCVsg7LbY9eRWrQ-j1DvY8v5-DyKTtQyJ/pub",
+    "series": "habitat loss, pollution, climate change, and weak protections."
+  },
+  {
+    "date": "2025-11-21",
+    "title": "Millions of Animals Used for Testing",
+    "topic": "Ethical Concerns",
+    "body": "Animals are still widely used in scientific research around the world, primarily to develop and test new medicines, study diseases, and ensure chemical and drug safety. Commonly used animals include mice, rats, rabbits, zebrafish, and sometimes primates.\n\nWho Conducts Animal Testing\n\nUniversities and academic labs conduct research in medicine, biology, and psychology.\n\nPharmaceutical and biotech companies conduct preclinical testing of drugs and vaccines.\n\nGovernment agencies like the NIH and FDA fund and regulate studies.\n\nContract research organizations (CROs) and private labs are hired to run studies.\n\nRegulations\n\nIn the U.S., rules include the Animal Welfare Act, PHS policy, and oversight by IACUC committees.\n\nOther countries have their own regulations, like the EU’s strict animal testing directive.\n\nResearch must justify animal use, minimize suffering, and consider alternatives.\n\nEthical Concerns\n\nCritics argue that many experiments cause pain or distress, and some are unnecessary.\n\nAlternatives like cell cultures, organoids, and computer models are growing but cannot yet fully replace animals in all studies.\n\nThe 3Rs principle, Reduce, Refine, Replace, is guiding researchers toward more ethical practices.\nMillions of animals are used annually, mostly mice and rats.\n\nUse of primates is limited but still occurs in specialized research like neuroscience and infectious diseases.\n\nThere is a shift toward reducing animal use and improving welfare, but animal testing remains essential in many areas.\n\nBottom Line:\nAnimal testing continues to play a critical role in science and medicine. While regulations exist to protect welfare and ethical standards, and alternatives are expanding, millions of animals are still used each year worldwide, with research focused on understanding diseases, developing drugs, and ensuring safety.",
+    "link": "https://docs.google.com/document/d/e/2PACX-1vRYEeiuDgwXBZ6mE1dlLEX2uZwHZG_af77nowP8HRd1cq47hOHYBkTnBg6M-Oq5xnKzy1TJwOfg-sdH/pub",
+    "series": "cell cultures, organoids, and computer models"
+  },
+  {}
+];
+
+// ======================================================
+// 2. STATE
+// ======================================================
+let filtered = comments.slice();
+let showingDetail = null;
+
+// ======================================================
+// 3. FILTERING
+// ======================================================
+function filterComments() {
+  const dateVal   = document.getElementById("dateSearch").value;
+  const topicVal  = document.getElementById("topicSearch").value.trim().toLowerCase();
+  const seriesVal = document.getElementById("seriesSearch").value.trim().toLowerCase();
+
+  filtered = comments.filter(c => {
+    if (!c || !c.title) return false;
+
+    const dateMatch = !dateVal || c.date === dateVal;
+
+    const topicMatch = !topicVal || (
+      (c.topic  && c.topic.toLowerCase().includes(topicVal)) ||
+      (c.title  && c.title.toLowerCase().includes(topicVal)) ||
+      (c.body   && c.body.toLowerCase().includes(topicVal))
+    );
+
+    const seriesMatch = !seriesVal || (
+      c.series && c.series.toLowerCase().includes(seriesVal)
+    );
+
+    return dateMatch && topicMatch && seriesMatch;
+  });
+
+  showingDetail = null;
+  renderList();
+}
+
+// ======================================================
+// 4. LIST RENDER
+// ======================================================
+function renderList() {
+  const list   = document.getElementById("commentList");
+  const detail = document.getElementById("commentDetail");
+  if (!list || !detail) return;
+
+  detail.innerHTML = "";
+  list.innerHTML = "";
+
+  if (!filtered.length) {
+    list.innerHTML = `<li><span class="comment-title">No entries found.</span></li>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const li = document.createElement("li");
+    li.onclick = () => showDetail(c);
+
+    const snippet = c.body
+      ? c.body.slice(0, 120) + (c.body.length > 120 ? "…" : "")
+      : "";
+
+    const topic  = c.topic  || "";
+    const series = c.series || "";
+    const date   = c.date   || "";
+
+    const metaText = [topic, series ? `Series: ${series}` : "", date]
+      .filter(Boolean).join(" • ");
+
+    li.innerHTML = `
+      <div class="comment-title">${escapeHtml(c.title || "")}</div>
+      <div class="comment-meta">${escapeHtml(metaText)}</div>
+      <div class="comment-body">${escapeHtml(snippet)}</div>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// ======================================================
+// 5. DETAIL VIEW → POPUP MODAL
+// ======================================================
+function showDetail(c) {
+  showingDetail = c;
+
+  const backdrop = document.getElementById("modalBackdrop");
+  const modal    = document.getElementById("articleModal");
+  const titleEl  = document.getElementById("modalTitle");
+  const metaEl   = document.getElementById("modalMeta");
+  const bodyEl   = document.getElementById("modalBody");
+  const linkRow  = document.getElementById("modalLinkRow");
+
+  const topic  = c.topic  || "";
+  const series = c.series || "";
+  const date   = c.date   || "";
+
+  const metaText = [topic, series ? `Series: ${series}` : "", date]
+    .filter(Boolean).join(" • ");
+
+  titleEl.textContent = c.title || "";
+  metaEl.textContent  = metaText;
+  bodyEl.textContent  = c.body || "";
+  linkRow.innerHTML   = "";
+
+  if (c.link) {
+    const btn = document.createElement("button");
+    btn.className = "open-link-btn";
+    btn.textContent = "Open Full Article";
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      window.open(c.link, "_blank");
+    });
+    linkRow.appendChild(btn);
+  }
+
+  backdrop.classList.remove("hidden");
+  modal.classList.remove("hidden");
+
+  // Center the modal initially
+  const rect = modal.getBoundingClientRect();
+  const left = Math.max(14, (window.innerWidth - rect.width) / 2);
+  const top  = Math.max(24, (window.innerHeight - rect.height) / 4);
+  modal.style.left = left + "px";
+  modal.style.top  = top  + "px";
+}
+
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.add("hidden");
+  document.getElementById("articleModal").classList.add("hidden");
+}
+
+// ======================================================
+// 6. DRAGGABLE MODAL
+// ======================================================
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+function initDrag() {
+  const modal  = document.getElementById("articleModal");
+  const header = document.getElementById("modalHeader");
+  if (!modal || !header) return;
+
+  header.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    const rect = modal.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", function(e) {
+    if (!isDragging) return;
+    const modal = document.getElementById("articleModal");
+    if (!modal) return;
+
+    let left = e.clientX - dragOffsetX;
+    let top  = e.clientY - dragOffsetY;
+
+    const maxLeft = window.innerWidth  - modal.offsetWidth;
+    const maxTop  = window.innerHeight - modal.offsetHeight;
+
+    if (left < 7) left = 7;
+    if (top  < 7) top  = 7;
+    if (left > maxLeft - 7) left = maxLeft - 7;
+    if (top  > maxTop  - 7) top  = maxTop  - 7;
+
+    modal.style.left = left + "px";
+    modal.style.top  = top  + "px";
+  });
+
+  window.addEventListener("mouseup", function() {
+    isDragging = false;
+  });
+}
+
+// ======================================================
+// 7. UTILS
+// ======================================================
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ======================================================
+// 8. INIT
+// ======================================================
+filterComments();
+initDrag();
+</script>
+</body>
