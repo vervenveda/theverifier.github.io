@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Verifier – Daily News Quiz</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f0f4f8; }
+    header { background: #2d6a4f; color: white; text-align: center; padding: 1rem; font-size: 1.5rem; position: sticky; top: 0; z-index: 100; }
+    .controls { display: flex; flex-wrap: wrap; justify-content: center; padding: 0.5rem; background: #95d5b2; }
+    .controls select { padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; margin: 0.25rem; }
+    .quiz-container { padding: 1rem; max-width: 600px; margin: auto; }
+    .question-card { background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    button.option { display: block; width: 100%; padding: 0.5rem; margin: 0.5rem 0; border: none; border-radius: 5px; background: #52b788; color: white; font-size: 1rem; cursor: pointer; }
+    button.option.correct { background: #198754; }
+    button.option.wrong { background: #dc3545; }
+    .timer, .score, .leaderboard { text-align: center; margin: 1rem 0; font-size: 1.2rem; }
+    footer { text-align: center; padding: 1rem; background: #2d6a4f; color: white; position: sticky; bottom: 0; }
+  </style>
+</head>
+<body>
+
+  <header>The Verifier<br>Daily News Quiz</header>
+
+  <div class="controls">
+    <label for="categorySelect">Category:</label>
+    <select id="categorySelect">
+      <option value="All">All</option>
+      <option value="Environment">Environment</option>
+      <option value="Health">Health</option>
+      <option value="Science">Science</option>
+      <option value="Global">Global</option>
+    </select>
+  </div>
+
+  <div class="timer" id="timerDisplay"></div>
+  <div class="quiz-container" id="quizContainer">
+    <p>Loading quiz...</p>
+  </div>
+  <div class="score" id="scoreDisplay">Score: 0 | Streak: 0</div>
+  <div class="leaderboard" id="leaderboardDisplay"></div>
+
+  <footer>&copy; 2025 The Verifier</footer>
+
+  <script>
+  // --- Service Worker Blob Setup ---
+  const swCode = `
+    self.addEventListener('install', e => { self.skipWaiting(); });
+    self.addEventListener('activate', e => { self.clients.claim(); });
+    self.addEventListener('notificationclick', e => {
+      e.notification.close();
+      e.waitUntil(clients.openWindow(e.notification.data.url || '/'));
+    });
+    self.addEventListener('push', e => {
+      const d = e.data.json();
+      self.registration.showNotification(d.title, { body: d.body, data: { url: d.url } });
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'text/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(swUrl)
+      .then(() => console.log('Service worker registered'))
+      .catch(console.error);
+  }
+
+  // --- Core Quiz & News Logic ---
+  const FEEDS = [
+    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/environment.xml', category: 'Environment' },
+    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/health.xml', category: 'Health' },
+    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/science.xml', category: 'Science' },
+    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/science_and_environment/rss.xml', category: 'Global' },
+    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.npr.org/rss/rss.php?id=1007', category: 'Environment' }
+  ];
+  const questionsPerQuiz = 10;
+  const timePerQuestion = 20; // seconds
+
+  let allArticles = [];
+  let quizQuestions = [];
+  let currentQuestionIndex = 0;
+  let score = 0;
+  let streak = parseInt(localStorage.getItem('verifierStreak') || '0');
+  let timer = null;
+
+  const categorySelect = document.getElementById('categorySelect');
+  const quizContainer = document.getElementById('quizContainer');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const scoreDisplay = document.getElementById('scoreDisplay');
+  const leaderboardDisplay = document.getElementById('leaderboardDisplay');
+
+  // Fetch RSS feed and return items
+  async function fetchFeed(url, category) {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (Array.isArray(data.items)) {
+        return data.items.map(it => ({ ...it, category }));
+      }
+    } catch (err) { console.error('Feed error', err); }
+    return [];
+  }
+
+  // Load and cache news
+  async function loadNews() {
+    let articles = [];
+    for (let f of FEEDS) {
+      const items = await fetchFeed(f.url, f.category);
+      articles = articles.concat(items);
+    }
+    // dedupe by link
+    const seen = new Set();
+    const unique = [];
+    for (let a of articles) {
+      if (!seen.has(a.link)) {
+        seen.add(a.link);
+        unique.push(a);
+      }
+    }
+    // sort by date desc
+    unique.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    allArticles = unique;
+    localStorage.setItem('verifierNews', JSON.stringify(allArticles));
+    localStorage.setItem('verifierNewsTime', Date.now());
+  }
+
+  // Generate quiz questions
+  function generateQuiz() {
+    const cat = categorySelect.value;
+    let pool = (cat === 'All' ? allArticles : allArticles.filter(a => a.category === cat));
+    pool = shuffle(pool).slice(0, questionsPerQuiz);
+    quizQuestions = pool.map(article => {
+      const type = randomChoice(['category','truefalse','date']);
+      if (type === 'category') {
+        return {
+          type: 'category',
+          question: `Which category does this headline belong to?\n\n"${article.title}"`,
+          options: shuffle(['Environment','Health','Science','Global']),
+          answer: article.category
+        };
+      } else if (type === 'truefalse') {
+        return {
+          type: 'truefalse',
+          question: `True or False: This headline is real\n\n"${article.title}"`,
+          options: ['True','False'],
+          answer: 'True'
+        };
+      } else if (type === 'date') {
+        const realYear = new Date(article.pubDate).getFullYear().toString();
+        const fake = (parseInt(realYear) - (1 + Math.floor(Math.random()*5))).toString();
+        const fake2 = (parseInt(realYear) + 1).toString();
+        return {
+          type: 'date',
+          question: `In which year was this article published?\n\n"${article.title}"`,
+          options: shuffle([realYear, fake, fake2]),
+          answer: realYear
+        };
+      }
+    }).filter(q => q);
+  }
+
+  function showQuestion() {
+    clearInterval(timer);
+    if (currentQuestionIndex >= quizQuestions.length) {
+      endQuiz();
+      return;
+    }
+    const q = quizQuestions[currentQuestionIndex];
+    quizContainer.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.innerHTML = `<p>${q.question.replace(/\\n/g, '<br>')}</p>`;
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.innerText = opt;
+      btn.onclick = () => checkAnswer(opt);
+      card.appendChild(btn);
+    });
+    quizContainer.appendChild(card);
+    startTimer();
+  }
+
+  function checkAnswer(selected) {
+    const q = quizQuestions[currentQuestionIndex];
+    const btns = document.querySelectorAll('button.option');
+    btns.forEach(b => {
+      if (b.innerText === q.answer) b.classList.add('correct');
+      if (b.innerText === selected && selected !== q.answer) b.classList.add('wrong');
+      b.disabled = true;
+    });
+    if (selected === q.answer) score++;
+    scoreDisplay.innerText = `Score: ${score} | Streak: ${streak}`;
+    clearInterval(timer);
+    setTimeout(() => {
+      currentQuestionIndex++;
+      showQuestion();
+    }, 1000);
+  }
+
+  function startTimer() {
+    let t = timePerQuestion;
+    timerDisplay.innerText = `Time: ${t}`;
+    timer = setInterval(() => {
+      t--;
+      timerDisplay.innerText = `Time: ${t}`;
+      if (t <= 0) {
+        clearInterval(timer);
+        currentQuestionIndex++;
+        showQuestion();
+      }
+    }, 1000);
+  }
+
+  function endQuiz() {
+    if (score >= Math.ceil(questionsPerQuiz / 2)) streak++; else streak = 0;
+    localStorage.setItem('verifierStreak', streak);
+    scoreDisplay.innerText = `Score: ${score} | Streak: ${streak}`;
+    quizContainer.innerHTML = `<div class="question-card"><h3>Quiz Complete!</h3><p>Your final score: ${score} / ${quizQuestions.length}</p><p>Streak: ${streak}</p><button onclick="startGame()">Play Again</button></div>`;
+    timerDisplay.innerText = '';
+    updateLeaderboard();
+  }
+
+  function startGame() {
+    score = 0;
+    currentQuestionIndex = 0;
+    scoreDisplay.innerText = `Score: ${score} | Streak: ${streak}`;
+    generateQuiz();
+    showQuestion();
+  }
+
+  function updateLeaderboard() {
+    let board = JSON.parse(localStorage.getItem('verifierBoard') || '[]');
+    board.push({ date: new Date().toLocaleDateString(), score, streak });
+    board = board.sort((a,b) => b.score - a.score || b.streak - a.streak).slice(0, 10);
+    localStorage.setItem('verifierBoard', JSON.stringify(board));
+    renderLeaderboard(board);
+  }
+
+  function renderLeaderboard(board) {
+    let html = '<h3>Leaderboard</h3><ol>';
+    board.forEach(e => {
+      html += `<li>${e.date} — Score: ${e.score}, Streak: ${e.streak}</li>`;
+    });
+    html += '</ol>';
+    leaderboardDisplay.innerHTML = html;
+  }
+
+  function shuffle(a) {
+    return a.sort(() => Math.random() - 0.5);
+  }
+
+  function randomChoice(a) {
+    return a[Math.floor(Math.random() * a.length)];
+  }
+
+  // On load: load news, then init quiz
+  (async () => {
+    await loadNews();
+    const last = localStorage.getItem('verifierNewsTime');
+    const oneDay = 24 * 60 * 60 * 1000;
+    if (!last || Date.now() - last > oneDay) {
+      await loadNews();
+    } else {
+      allArticles = JSON.parse(localStorage.getItem('verifierNews') || '[]');
+    }
+    categorySelect.onchange = startGame;
+    startGame();
+    renderLeaderboard(JSON.parse(localStorage.getItem('verifierBoard') || '[]'));
+
+    // Ask notification permission and schedule local daily alarm at 9AM
+    if ('Notification' in window) {
+      Notification.requestPermission().then(p => {
+        if (p === 'granted') {
+          scheduleDailyNotification();
+        }
+      });
+    }
+  })();
+
+  // Schedule a daily local notification at 9:00 local time (approximate)
+  function scheduleDailyNotification() {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(9, 0, 0, 0);
+    if (now > target) {
+      target.setDate(target.getDate() + 1);
+    }
+    const delay = target - now;
+    setTimeout(() => {
+      showLocalNotification();
+      scheduleDailyNotification();
+    }, delay);
+  }
+
+  function showLocalNotification() {
+    if (Notification.permission === 'granted') {
+      navigator.serviceWorker.getRegistration().then(reg => {
+        if (reg) {
+          reg.showNotification('The Verifier Quiz', {
+            body: 'New quiz questions are ready! Test your knowledge.',
+            data: { url: location.href }
+          });
+        }
+      });
+    }
+  }
+  </script>
+
+</body>
+</html>
