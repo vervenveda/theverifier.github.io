@@ -27,15 +27,159 @@ button{cursor:pointer}
 .skip:focus{transform:none}
 :focus-visible{outline:3px solid #e4c678;outline-offset:3px}
 
-.source-strip{background:#020414;color:#f9fafb;border-bottom:1px solid rgba(255,255,255,.08)}
-.source-inner{min-height:42px;display:flex;align-items:center;gap:18px}
-.source-label{display:flex;align-items:center;gap:8px;flex:0 0 auto;color:#f7df9c;font-size:.7rem;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
-.source-label:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ticker);box-shadow:0 0 13px rgba(255,212,0,.72)}
-.source-marquee{min-width:0;flex:1;overflow:hidden}
-.source-track{display:inline-flex;align-items:center;gap:28px;white-space:nowrap;animation:sourceMove 52s linear infinite}
-.source-track a{color:#c9d5e6;text-decoration:none;font-size:.78rem}.source-track a:hover{color:#fff}
-.source-clock{flex:0 0 auto;color:#aab9cc;font-size:.72rem}
-@keyframes sourceMove{to{transform:translateX(-50%)}}
+.ticker-component{
+  background:#020414;
+  overflow:hidden;
+  color:#f9fafb;
+  font-family:Inter,Arial,Helvetica,sans-serif;
+}
+.verifier-bar{
+  width:100%;
+  padding:11px 16px 13px;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:start;
+  gap:16px;
+  color:#f9fafb;
+  background:linear-gradient(180deg,#050816,#020414);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 14px 33px rgba(0,0,0,.42);
+}
+.vb-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding-right:15px;
+  border-right:1px solid rgba(148,163,184,.35);
+}
+.vb-logo{
+  width:36px;
+  height:36px;
+  flex:0 0 auto;
+  border-radius:11px;
+  display:grid;
+  place-items:center;
+  color:#231300;
+  background:radial-gradient(circle at 30% 0%,#fffbe6,#e8b93a);
+  font:700 18px Georgia,serif;
+}
+.vb-text-main{
+  font-size:15px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.vb-text-sub{
+  margin-top:2px;
+  color:rgba(226,232,240,.72);
+  font-size:9px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.vb-tickers{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  padding:0 4px;
+}
+.ticker-row{
+  min-width:0;
+  display:grid;
+  grid-template-columns:155px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+}
+.ticker-label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:rgba(148,163,184,.95);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.14em;
+  line-height:1.25;
+  text-transform:uppercase;
+}
+.ticker-dot{
+  width:5px;
+  height:5px;
+  flex:0 0 auto;
+  border-radius:999px;
+  background:var(--ticker);
+  box-shadow:0 0 10px rgba(255,212,0,.7);
+}
+.marquee-wrap{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid rgba(51,65,85,.88);
+  border-radius:11px;
+  background:rgba(15,23,42,.92);
+}
+.marquee{
+  display:inline-flex;
+  align-items:center;
+  white-space:nowrap;
+  animation:marquee 92s linear infinite;
+  will-change:transform;
+}
+.marquee:hover,
+.marquee:focus-within{
+  animation-play-state:paused;
+}
+.ticker-link{
+  min-height:32px;
+  padding:4px 13px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#c7d2e5;
+  text-decoration:none;
+  font-size:12px;
+}
+.ticker-link .label{
+  color:#f3f5f8;
+  font-weight:800;
+}
+.ticker-link .preview{
+  max-width:34ch;
+  overflow:hidden;
+  color:#b7c4d5;
+  text-overflow:ellipsis;
+}
+.ticker-link .meta{
+  color:rgba(148,163,184,.92);
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.ticker-link:hover{
+  color:#fff;
+  background:rgba(255,212,0,.11);
+}
+.ticker-link:hover .preview{color:#fff}
+.ticker-sep{
+  color:rgba(100,116,139,.74);
+}
+.vb-right{
+  min-width:150px;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  color:rgba(148,163,184,.95);
+  font-size:9px;
+  text-align:right;
+}
+.vb-clock{
+  color:#e5e7eb;
+  font-size:11px;
+}
+.ticker-buffer{
+  height:26px;
+  background:linear-gradient(180deg,#020414,var(--navy));
+}
+@keyframes marquee{to{transform:translateX(-50%)}}
 
 .site-header{position:sticky;top:0;z-index:1000;background:rgba(7,25,45,.97);border-bottom:1px solid rgba(255,255,255,.11);backdrop-filter:blur(14px)}
 .nav{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}
@@ -96,6 +240,12 @@ h2{color:var(--navy);font-size:clamp(2.2rem,5vw,4rem);line-height:1.05;letter-sp
 .open{color:#fff;background:var(--navy)}.copy{padding:0 12px;color:var(--navy);border:1px solid var(--line);background:#fff}
 .empty{display:none;margin:18px 0 4px;padding:28px;border:1px dashed var(--line);border-radius:16px;text-align:center;color:var(--muted)}.empty.show{display:block}
 
+.section#columns{
+  background:
+    linear-gradient(rgba(255,255,255,.95),rgba(255,255,255,.95)),
+    repeating-linear-gradient(90deg,transparent 0 74px,rgba(7,25,45,.025) 75px);
+}
+.section#columns .heading{margin-bottom:34px}
 .category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
 .category{min-height:76px;padding:17px 18px;display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--line);border-radius:15px;color:var(--navy);background:#fff;box-shadow:var(--soft);font-weight:850;text-decoration:none}
 .category:after{content:"→";color:#8d6e42}.category:hover{transform:translateY(-3px);border-color:var(--gold)}
@@ -120,22 +270,48 @@ footer{padding:38px 0;color:rgba(255,255,255,.72);background:#040f1b}.footer-gri
 .toast{position:fixed;left:50%;bottom:20px;z-index:4000;transform:translate(-50%,120px);padding:.75rem 1rem;border-radius:999px;color:#fff;background:var(--navy);box-shadow:var(--shadow);font-size:.8rem;font-weight:900;transition:.2s}.toast.show{transform:translate(-50%,0)}
 
 @media(max-width:1080px){.app-grid,.network-grid{grid-template-columns:repeat(3,1fr)}.category-grid{grid-template-columns:repeat(2,1fr)}.breadcrumb{align-items:flex-start;flex-direction:column;padding:8px 0}.network-trail{width:100%}}
-@media(max-width:900px){.nav-links{display:none}.toolbar{grid-template-columns:1fr 1fr}.toolbar .field:first-child{grid-column:1/-1}.app-grid,.network-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:1fr 1fr}.source-clock{display:none}}
-@media(max-width:620px){.source-inner{min-height:36px}.source-label{display:none}.hero-stats,.app-grid,.network-grid,.category-grid,.principles,.footer-grid{grid-template-columns:1fr}.actions .btn{width:100%}.toolbar{grid-template-columns:1fr}.toolbar .field:first-child{grid-column:auto}.card-actions{grid-template-columns:1fr}.brand-copy small{display:none}.source-track{animation-duration:38s}}
-@media print{.source-strip,.site-header,.breadcrumb-shell,.drawer-overlay,.actions,.toolbar,.favorite,.card-actions,#network,footer,.toast{display:none!important}.hero{color:#111;background:#fff}.hero h1{color:#111}.lead,.hero-stats{color:#333}.hero-copy{padding:2rem 0}.section{padding:1.5rem 0}.app-grid{grid-template-columns:repeat(2,1fr)}.card{box-shadow:none;break-inside:avoid}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important}.source-track{animation:none!important;white-space:normal;flex-wrap:wrap}}
+@media(max-width:900px){
+  .verifier-bar{grid-template-columns:auto minmax(0,1fr)}
+  .vb-right{display:none}
+  .ticker-row{grid-template-columns:128px minmax(0,1fr)}
+  .nav-links{display:none}.toolbar{grid-template-columns:1fr 1fr}.toolbar .field:first-child{grid-column:1/-1}.app-grid,.network-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:1fr 1fr}.vb-right{display:none}}
+@media(max-width:620px){.verifier-bar{grid-template-columns:1fr;padding:10px 10px 12px}.vb-brand{border-right:0;border-bottom:1px solid rgba(148,163,184,.3);padding:0 0 8px}.ticker-row{grid-template-columns:1fr}.ticker-label{padding-left:3px}.hero-stats,.app-grid,.network-grid,.category-grid,.principles,.footer-grid{grid-template-columns:1fr}.actions .btn{width:100%}.toolbar{grid-template-columns:1fr}.toolbar .field:first-child{grid-column:auto}.card-actions{grid-template-columns:1fr}.brand-copy small{display:none}.marquee{animation-duration:64s}}
+@media print{.ticker-component,.ticker-buffer,.site-header,.breadcrumb-shell,.drawer-overlay,.actions,.toolbar,.favorite,.card-actions,#network,footer,.toast{display:none!important}.hero{color:#111;background:#fff}.hero h1{color:#111}.lead,.hero-stats{color:#333}.hero-copy{padding:2rem 0}.section{padding:1.5rem 0}.app-grid{grid-template-columns:repeat(2,1fr)}.card{box-shadow:none;break-inside:avoid}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important}.marquee{animation:none!important;white-space:normal;flex-wrap:wrap}}
 </style>
 </head>
 <body id="top">
 <a class="skip" href="#main">Skip to main content</a>
 
-<div class="source-strip" aria-label="Verifier source compass">
-  <div class="shell source-inner">
-    <span class="source-label">Global Source Compass</span>
-    <div class="source-marquee"><div class="source-track" id="sourceTrack"></div></div>
-    <time class="source-clock" id="localClock">--:--</time>
+<div class="ticker-component" aria-label="Global news source ticker">
+  <div class="verifier-bar">
+    <div class="vb-brand">
+      <div class="vb-logo" aria-hidden="true">V</div>
+      <div>
+        <div class="vb-text-main">The Verifier</div>
+        <div class="vb-text-sub">Global Source Compass</div>
+      </div>
+    </div>
+
+    <div class="vb-tickers">
+      <div class="ticker-row">
+        <div class="ticker-label"><span class="ticker-dot"></span>Global · Wire · Public Service</div>
+        <div class="marquee-wrap"><div id="tickerGlobal" class="marquee"></div></div>
+      </div>
+      <div class="ticker-row">
+        <div class="ticker-label"><span class="ticker-dot"></span>Regional · Investigative · Specialized</div>
+        <div class="marquee-wrap"><div id="tickerRegional" class="marquee"></div></div>
+      </div>
+    </div>
+
+    <div class="vb-right">
+      <div>Local browser time</div>
+      <time id="localClock" class="vb-clock">--:--:--</time>
+      <div>Hover a row to pause</div>
+    </div>
   </div>
 </div>
+<div class="ticker-buffer" aria-hidden="true"></div>
 
 <header class="site-header">
   <div class="shell nav">
@@ -144,7 +320,7 @@ footer{padding:38px 0;color:rgba(255,255,255,.72);background:#040f1b}.footer-gri
       <span class="brand-copy"><strong>The Verifier</strong><small>Truth · Facts · Accountability</small></span>
     </a>
     <nav class="nav-links" aria-label="Primary navigation">
-      <a href="#apps">Applications</a><a href="#columns">Columns</a><a href="#standards">Standards</a><a href="#network">Public Network</a>
+      <a href="#columns">Editorial Columns</a><a href="#apps">Applications</a><a href="#standards">Standards</a><a href="#network">Public Network</a>
     </nav>
     <button class="menu" id="menuButton" type="button" aria-label="Open complete directory" aria-expanded="false"><span></span></button>
   </div>
@@ -176,12 +352,12 @@ footer{padding:38px 0;color:rgba(255,255,255,.72);background:#040f1b}.footer-gri
     <p class="eyebrow">Independent news · research · education</p>
     <h1>The Verifier</h1>
     <p class="lead">A sovereign public-interest newsroom and research network for comparing sources, exploring current and historical news, examining evidence, practicing news literacy, and reaching informed conclusions independently.</p>
-    <div class="actions"><a class="btn primary" href="./apps/ultimate_news_index.html">Open Ultimate News →</a><a class="btn secondary" href="#apps">Explore all applications</a></div>
+    <div class="actions"><a class="btn primary" href="#columns">Explore Editorial Columns →</a><a class="btn secondary" href="./apps/ultimate_news_index.html">Open Ultimate News</a><a class="btn secondary" href="#apps">All applications</a></div>
     <div class="hero-stats"><div class="stat"><strong>21</strong><span>Current applications</span></div><div class="stat"><strong>18</strong><span>Editorial columns</span></div><div class="stat"><strong>16</strong><span>Connected landing pages</span></div><div class="stat"><strong>Local-first</strong><span>Sovereign navigation</span></div></div>
   </div>
 </section>
 
-  <section class="section" id="columns">
+<section class="section" id="columns">
   <div class="shell">
     <div class="heading"><p class="kicker">Editorial columns</p><h2>Explore the subjects that shape public life.</h2><p>Each destination opens its corresponding page inside the repository’s <strong>columns</strong> folder.</p></div>
     <nav class="category-grid" id="columnGrid" aria-label="Editorial columns"></nav>
@@ -231,7 +407,7 @@ footer{padding:38px 0;color:rgba(255,255,255,.72);background:#040f1b}.footer-gri
 <footer>
   <div class="shell footer-grid">
     <div><h3>The Verifier</h3><p>Independent news, research, source comparison, education, and public-interest discovery.</p><nav class="crumbs" aria-label="Footer breadcrumb"><a href="https://vervenveda.github.io/">Verve N Veda</a><span class="sep">›</span><span aria-current="page">The Verifier</span></nav></div>
-    <div><h3>Newsroom</h3><nav class="footer-links"><a href="#apps">Applications</a><a href="#columns">Editorial Columns</a><a href="#standards">Editorial Standards</a><a href="#network">Public Network</a></nav></div>
+    <div><h3>Newsroom</h3><nav class="footer-links"><a href="#columns">Editorial Columns</a><a href="#apps">Applications</a><a href="#standards">Editorial Standards</a><a href="#network">Public Network</a></nav></div>
     <button class="top-button" id="topButton" type="button">Back to top</button>
   </div>
 </footer>
@@ -252,15 +428,49 @@ const appUrl=app=>"./apps/"+encodeURI(app.file);
 const categoryLabel=key=>CATEGORIES[key]?.label||key;
 function toast(message){$("toast").textContent=message;$("toast").classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>$("toast").classList.remove("show"),1800)}
 
-const SOURCE_LINKS=[
-  ["Associated Press","https://apnews.com/"],["Reuters","https://www.reuters.com/"],["BBC News","https://www.bbc.com/news"],
-  ["NPR","https://www.npr.org/"],["ProPublica","https://www.propublica.org/"],["The Guardian","https://www.theguardian.com/"],
-  ["Deutsche Welle","https://www.dw.com/"],["France 24","https://www.france24.com/"],["CBC News","https://www.cbc.ca/news"],
-  ["ABC News Australia","https://www.abc.net.au/news"],["Al Jazeera","https://www.aljazeera.com/"],["AllAfrica","https://allafrica.com/"]
+const OUTLETS=[
+  {name:"Associated Press",region:"North America",country:"USA",topic:"Breaking news and public-service reporting",url:"https://apnews.com/"},
+  {name:"Reuters",region:"Global",country:"Worldwide",topic:"International, political, and business wire coverage",url:"https://www.reuters.com/"},
+  {name:"BBC News",region:"Europe",country:"United Kingdom",topic:"World reporting, analysis, and public-service coverage",url:"https://www.bbc.com/news"},
+  {name:"NPR",region:"North America",country:"USA",topic:"News, culture, science, and public radio reporting",url:"https://www.npr.org/"},
+  {name:"CBC News",region:"North America",country:"Canada",topic:"Canadian and international public-service news",url:"https://www.cbc.ca/news"},
+  {name:"ABC News Australia",region:"Oceania",country:"Australia",topic:"Australian and Asia-Pacific public-service reporting",url:"https://www.abc.net.au/news"},
+  {name:"Deutsche Welle",region:"Europe",country:"Germany",topic:"International reporting and European perspectives",url:"https://www.dw.com/"},
+  {name:"France 24",region:"Europe",country:"France",topic:"International live coverage and global analysis",url:"https://www.france24.com/"},
+  {name:"ProPublica",region:"North America",country:"USA",topic:"Independent investigative and accountability reporting",url:"https://www.propublica.org/"},
+  {name:"The Guardian",region:"Europe",country:"United Kingdom",topic:"Investigations, climate, politics, and world affairs",url:"https://www.theguardian.com/"},
+  {name:"Al Jazeera",region:"Middle East",country:"Qatar",topic:"International coverage with Middle East and Global South focus",url:"https://www.aljazeera.com/"},
+  {name:"AllAfrica",region:"Africa",country:"Pan-Africa",topic:"Regional reporting gathered from across the African continent",url:"https://allafrica.com/"},
+  {name:"Daily Nation",region:"Africa",country:"Kenya",topic:"East African news, politics, public life, and business",url:"https://nation.africa/"},
+  {name:"The Hindu",region:"Asia",country:"India",topic:"Indian public affairs, politics, culture, and world news",url:"https://www.thehindu.com/"},
+  {name:"Japan Times",region:"Asia",country:"Japan",topic:"Japanese politics, society, culture, and regional affairs",url:"https://www.japantimes.co.jp/"},
+  {name:"RNZ News",region:"Oceania",country:"New Zealand",topic:"New Zealand public-service and Pacific-region reporting",url:"https://www.rnz.co.nz/news"},
+  {name:"Arab News",region:"Middle East",country:"Saudi Arabia",topic:"Regional affairs, business, society, and international news",url:"https://www.arabnews.com/"},
+  {name:"South China Morning Post",region:"Asia",country:"Hong Kong",topic:"China, Asia, business, diplomacy, and regional affairs",url:"https://www.scmp.com/"}
 ];
+const GLOBAL_REGIONS=new Set(["North America","Europe","Global","Oceania"]);
+function tickerItem(outlet){
+  const a=document.createElement("a");
+  a.className="ticker-link";
+  a.href=outlet.url;
+  a.target="_blank";
+  a.rel="noopener noreferrer";
+  a.innerHTML=`<span class="label">${outlet.name}</span><span class="preview">${outlet.topic}</span><span class="meta">${outlet.region} · ${outlet.country}</span>`;
+  const separator=document.createElement("span");
+  separator.className="ticker-sep";
+  separator.textContent=" • ";
+  return [a,separator];
+}
+function buildTicker(id,outlets){
+  const track=$(id);
+  const sequence=document.createElement("span");
+  outlets.forEach(outlet=>sequence.append(...tickerItem(outlet)));
+  const duplicate=sequence.cloneNode(true);
+  track.replaceChildren(sequence,duplicate);
+}
 function renderSourceStrip(){
-  const set=SOURCE_LINKS.map(([name,url])=>`<a href="${url}" target="_blank" rel="noopener noreferrer">${name}</a>`).join("<span>•</span>");
-  $("sourceTrack").innerHTML=set+set;
+  buildTicker("tickerGlobal",OUTLETS.filter(outlet=>GLOBAL_REGIONS.has(outlet.region)));
+  buildTicker("tickerRegional",OUTLETS.filter(outlet=>!GLOBAL_REGIONS.has(outlet.region)));
 }
 function updateClock(){$("localClock").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"medium"}).format(new Date())}
 
