@@ -1,8 +1,6 @@
 # theverifier.github.io
 
-from pathlib import Path
-
-readme = """# The Verifier
+# The Verifier
 
 **Truth · Facts · Accountability**
 
