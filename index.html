@@ -1138,6 +1138,251 @@ footer h3{
 }
 </style>
 
+
+<style id="verifier-requested-header-and-button-adjustments">
+/* ============================================================
+   REQUESTED TARGETED ADJUSTMENTS ONLY
+   1. Full-width double ticker
+   2. Fine, compact identity row with centered date/time
+   3. Even Open Application button alignment
+   Preferred scale: 3 · 7 · 11 · 14 · 24 · 33 · 55 · 66
+   ============================================================ */
+
+/* Full-width double ticker */
+.ticker-component,
+.verifier-bar,
+.vb-tickers,
+.ticker-row{
+  width:100%;
+  max-width:none;
+}
+.ticker-component{
+  border-bottom:1px solid rgba(255,255,255,.11);
+}
+.verifier-bar{
+  display:block;
+  padding:3px 0;
+  background:#07111d;
+  box-shadow:none;
+}
+.vb-tickers{
+  display:grid;
+  gap:3px;
+  padding:0;
+}
+.ticker-row{
+  min-height:33px;
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  gap:0;
+  align-items:stretch;
+}
+.ticker-label{
+  min-width:0;
+  padding:0 14px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:rgba(211,219,227,.75);
+  background:#091624;
+  border-block:1px solid rgba(120,139,157,.28);
+  font-family:var(--sans);
+  font-size:7px;
+  font-weight:400!important;
+  letter-spacing:.14em;
+  line-height:1.2;
+}
+.ticker-dot{
+  width:3px;
+  height:3px;
+  box-shadow:none;
+}
+.marquee-wrap{
+  min-width:0;
+  border-block:1px solid rgba(120,139,157,.28);
+  border-inline:1px solid rgba(120,139,157,.20);
+  border-radius:0!important;
+  background:#0b1a2a;
+}
+.ticker-link{
+  min-height:33px;
+  padding:3px 11px;
+  gap:7px;
+  font-family:var(--sans);
+  font-size:11px;
+  font-weight:400!important;
+  letter-spacing:.015em;
+}
+.ticker-link .label,
+.ticker-link .preview,
+.ticker-link .meta{
+  font-weight:400!important;
+}
+.ticker-link .preview{
+  max-width:44ch;
+}
+.ticker-link .meta{
+  font-size:7px;
+  letter-spacing:.07em;
+}
+
+/* Compact header immediately below the ticker */
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:rgba(13,32,51,.985);
+  box-shadow:none;
+}
+.site-header,
+.site-header *{
+  font-weight:400!important;
+}
+.site-header .nav{
+  min-height:66px;
+  display:grid;
+  grid-template-columns:minmax(190px,1fr) minmax(280px,2fr) minmax(190px,1fr);
+  align-items:center;
+  gap:14px;
+  padding:7px 0;
+}
+.site-header .brand{
+  justify-self:start;
+  gap:11px;
+}
+.site-header .brand-mark{
+  width:33px;
+  height:33px;
+  border-radius:7px;
+  font:400 14px var(--serif);
+}
+.site-header .brand-copy strong{
+  font:400 14px/1.15 var(--serif);
+  letter-spacing:.045em;
+}
+.site-header .brand-copy small{
+  margin-top:3px;
+  font-size:7px;
+  letter-spacing:.14em;
+  line-height:1.2;
+}
+.header-time{
+  min-width:0;
+  justify-self:stretch;
+  display:grid;
+  place-items:center;
+  gap:3px;
+  color:rgba(255,255,255,.72);
+  text-align:center;
+  text-transform:uppercase;
+}
+.header-time-label{
+  font-size:7px;
+  letter-spacing:.24em;
+  line-height:1;
+}
+.header-time .vb-clock{
+  width:100%;
+  color:#f3f4f5;
+  font-size:11px;
+  line-height:1.2;
+  letter-spacing:.14em;
+  white-space:nowrap;
+  text-align:center;
+}
+.site-header .menu{
+  width:33px;
+  height:33px;
+  justify-self:end;
+  border-radius:7px;
+}
+.site-header .menu span,
+.site-header .menu:before,
+.site-header .menu:after{
+  width:14px;
+  height:1px;
+  margin:3px auto;
+}
+.header-anchor-links{
+  display:none!important;
+}
+
+/* Even application-card and button alignment */
+.app-grid{
+  align-items:stretch;
+  grid-auto-rows:1fr;
+}
+.app-card{
+  height:100%;
+}
+.app-card .card-actions{
+  margin-top:auto!important;
+  padding-top:14px;
+}
+.app-card .open{
+  width:100%;
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+@media(max-width:900px){
+  .ticker-row{
+    grid-template-columns:180px minmax(0,1fr);
+  }
+  .site-header .nav{
+    grid-template-columns:minmax(150px,1fr) minmax(210px,1.5fr) 55px;
+  }
+}
+@media(max-width:620px){
+  .verifier-bar{
+    padding:3px 0;
+  }
+  .ticker-row{
+    min-height:55px;
+    grid-template-columns:1fr;
+  }
+  .ticker-label{
+    min-height:14px;
+    justify-content:center;
+    padding:3px 7px;
+    border-bottom:0;
+    text-align:center;
+  }
+  .ticker-link{
+    min-height:33px;
+  }
+  .site-header .nav{
+    min-height:66px;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:11px;
+  }
+  .site-header .brand{
+    min-width:0;
+  }
+  .site-header .brand-copy strong{
+    font-size:14px;
+  }
+  .site-header .brand-copy small{
+    display:block;
+    max-width:30ch;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .header-time{
+    grid-column:1/-1;
+    grid-row:2;
+    padding-bottom:7px;
+  }
+  .site-header .menu{
+    grid-column:2;
+    grid-row:1;
+  }
+}
+</style>
+
 </head>
  <body id="top">
   <a class="skip" href="#main">
@@ -1145,19 +1390,6 @@ footer h3{
   </a>
   <div aria-label="Global news source ticker" class="ticker-component">
    <div class="verifier-bar">
-    <div class="vb-brand">
-     <div aria-hidden="true" class="vb-logo">
-      V
-     </div>
-     <div>
-      <div class="vb-text-main">
-       The Verifier
-      </div>
-      <div class="vb-text-sub">
-       Global Source Compass
-      </div>
-     </div>
-    </div>
     <div class="vb-tickers">
      <div class="ticker-row">
       <div class="ticker-label">
@@ -1182,20 +1414,7 @@ footer h3{
       </div>
      </div>
     </div>
-    <div class="vb-right">
-     <div>
-      Local browser time
-     </div>
-     <time class="vb-clock" id="localClock">
-      --:--:--
-     </time>
-     <div>
-      Hover a row to pause
-     </div>
-    </div>
    </div>
-  </div>
-  <div aria-hidden="true" class="ticker-buffer">
   </div>
   <header class="site-header">
    <div class="shell nav">
@@ -1212,7 +1431,15 @@ footer h3{
       </small>
      </span>
     </a>
-    <nav aria-label="Primary navigation" class="nav-links">
+    <div aria-label="Local browser date and time" class="header-time">
+     <span class="header-time-label">
+      Local browser date and time
+     </span>
+     <time class="vb-clock" id="localClock">
+      --:--:--
+     </time>
+    </div>
+    <nav aria-label="Primary navigation" class="nav-links header-anchor-links">
      <a href="#columns">
       Editorial Columns
      </a>
