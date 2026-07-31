@@ -1,15 +1,16 @@
 <!DOCTYPE html>
+
 <html lang="en">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width,initial-scale=1" name="viewport"/>
-  <meta content="The Verifier — independent news, research, public-interest data, educational tools, source comparison, and connected public resources." name="description"/>
-  <meta content="#0d2033" name="theme-color"/>
-  <meta content="light" name="color-scheme"/>
-  <title>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="The Verifier — independent news, research, public-interest data, educational tools, source comparison, and connected public resources." name="description"/>
+<meta content="#0d2033" name="theme-color"/>
+<meta content="light" name="color-scheme"/>
+<title>
    The Verifier | Truth · Facts · Accountability
   </title>
-  <style>
+<style>
    :root{
   --navy:#07192d;--navy2:#102943;--navy3:#173d61;--paper:#f7f7f5;--surface:#fff;
   --ink:#142033;--muted:#59677a;--gold:#c7a978;--gold2:#f1dfb9;--line:#d9dee5;
@@ -334,7 +335,7 @@ footer{padding:38px 0;color:rgba(255,255,255,.72);background:#040f1b}.footer-gri
 @media print{.ticker-component,.ticker-buffer,.site-header,.breadcrumb-shell,.drawer-overlay,.actions,.toolbar,.favorite,.card-actions,#network,footer,.toast{display:none!important}.hero{color:#111;background:#fff}.hero h1{color:#111}.lead,.hero-stats{color:#333}.hero-copy{padding:2rem 0}.section{padding:1.5rem 0}.app-grid{grid-template-columns:repeat(2,1fr)}.card{box-shadow:none;break-inside:avoid}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important}.marquee{animation:none!important;white-space:normal;flex-wrap:wrap}}
   </style>
-  <style id="verifier-refined-editorial-system">
+<style id="verifier-refined-editorial-system">
    :root{
   --navy:#0d2033;
   --navy2:#17344d;
@@ -1027,7 +1028,6 @@ footer h3{
   }
 }
   </style>
- 
 <style id="verifier-targeted-refinements">
 /* Targeted editorial refinements — preserves The Verifier's established identity. */
 :root{
@@ -1137,8 +1137,6 @@ footer h3{
   }
 }
 </style>
-
-
 <style id="verifier-requested-header-and-button-adjustments">
 /* ============================================================
    REQUESTED TARGETED ADJUSTMENTS ONLY
@@ -1382,404 +1380,616 @@ footer h3{
   }
 }
 </style>
+<style id="verifier-final-integrity-layout">
+/* ============================================================
+   THE VERIFIER — FINAL INTEGRITY & LAYOUT LAYER
+   Preserves the established editorial identity while improving
+   wrapping, centering, link clarity, accessibility, and balance.
+   ============================================================ */
 
-</head>
- <body id="top">
-  <a class="skip" href="#main">
+:root{
+  --verifier-card-min:238px;
+}
+
+html,body{max-width:100%}
+
+.hero h1,
+.heading h2,
+.app-card h3,
+.site-card h3,
+.category,
+.btn,
+.tool-button,
+.open,
+.copy,
+.menu-link strong,
+.brand-copy strong,
+.brand-copy small{
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+
+.hero h1,
+.heading h2{
+  text-wrap:balance;
+}
+
+.heading p,
+.lead,
+.app-card p,
+.site-card p,
+.principles p{
+  text-wrap:pretty;
+}
+
+.app-group[hidden]{display:none!important}
+.app-group + .app-group{margin-top:34px}
+.group-heading{text-align:center}
+
+.app-grid,
+.network-grid{
+  display:flex!important;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:stretch;
+  gap:12px;
+}
+
+.app-card,
+.site-card{
+  width:100%;
+  flex:1 1 var(--verifier-card-min);
+  max-width:calc((100% - 36px)/4);
+  align-items:center;
+  text-align:center;
+}
+
+.app-card .card-top{
+  width:100%;
+}
+
+.card-badge,
+.app-health,
+.site-status{
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+.app-card h3,
+.site-card h3{
+  line-height:1.22;
+}
+
+.app-card p,
+.site-card p{
+  width:100%;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.app-card .card-actions{
+  width:100%;
+}
+
+.open.development{
+  color:#fff;
+  background:#6f3940;
+  border:1px dashed rgba(255,255,255,.45);
+}
+
+.site-card.building{
+  border-style:dashed;
+  background:#f8f5ed;
+}
+
+.site-card.building:hover{
+  border-style:solid;
+}
+
+.site-card.current{
+  border-style:solid;
+}
+
+.category-grid{
+  align-items:stretch;
+}
+
+.category{
+  justify-content:center;
+  text-align:center;
+}
+
+.category:after{
+  flex:0 0 auto;
+}
+
+.principles article{
+  text-align:center;
+}
+
+.ticker-link[href]{
+  cursor:pointer;
+}
+
+.ticker-link[href]:hover{
+  color:#fff;
+  background:rgba(214,184,83,.09);
+}
+
+.ticker-link[href]:hover .preview{
+  color:#fff;
+}
+
+.ticker-sequence{
+  display:inline-flex;
+  align-items:center;
+}
+
+.drawer-empty{
+  display:block;
+  padding:.7rem;
+  color:rgba(255,255,255,.7);
+  text-align:center;
+}
+
+.drawer[role="dialog"]{
+  outline:none;
+}
+
+.menu-link{
+  text-align:left;
+}
+
+.toolbar > *{
+  min-width:0;
+}
+
+.header-time,
+.brand-copy{
+  min-width:0;
+}
+
+.site-header .brand-copy strong,
+.site-header .brand-copy small{
+  display:block;
+}
+
+.connection-summary{
+  text-align:center;
+}
+
+.footer-grid{
+  text-align:left;
+}
+
+@media(max-width:1080px){
+  .app-card,
+  .site-card{
+    max-width:calc((100% - 24px)/3);
+  }
+}
+
+@media(max-width:900px){
+  .app-card,
+  .site-card{
+    max-width:calc((100% - 12px)/2);
+  }
+}
+
+@media(max-width:620px){
+  .app-card,
+  .site-card{
+    max-width:100%;
+  }
+
+  .footer-grid{
+    text-align:center;
+  }
+
+  .footer-links,
+  .footer-grid .crumbs{
+    justify-content:center;
+  }
+
+  .top-button{
+    width:100%;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .ticker-sequence[aria-hidden="true"]{
+    display:none;
+  }
+}
+</style></head>
+<body id="top">
+<a class="skip" href="#main">
    Skip to main content
   </a>
-  <div aria-label="Global news source ticker" class="ticker-component">
-   <div class="verifier-bar">
-    <div class="vb-tickers">
-     <div class="ticker-row">
-      <div class="ticker-label">
-       <span class="ticker-dot">
-       </span>
+<div aria-label="Global and regional news-source ticker. Source names open their official websites in a new tab." class="ticker-component">
+<div class="verifier-bar">
+<div class="vb-tickers">
+<div class="ticker-row">
+<div class="ticker-label">
+<span class="ticker-dot">
+</span>
        Global · Wire · Public Service
       </div>
-      <div class="marquee-wrap">
-       <div class="marquee" id="tickerGlobal">
-       </div>
-      </div>
-     </div>
-     <div class="ticker-row">
-      <div class="ticker-label">
-       <span class="ticker-dot">
-       </span>
+<div class="marquee-wrap">
+<div class="marquee" id="tickerGlobal">
+</div>
+</div>
+</div>
+<div class="ticker-row">
+<div class="ticker-label">
+<span class="ticker-dot">
+</span>
        Regional · Investigative · Specialized
       </div>
-      <div class="marquee-wrap">
-       <div class="marquee" id="tickerRegional">
-       </div>
-      </div>
-     </div>
-    </div>
-   </div>
-  </div>
-  <header class="site-header">
-   <div class="shell nav">
-    <a class="brand" href="./">
-     <span aria-hidden="true" class="brand-mark">
+<div class="marquee-wrap">
+<div class="marquee" id="tickerRegional">
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<header class="site-header">
+<div class="shell nav">
+<a class="brand" href="./">
+<span aria-hidden="true" class="brand-mark">
       V
      </span>
-     <span class="brand-copy">
-      <strong>
+<span class="brand-copy">
+<strong>
        The Verifier
       </strong>
-      <small>
+<small>
        Truth · Facts · Accountability
       </small>
-     </span>
-    </a>
-    <div aria-label="Local browser date and time" class="header-time">
-     <span class="header-time-label">
+</span>
+</a>
+<div aria-label="Local browser date and time" class="header-time">
+<span class="header-time-label">
       Local browser date and time
      </span>
-     <time class="vb-clock" id="localClock">
+<time class="vb-clock" id="localClock">
       --:--:--
      </time>
-    </div>
-    <nav aria-label="Primary navigation" class="nav-links header-anchor-links">
-     <a href="#columns">
+</div>
+<nav aria-label="Primary navigation" class="nav-links header-anchor-links">
+<a href="#columns">
       Editorial Columns
      </a>
-     <a href="#apps">
+<a href="#apps">
       Applications
      </a>
-     <a href="#standards">
+<a href="#standards">
       Standards
      </a>
-     <a href="#network">
+<a href="#network">
       Public Network
      </a>
-    </nav>
-    <button aria-expanded="false" aria-label="Open complete directory" class="menu" id="menuButton" type="button">
-     <span>
-     </span>
-    </button>
-   </div>
-  </header>
-  <div class="breadcrumb-shell">
-   <div class="shell breadcrumb">
-    <nav aria-label="Breadcrumb" class="crumbs">
-     <a href="https://vervenveda.github.io/">
+</nav>
+<button aria-controls="drawer" aria-expanded="false" aria-label="Open complete directory" class="menu" id="menuButton" type="button">
+<span>
+</span>
+</button>
+</div>
+</header>
+<div class="breadcrumb-shell">
+<div class="shell breadcrumb">
+<nav aria-label="Breadcrumb" class="crumbs">
+<a href="https://vervenveda.github.io/">
       Verve N Veda
      </a>
-     <span aria-hidden="true" class="sep">
+<span aria-hidden="true" class="sep">
       ›
      </span>
-     <a href="https://vervenveda.github.io/#network">
+<a href="https://vervenveda.github.io/#network">
       Public Network
      </a>
-     <span aria-hidden="true" class="sep">
+<span aria-hidden="true" class="sep">
       ›
      </span>
-     <span aria-current="page">
+<span aria-current="page">
       The Verifier
      </span>
-    </nav>
-    <nav aria-label="Main public landing pages" class="network-trail" id="networkTrail">
-    </nav>
-   </div>
-  </div>
-  <div aria-hidden="true" class="drawer-overlay" id="drawer">
-   <aside aria-label="Verifier and public-network directory" class="drawer">
-    <div class="drawer-top">
-     <h2>
+</nav>
+<nav aria-label="Main public landing pages" class="network-trail" id="networkTrail">
+</nav>
+</div>
+</div>
+<div aria-hidden="true" class="drawer-overlay" id="drawer">
+<aside aria-label="Verifier and public-network directory" aria-labelledby="drawerTitle" aria-modal="true" class="drawer" role="dialog">
+<div class="drawer-top">
+<h2 id="drawerTitle">
       Verifier Directory
      </h2>
-     <button aria-label="Close directory" class="drawer-close" id="drawerClose" type="button">
+<button aria-label="Close directory" class="drawer-close" id="drawerClose" type="button">
       ×
      </button>
-    </div>
-    <p>
+</div>
+<p>
      Search Verifier applications, editorial columns, and connected public landing pages.
     </p>
-    <input autocomplete="off" class="drawer-search" id="drawerSearch" placeholder="Search the newsroom and network…" type="search"/>
-    <div id="drawerContent">
-    </div>
-   </aside>
-  </div>
-  <main id="main">
-   <section class="hero">
-    <div class="shell hero-copy">
-     <p class="eyebrow">
+<input autocomplete="off" class="drawer-search" id="drawerSearch" placeholder="Search the newsroom and network…" type="search"/>
+<div id="drawerContent">
+</div>
+</aside>
+</div>
+<main id="main">
+<section class="hero">
+<div class="shell hero-copy">
+<p class="eyebrow">
       Independent news · research · education
      </p>
-     <h1>
+<h1>
       The Verifier
      </h1>
-     <p class="lead">
-      A sovereign public interest newsroom and research network for comparing sources, exploring current and historical news, examining evidence, practicing news literacy, and reaching informed conclusions independently.
-     </p>
-     <div class="actions">
-      <a class="btn primary" href="#columns">
+<p class="lead">A sovereign public-interest newsroom and research network for comparing sources, exploring current and historical news, examining evidence, practicing news literacy, and reaching informed conclusions independently.</p>
+<div class="actions">
+<a class="btn primary" href="#columns">
        Explore Editorial Columns by Jennifer Pearl →
       </a>
-      <a class="btn secondary" href="#apps">
+<a class="btn secondary" href="#apps">
        Browse Verifier Applications
       </a>
-      <a class="btn secondary" href="#standards">
+<a class="btn secondary" href="#standards">
        Editorial Standards
       </a>
-     </div>
-     <div class="hero-stats">
-      <div class="stat">
-       <strong id="appStat">
+</div>
+<div class="hero-stats">
+<div class="stat">
+<strong id="appStat">
         21
        </strong>
-       <span>
+<span>
         Connected applications
        </span>
-      </div>
-      <div class="stat">
-       <strong id="columnStat">
+</div>
+<div class="stat">
+<strong id="columnStat">
         18
        </strong>
-       <span>
+<span>
         Editorial columns by Jennifer Pearl
        </span>
-      </div>
-      <div class="stat">
-       <strong id="repositoryStat">
-        22
-       </strong>
-       <span>
+</div>
+<div class="stat">
+<strong id="repositoryStat">26</strong>
+<span>
         Connected destinations
        </span>
-      </div>
-      <div class="stat">
-       <strong>
+</div>
+<div class="stat">
+<strong>
         Local-first
        </strong>
-       <span>
+<span>
         Sovereign navigation
        </span>
-      </div>
-     </div>
-    </div>
-   </section>
-   <section class="section" id="columns">
-    <div class="shell">
-     <div class="heading">
-      <p class="kicker">
-       Editorial columns <br> by Jennifer Pearl
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="columns">
+<div class="shell">
+<div class="heading">
+<p class="kicker">
+       Editorial columns <br/> by Jennifer Pearl
       </p>
-      <h2>
-       Explore the subjects that shape public life.
-      </h2>
-      <p>
+<h2>Explore the subjects<br/>that shape public life.</h2>
+<p>
        Each destination opens a dedicated Verifier editorial desk for focused reading, research, and public-interest discovery.
       </p>
-     </div>
-     <nav aria-label="Editorial columns" class="category-grid" id="columnGrid">
-     </nav>
-    </div>
-   </section>
-   <section class="section alt" id="apps">
-    <div class="shell">
-     <div class="heading">
-      <p class="kicker">
+</div>
+<nav aria-label="Editorial columns" class="category-grid" id="columnGrid">
+</nav>
+</div>
+</section>
+<section class="section alt" id="apps">
+<div class="shell">
+<div class="heading">
+<p class="kicker">
        Verifier applications
       </p>
-      <h2>
-       One newsroom. Many ways to explore the world.
-      </h2>
-      <p>
+<h2>One newsroom.<br/>Many ways to explore the world.</h2>
+<p>
        Search the complete collection, filter by newsroom family, save favorite tools locally, or open a random Verifier application.
       </p>
-     </div>
-     <div aria-label="Application collection summary" class="connection-summary">
-      <span aria-hidden="true" class="connection-dot">
-      </span>
-      <strong id="manifestStatus">
+</div>
+<div aria-label="Application collection summary" class="connection-summary">
+<span aria-hidden="true" class="connection-dot">
+</span>
+<strong id="manifestStatus">
        21 Verifier applications available
       </strong>
-      <span>
+<span>
        Search, filter, save favorites locally, or open a newsroom desk directly.
       </span>
-     </div>
-     <div class="catalog">
-      <div class="toolbar">
-       <input autocomplete="off" class="field" id="appSearch" placeholder="Search live news, science, education, archives, research…" type="search"/>
-       <select aria-label="Filter application category" class="field" id="categoryFilter">
-       </select>
-       <button aria-pressed="false" class="tool-button" id="favoritesButton" type="button">
+</div>
+<div class="catalog">
+<div class="toolbar">
+<input autocomplete="off" class="field" id="appSearch" placeholder="Search live news, science, education, archives, research…" type="search"/>
+<select aria-label="Filter application category" class="field" id="categoryFilter">
+</select>
+<button aria-pressed="false" class="tool-button" id="favoritesButton" type="button">
         ♡ Saved
         <span id="favoriteCount">
          0
         </span>
-       </button>
-       <button class="tool-button" id="randomButton" type="button">
+</button>
+<button class="tool-button" id="randomButton" type="button">
         Random Desk ✦
        </button>
-      </div>
-      <p aria-live="polite" class="results" id="results">
-      </p>
-      <div id="appGroups">
-      </div>
-      <div class="empty" id="empty">
-       <h3>
+</div>
+<p aria-live="polite" class="results" id="results">
+</p>
+<div id="appGroups">
+</div>
+<div class="empty" id="empty">
+<h3>
         No application matched that search.
        </h3>
-       <p>
+<p>
         Try a broader word or clear the category filter.
        </p>
-      </div>
-     </div>
-    </div>
-   </section>
-   <section class="section alt" id="standards">
-    <div class="shell">
-     <div class="heading">
-      <p class="kicker">
+</div>
+</div>
+</div>
+</section>
+<section class="section alt" id="standards">
+<div class="shell">
+<div class="heading">
+<p class="kicker">
        Editorial standards
       </p>
-      <h2>
-       News that puts truth first.
-      </h2>
-      <p>
+<h2>News that puts<br/>truth first.</h2>
+<p>
        The Verifier separates evidence, reporting, commentary, uncertainty, and unresolved claims.
       </p>
-     </div>
-     <div class="principles">
-      <article class="card">
-       <strong>
+</div>
+<div class="principles">
+<article class="card">
+<strong>
         Source transparency
        </strong>
-       <p>
+<p>
         Identify primary records, official sources, credible reporting, commentary, and meaningful gaps in the available evidence.
        </p>
-      </article>
-      <article class="card">
-       <strong>
+</article>
+<article class="card">
+<strong>
         Accountability
        </strong>
-       <p>
+<p>
         Correct meaningful errors, disclose relevant conflicts, and never present opinion or inference as established fact.
        </p>
-      </article>
-      <article class="card">
-       <strong>
+</article>
+<article class="card">
+<strong>
         Reader independence
        </strong>
-       <p>
+<p>
         Provide enough context and source access for readers to inspect evidence and reach informed conclusions of their own.
        </p>
-      </article>
-     </div>
-    </div>
-   </section>
-   <section class="section statement">
-    <div class="shell">
-     <blockquote>
+</article>
+</div>
+</div>
+</section>
+<section class="section statement">
+<div class="shell">
+<blockquote>
       “The goal of a constitutional republic is not to eliminate disagreement. The goal is to create a system where disagreement can happen peacefully, where power changes hands without violence, and where citizens remain the ultimate source of authority.”
       <cite>
        Jennifer Kay Pearl
       </cite>
-     </blockquote>
-    </div>
-   </section>
-   <section class="section" id="network">
-    <div class="shell">
-     <div class="heading">
-      <p class="kicker">
-       Public network
-      </p>
-      <h2>
-       Every public destination has a clear route home.
-      </h2>
-      <p>
+</blockquote>
+</div>
+</section>
+<section class="section" id="network">
+<div class="shell">
+<div class="heading">
+<p class="kicker">The breadcrumb above identifies this site’s place inside the network. The directory below connects every current public route and clearly marks landing pages still being completed.</p>
+<h2>Every public destination<br/>has a clear route home.</h2>
+<p>
        The breadcrumb above identifies this site’s place inside the network, while the cards below connect verified public landing pages. Destinations without a published landing page remain unavailable here until they are ready.
       </p>
-     </div>
-     <div aria-label="Public landing-page audit" class="connection-summary">
-      <span aria-hidden="true" class="connection-dot">
-      </span>
-      <strong id="repositoryManifestStatus">
+</div>
+<div aria-label="Public landing-page audit" class="connection-summary">
+<span aria-hidden="true" class="connection-dot">
+</span>
+<strong id="repositoryManifestStatus">
        Public destinations connected
       </strong>
-      <span>
-       Only published public destinations are included in this directory.
-      </span>
-     </div>
-     <div class="network-grid" id="networkGrid">
-     </div>
-    </div>
-   </section>
-  </main>
-  <footer>
-   <div class="shell footer-grid">
-    <div>
-     <h3>
+<span>Published and developing destinations remain linked so the network can grow without losing its routes.</span>
+</div>
+<div class="network-grid" id="networkGrid">
+</div>
+</div>
+</section>
+</main>
+<footer>
+<div class="shell footer-grid">
+<div>
+<h3>
       The Verifier
      </h3>
-     <p>
+<p>
       Independent news, research, source comparison, education, and public-interest discovery.
      </p>
-     <nav aria-label="Footer breadcrumb" class="crumbs">
-      <a href="https://vervenveda.github.io/">
+<nav aria-label="Footer breadcrumb" class="crumbs">
+<a href="https://vervenveda.github.io/">
        Verve N Veda
       </a>
-      <span class="sep">
+<span class="sep">
        ›
       </span>
-      <span aria-current="page">
+<span aria-current="page">
        The Verifier
       </span>
-     </nav>
-    </div>
-    <div>
-     <h3>
+</nav>
+</div>
+<div>
+<h3>
       Newsroom
      </h3>
-     <nav class="footer-links">
-      <a href="#columns">
+<nav class="footer-links">
+<a href="#columns">
        Editorial Columns
       </a>
-      <a href="#apps">
+<a href="#apps">
        Applications
       </a>
-      <a href="#standards">
+<a href="#standards">
        Editorial Standards
       </a>
-      <a href="#network">
+<a href="#network">
        Public Network
       </a>
-     </nav>
-    </div>
-    <button class="top-button" id="topButton" type="button">
+</nav>
+</div>
+<button class="top-button" id="topButton" type="button">
      Back to top
     </button>
-   </div>
-  </footer>
-  <div aria-live="polite" class="toast" id="toast" role="status">
-  </div>
-  <script>
-   "use strict";
-const APPS=[{"id":"ultimate-news","title":"Ultimate News","file":"ultimate_news_index.html","category":"live","icon":"V","badge":"Flagship","description":"The flagship Verifier newsroom, reserved for the complete live-news experience as its final content is prepared.","tags":"ultimate comprehensive universal news search research flagship","health":"needs-content"},{"id":"world-wire","title":"World Wire","file":"world_wire_index.html","category":"live","icon":"◎","badge":"Global","description":"A worldwide wire room for moving quickly among international stories, regions, and sources.","tags":"world wire global international regions live"},{"id":"live-news","title":"Live News","file":"live_news_index.html","category":"live","icon":"●","badge":"Live","description":"A focused portal for current coverage, breaking stories, and rapidly developing events.","tags":"live news breaking current coverage"},{"id":"interactive-live-dashboard","title":"Interactive Live News Dashboard","file":"Interactive_Live_ News_ Dashboard_index.html","category":"live","icon":"▦","badge":"Dashboard","description":"An interactive newsroom control panel for exploring live coverage through a large, accessible interface.","tags":"interactive live news dashboard accessible current","health":"shared-build"},{"id":"interactive-news","title":"Interactive News Dashboard","file":"interactive_news_index.html","category":"live","icon":"⌘","badge":"Interactive","description":"A second interactive news workspace for organizing, reading, and navigating current reporting.","tags":"interactive news dashboard interface current","health":"shared-build"},{"id":"news-feed","title":"News Feed","file":"news_feed_index.html","category":"live","icon":"≋","badge":"Feed","description":"A streamlined, continuously browsable feed for headlines and developing stories.","tags":"news feed stream headlines browse"},{"id":"news-ticker","title":"News Ticker","file":"news_ticker_index.html","category":"live","icon":"→","badge":"Component","description":"A reusable ticker environment for source links, headlines, and newsroom navigation.","tags":"news ticker scrolling headlines sources component"},{"id":"live-research","title":"Live Research News","file":"Live_Research_News_index.html","category":"research","icon":"⌕","badge":"Research","description":"A research-oriented news workspace for following evidence, context, and deeper source trails.","tags":"live research news evidence sources context"},{"id":"modern-engine","title":"Modern News Engine","file":"Modern_News_Engine_index.html","category":"research","icon":"⚙","badge":"Engine","description":"A modern discovery engine for sorting news pathways, topics, and source options.","tags":"modern news engine discovery sort topics"},{"id":"plera-search","title":"PLERA Search Gate","file":"PLERA_Search_Gate_index.html","category":"research","icon":"◎","badge":"Search","description":"A sovereign gateway to public research, maps, law, learning, official records, and open data.","tags":"plera search gate research maps law learning open data"},{"id":"portfolio","title":"Verifier App Portfolio","file":"app_portfolio_index.html","category":"research","icon":"▤","badge":"Directory","description":"A broader portfolio of Verifier applications and connected public-interest tools.","tags":"app portfolio directory verifier tools"},{"id":"global-digest","title":"Global News Digest","file":"global_news_digest_index.html","category":"research","icon":"◉","badge":"Digest","description":"Major news sources and story pathways organized for regional and global reading.","tags":"global news digest regions outlets sources"},{"id":"ecopulse","title":"EcoPulse News","file":"EcoPulse_news_index.html","category":"science","icon":"⌁","badge":"Environment","description":"Environmental, ecological, climate, conservation, and planetary systems reporting.","tags":"ecopulse environment ecology climate conservation news"},{"id":"science-news","title":"Science News","file":"science_news_index.html","category":"science","icon":"⚗","badge":"Science","description":"Scientific developments, research reporting, innovation, and discovery pathways.","tags":"science news research discovery innovation"},{"id":"science-daily","title":"Science Daily","file":"science_daily_index.html","category":"science","icon":"✦","badge":"Daily","description":"A daily science-focused reading and learning portal for curious minds.","tags":"science daily facts learning reading"},{"id":"violence-data","title":"Violence Data","file":"violence_data_index.html","category":"science","icon":"△","badge":"Public Data","description":"A public-interest data portal for examining violence, conflict, and humanitarian patterns.","tags":"violence data conflict humanitarian public interest"},{"id":"education-news","title":"Education News","file":"education_news_index.html","category":"learning","icon":"▣","badge":"Education","description":"Reporting concerning schools, learners, educators, curriculum, and education policy.","tags":"education news schools students teachers curriculum"},{"id":"kids-news","title":"Kids News Network","file":"kids_news_network_index.html","category":"learning","icon":"☀","badge":"Kids","description":"An age-aware news, weather, learning, trivia, and discovery portal for young readers.","tags":"kids news children safe weather learning trivia"},{"id":"daily-news-quiz","title":"The Verifier Daily News Quiz","file":"Trivia_news_index.html","category":"learning","icon":"?","badge":"Quiz","description":"A daily current-events quiz for practicing recall, context, and news literacy.","tags":"trivia news daily quiz verifier current events literacy"},{"id":"vintage-news","title":"Vintage News","file":"vintage_news_index.html","category":"archive","icon":"N","badge":"Archive","description":"A newspaper-inspired historical and archival news-reading experience.","tags":"vintage news historical newspaper archive"},{"id":"vintage-digest","title":"Vintage News Digest","file":"vintage_news_digest_index.html","category":"archive","icon":"D","badge":"Archive","description":"A local-first vintage digest for curated summaries, saved editions, and reflective reading.","tags":"vintage news digest historical archive saved editions"}];
-const CATEGORIES={"all": {"label": "All Newsrooms", "icon": "▦", "description": "Every current Verifier application."}, "live": {"label": "Live & Interactive", "icon": "●", "description": "Current coverage, feeds, dashboards, and wire rooms."}, "research": {"label": "Research & Discovery", "icon": "⌕", "description": "Evidence trails, search engines, portfolios, and global digests."}, "science": {"label": "Science, Environment & Data", "icon": "⚗", "description": "Science reporting, ecological news, and public-interest data."}, "learning": {"label": "Education, Kids & News Literacy", "icon": "▣", "description": "Education coverage, child-aware news, and current-events quizzes."}, "archive": {"label": "Archives & Vintage Editions", "icon": "N", "description": "Historical and newspaper-inspired reading rooms."}};
-const COLUMNS=[["Editor’s Choice", "editors_choice_index.html"], ["The Universe", "universe_index.html"], ["Corruption", "corruption_index.html"], ["Debunked", "debunked_index.html"], ["U.S. Politics", "us_politics_index.html"], ["Finance", "finance_index.html"], ["Religion & Culture", "culture_religion_index.html"], ["Environment", "environment_index.html"], ["Foreign Politics", "foreign_politics_index.html"], ["Arts & Humanities", "arts_humanities_index.html"], ["Immigration", "immigration_index.html"], ["Health & Lifestyle", "health_lifestyle_index.html"], ["Animals & Biodiversity", "animals_biodiversity_index.html"], ["Science & Technology", "science_tech_index.html"], ["World Conflict", "world_conflict_index.html"], ["Sports", "sports_index.html"], ["Education", "education_index.html"], ["Presidents", "presidents_index.html"]];
-const SITES=[
-{"title":"Verve N Veda","repo":"vervenveda.github.io","url":"https://vervenveda.github.io/","icon":"V","status":"live","description":"The public front door to the wider Verve N Veda ecosystem."},
-{"title":"One Nation For All","repo":"onenationforall.github.io","url":"https://vervenveda.github.io/onenationforall.github.io/","icon":"1","status":"live","description":"Civic dialogue, public policy, unity, and community-centered solutions."},
-{"title":"PLERA Search","repo":"PLERASearch.github.io","url":"https://vervenveda.github.io/PLERASearch.github.io/","icon":"⌕","status":"live","description":"A sovereign gateway into search tools and trusted public-resource directories."},
-{"title":"Jennifer Pearl 2028","repo":"JenniferPearl2028","url":"https://jenniferpearl2028.github.io/","icon":"JP","status":"live","description":"Campaign, policy, events, and public updates."},
-{"title":"The Verifier","repo":"theverifier.github.io","url":"https://vervenveda.github.io/theverifier.github.io/","icon":"V","status":"live","description":"Independent news discovery, research, education, and source comparison."},
-{"title":"Khaemenes Academy","repo":"khaemenesacademy.github.io","url":"https://vervenveda.github.io/khaemenesacademy.github.io/","icon":"KA","status":"live","description":"The central academy portal for free, sovereign learning across ages and subjects."},
-{"title":"Crèche Preschool","repo":"creche_preschool.github.io","url":"https://vervenveda.github.io/creche_preschool.github.io/","icon":"C","status":"live","description":"Colorful early-learning activities for children and their grown-ups."},
-{"title":"ARSHIF Archives","repo":"Arshif.github.io","url":"https://vervenveda.github.io/Arshif.github.io/","icon":"A","status":"live","description":"Research halls, archives, literature, culture, medicine, history, and memory."},
-{"title":"Medicament Hub","repo":"medicament-hub.github.io","url":"https://vervenveda.github.io/medicament-hub.github.io/","icon":"M","status":"live","description":"Whole-person health education, public medical resources, and family support."},
-{"title":"Solanar","repo":"solanar.github.io","url":"https://vervenveda.github.io/solanar.github.io/","icon":"S","status":"live","description":"Weather, Earth systems, lunar cycles, and environmental observation."},
-{"title":"Firmament Law","repo":"firmament.github.io","url":"https://vervenveda.github.io/firmament.github.io/","icon":"F","status":"live","description":"Legal information, public resources, rights, and civic learning."},
-{"title":"River to Road","repo":"river_to_road.github.io","url":"https://vervenveda.github.io/river_to_road.github.io/","icon":"R","status":"live","description":"Environmental stewardship, cleanup, restoration, and community action."},
-{"title":"Arcade","repo":"arcade.github.io","url":"https://vervenveda.github.io/arcade.github.io/","icon":"A","status":"live","description":"Games, strategy, trivia, creativity, and playful learning."},
-{"title":"Aurora Inspiration","repo":"aurora.github.io","url":"https://vervenveda.github.io/aurora.github.io/","icon":"AI","status":"live","description":"Rest, reflection, affirmations, creative renewal, and wellbeing."},
-{"title":"Professional Resource Hub","repo":"proresource_hub.github.io","url":"https://vervenveda.github.io/proresource_hub.github.io/","icon":"PR","status":"live","description":"Professional tools for writing, code, media, productivity, planning, and design."},
-{"title":"Bazaar Art","repo":"bazaarart.github.io","url":"https://vervenveda.github.io/bazaarart.github.io/","icon":"B","status":"live","description":"Art tools, education, galleries, creative enterprise, and community culture."},
-{"title":"The Refrain","repo":"the_refrain.github.io","url":"https://vervenveda.github.io/the_refrain.github.io/","icon":"R","status":"live","description":"Music, composition, performance, listening, and sound."}
+</div>
+</footer>
+<div aria-live="polite" class="toast" id="toast" role="status">
+</div>
+<script>
+"use strict";
+
+const APPS=[{"id":"ultimate-news","title":"Ultimate News","file":"ultimate_news_index.html","category":"live","icon":"V","badge":"Flagship","description":"The flagship Verifier newsroom. Its development file is connected and ready for the complete live-news experience to be added.","tags":"ultimate comprehensive universal news search research flagship","health":"needs-content"},{"id":"world-wire","title":"World Wire","file":"world_wire_index.html","category":"live","icon":"◎","badge":"Global","description":"A worldwide wire room for moving quickly among international stories, regions, and sources.","tags":"world wire global international regions live"},{"id":"live-news","title":"Live News","file":"live_news_index.html","category":"live","icon":"●","badge":"Live","description":"A focused portal for current coverage, breaking stories, and rapidly developing events.","tags":"live news breaking current coverage"},{"id":"interactive-live-dashboard","title":"Interactive Live News Dashboard","file":"Interactive_Live_ News_ Dashboard_index.html","category":"live","icon":"▦","badge":"Dashboard","description":"An interactive newsroom control panel for exploring live coverage through a large, accessible interface.","tags":"interactive live news dashboard accessible current","health":"shared-build"},{"id":"interactive-news","title":"Interactive News Dashboard","file":"interactive_news_index.html","category":"live","icon":"⌘","badge":"Interactive","description":"A second interactive news workspace for organizing, reading, and navigating current reporting.","tags":"interactive news dashboard interface current","health":"shared-build"},{"id":"news-feed","title":"News Feed","file":"news_feed_index.html","category":"live","icon":"≋","badge":"Feed","description":"A streamlined, continuously browsable feed for headlines and developing stories.","tags":"news feed stream headlines browse"},{"id":"news-ticker","title":"News Ticker","file":"news_ticker_index.html","category":"live","icon":"→","badge":"Component","description":"A reusable ticker environment for source links, headlines, and newsroom navigation.","tags":"news ticker scrolling headlines sources component"},{"id":"live-research","title":"Live Research News","file":"Live_Research_News_index.html","category":"research","icon":"⌕","badge":"Research","description":"A research-oriented news workspace for following evidence, context, and deeper source trails.","tags":"live research news evidence sources context"},{"id":"modern-engine","title":"Modern News Engine","file":"Modern_News_Engine_index.html","category":"research","icon":"⚙","badge":"Engine","description":"A modern discovery engine for sorting news pathways, topics, and source options.","tags":"modern news engine discovery sort topics"},{"id":"plera-search","title":"PLERA Search Gate","file":"PLERA_Search_Gate_index.html","category":"research","icon":"◎","badge":"Search","description":"A sovereign gateway to public research, maps, law, learning, official records, and open data.","tags":"plera search gate research maps law learning open data"},{"id":"portfolio","title":"Verifier App Portfolio","file":"app_portfolio_index.html","category":"research","icon":"▤","badge":"Directory","description":"A broader portfolio of Verifier applications and connected public-interest tools.","tags":"app portfolio directory verifier tools"},{"id":"global-digest","title":"Global News Digest","file":"global_news_digest_index.html","category":"research","icon":"◉","badge":"Digest","description":"Major news sources and story pathways organized for regional and global reading.","tags":"global news digest regions outlets sources"},{"id":"ecopulse","title":"EcoPulse News","file":"EcoPulse_news_index.html","category":"science","icon":"⌁","badge":"Environment","description":"Environmental, ecological, climate, conservation, and planetary systems reporting.","tags":"ecopulse environment ecology climate conservation news"},{"id":"science-news","title":"Science News","file":"science_news_index.html","category":"science","icon":"⚗","badge":"Science","description":"Scientific developments, research reporting, innovation, and discovery pathways.","tags":"science news research discovery innovation"},{"id":"science-daily","title":"Science Daily","file":"science_daily_index.html","category":"science","icon":"✦","badge":"Daily","description":"A daily science-focused reading and learning portal for curious minds.","tags":"science daily facts learning reading"},{"id":"violence-data","title":"Violence Data","file":"violence_data_index.html","category":"science","icon":"△","badge":"Public Data","description":"A public-interest data portal for examining violence, conflict, and humanitarian patterns.","tags":"violence data conflict humanitarian public interest"},{"id":"education-news","title":"Education News","file":"education_news_index.html","category":"learning","icon":"▣","badge":"Education","description":"Reporting concerning schools, learners, educators, curriculum, and education policy.","tags":"education news schools students teachers curriculum"},{"id":"kids-news","title":"Kids News Network","file":"kids_news_network_index.html","category":"learning","icon":"☀","badge":"Kids","description":"An age-aware news, weather, learning, trivia, and discovery portal for young readers.","tags":"kids news children safe weather learning trivia"},{"id":"daily-news-quiz","title":"The Verifier Daily News Quiz","file":"Trivia_news_index.html","category":"learning","icon":"?","badge":"Quiz","description":"A daily current-events quiz for practicing recall, context, and news literacy.","tags":"trivia news daily quiz verifier current events literacy"},{"id":"vintage-news","title":"Vintage News","file":"vintage_news_index.html","category":"archive","icon":"N","badge":"Archive","description":"A newspaper-inspired historical and archival news-reading experience.","tags":"vintage news historical newspaper archive"},{"id":"vintage-digest","title":"Vintage News Digest","file":"vintage_news_digest_index.html","category":"archive","icon":"D","badge":"Archive","description":"A local-first vintage digest for curated summaries, saved editions, and reflective reading.","tags":"vintage news digest historical archive saved editions"}];
+const CATEGORIES={"all":{"label":"All Newsrooms","icon":"▦","description":"Every current Verifier application."},"live":{"label":"Live & Interactive","icon":"●","description":"Current coverage, feeds, dashboards, and wire rooms."},"research":{"label":"Research & Discovery","icon":"⌕","description":"Evidence trails, search engines, portfolios, and global digests."},"science":{"label":"Science, Environment & Data","icon":"⚗","description":"Science reporting, ecological news, and public-interest data."},"learning":{"label":"Education, Kids & News Literacy","icon":"▣","description":"Education coverage, child-aware news, and current-events quizzes."},"archive":{"label":"Archives & Vintage Editions","icon":"N","description":"Historical and newspaper-inspired reading rooms."}};
+const COLUMNS=[["Editor’s Choice","editors_choice_index.html"],["The Universe","universe_index.html"],["Corruption","corruption_index.html"],["Debunked","debunked_index.html"],["U.S. Politics","us_politics_index.html"],["Finance","finance_index.html"],["Religion & Culture","culture_religion_index.html"],["Environment","environment_index.html"],["Foreign Politics","foreign_politics_index.html"],["Arts & Humanities","arts_humanities_index.html"],["Immigration","immigration_index.html"],["Health & Lifestyle","health_lifestyle_index.html"],["Animals & Biodiversity","animals_biodiversity_index.html"],["Science & Technology","science_tech_index.html"],["World Conflict","world_conflict_index.html"],["Sports","sports_index.html"],["Education","education_index.html"],["Presidents","presidents_index.html"]];
+const SITES=[{"title":"Verve N Veda","repo":"vervenveda.github.io","url":"https://vervenveda.github.io/","icon":"V","status":"live","description":"The public gateway to the complete Verve N Veda ecosystem."},{"title":"The Verifier","repo":"theverifier.github.io","url":"https://vervenveda.github.io/theverifier.github.io/","icon":"V","status":"live","description":"Independent news discovery, research, education, evidence, and source comparison."},{"title":"One Nation For All","repo":"onenationforall.github.io","url":"https://vervenveda.github.io/onenationforall.github.io/","icon":"1","status":"live","description":"Civic learning, public policy, unity, government, and community-centered solutions."},{"title":"PLERA Search","repo":"PLERASearch.github.io","url":"https://vervenveda.github.io/PLERASearch.github.io/","icon":"⌕","status":"live","description":"A sovereign gateway into trusted search tools and public-resource directories."},{"title":"Jennifer Pearl 2028","repo":"JenniferPearl2028.com","url":"https://www.jenniferpearl2028.com/","icon":"JP","status":"live","description":"Campaign, policy, service, events, and public updates."},{"title":"Khaemenes Academy","repo":"Khaemenes_Academy.github.io","url":"https://vervenveda.github.io/Khaemenes_Academy.github.io/","icon":"KA","status":"live","description":"The central international learning campus and Academy directory."},{"title":"Khaemenes Preschool","repo":"Khaemenes_Preschool.github.io","url":"https://vervenveda.github.io/Khaemenes_Preschool.github.io/","icon":"PS","status":"live","description":"Early-childhood stories, play, creativity, movement, and discovery."},{"title":"Khaemenes Kinder Garden","repo":"Khaemenes_KinderGarden.github.io","url":"https://vervenveda.github.io/Khaemenes_KinderGarden.github.io/","icon":"KG","status":"live","description":"Kindness, curiosity, literacy, number sense, nature, and school readiness."},{"title":"Khaemenes Elementary","repo":"Khaemenes_Elementary.github.io","url":"https://vervenveda.github.io/Khaemenes_Elementary.github.io/","icon":"E","status":"building","description":"Kinder Garden through Grade 5 learning and family resources."},{"title":"Khaemenes Middle","repo":"Khaemenes_Middle.github.io","url":"https://vervenveda.github.io/Khaemenes_Middle.github.io/","icon":"M","status":"building","description":"Grades 6–8 academics, independence, exploration, and preparation."},{"title":"Khaemenes High","repo":"Khaemenes_High.github.io","url":"https://vervenveda.github.io/Khaemenes_High.github.io/","icon":"HS","status":"live","description":"Grades 9–12 homerooms, complete courses, records, and graduation pathways."},{"title":"Khaemenes Higher Learning","repo":"Khaemenes_Higher_Learning.github.io","url":"https://vervenveda.github.io/Khaemenes_Higher_Learning.github.io/","icon":"HL","status":"live","description":"GED, college, careers, professional development, finance, and lifelong learning."},{"title":"Khaemenes Linguistics","repo":"Khaemenes_Linguistics.github.io","url":"https://vervenveda.github.io/Khaemenes_Linguistics.github.io/","icon":"L","status":"building","description":"Languages, linguistics, writing systems, translation, and communication."},{"title":"ARSHIF Archives","repo":"Arshif.github.io","url":"https://vervenveda.github.io/Arshif.github.io/","icon":"A","status":"live","description":"Research halls, archives, literature, culture, history, and memory."},{"title":"Arcade","repo":"arcade.github.io","url":"https://vervenveda.github.io/arcade.github.io/","icon":"◆","status":"live","description":"Games, strategy, trivia, creativity, and playful learning."},{"title":"Aurora Sanctuary","repo":"aurora.github.io","url":"https://vervenveda.github.io/aurora.github.io/","icon":"☼","status":"live","description":"Rest, reflection, wellness, creative renewal, and sanctuary resources."},{"title":"Bazaar Art","repo":"bazaarart.github.io","url":"https://vervenveda.github.io/bazaarart.github.io/","icon":"B","status":"live","description":"Art tools, education, galleries, creative enterprise, and community culture."},{"title":"Finance","repo":"finance.github.io","url":"https://vervenveda.github.io/finance.github.io/","icon":"$","status":"building","description":"Financial literacy, planning, markets, and practical public resources."},{"title":"Firmament Law","repo":"firmament.github.io","url":"https://vervenveda.github.io/firmament.github.io/","icon":"§","status":"live","description":"Legal information, rights, evidence tools, and civic learning."},{"title":"Medicament Hub","repo":"medicament-hub.github.io","url":"https://vervenveda.github.io/medicament-hub.github.io/","icon":"⚕","status":"live","description":"Health, medicine, family care, insurance, seniors, and wellness resources."},{"title":"My Art Gallery","repo":"myartgallery.github.io","url":"https://vervenveda.github.io/myartgallery.github.io/","icon":"▧","status":"building","description":"A personal space for preserving, organizing, and presenting artwork."},{"title":"ProResource Hub","repo":"proresource_hub.github.io","url":"https://vervenveda.github.io/proresource_hub.github.io/","icon":"PR","status":"live","description":"Professional tools for writing, code, media, research, productivity, and design."},{"title":"River to Road","repo":"river_to_road.github.io","url":"https://vervenveda.github.io/river_to_road.github.io/","icon":"≈","status":"live","description":"Environmental stewardship, cleanup, restoration, science, and community action."},{"title":"Solanar","repo":"solanar.github.io","url":"https://vervenveda.github.io/solanar.github.io/","icon":"☀","status":"live","description":"Weather, Earth systems, climate, lunar cycles, and environmental observation."},{"title":"The Refrain","repo":"the_refrain.github.io","url":"https://vervenveda.github.io/the_refrain.github.io/","icon":"♫","status":"live","description":"Music education, composition, recording, performance, and sound."},{"title":"Veterans","repo":"veterans.github.io","url":"https://vervenveda.github.io/veterans.github.io/","icon":"★","status":"building","description":"Veteran benefits, crisis support, family assistance, and public services."}];
+const OUTLETS=[{"name":"Associated Press","region":"North America","country":"USA","topic":"Breaking news and public-service reporting","url":"https://apnews.com/"},{"name":"Reuters","region":"Global","country":"Worldwide","topic":"International, political, and business wire coverage","url":"https://www.reuters.com/"},{"name":"BBC News","region":"Europe","country":"United Kingdom","topic":"World reporting, analysis, and public-service coverage","url":"https://www.bbc.com/news"},{"name":"NPR","region":"North America","country":"USA","topic":"News, culture, science, and public radio reporting","url":"https://www.npr.org/"},{"name":"CBC News","region":"North America","country":"Canada","topic":"Canadian and international public-service news","url":"https://www.cbc.ca/news"},{"name":"ABC News Australia","region":"Oceania","country":"Australia","topic":"Australian and Asia-Pacific public-service reporting","url":"https://www.abc.net.au/news"},{"name":"Deutsche Welle","region":"Europe","country":"Germany","topic":"International reporting and European perspectives","url":"https://www.dw.com/"},{"name":"France 24","region":"Europe","country":"France","topic":"International live coverage and global analysis","url":"https://www.france24.com/"},{"name":"ProPublica","region":"North America","country":"USA","topic":"Independent investigative and accountability reporting","url":"https://www.propublica.org/"},{"name":"The Guardian","region":"Europe","country":"United Kingdom","topic":"Investigations, climate, politics, and world affairs","url":"https://www.theguardian.com/"},{"name":"Al Jazeera","region":"Middle East","country":"Qatar","topic":"International coverage with Middle East and Global South focus","url":"https://www.aljazeera.com/"},{"name":"AllAfrica","region":"Africa","country":"Pan-Africa","topic":"Regional reporting gathered from across the African continent","url":"https://allafrica.com/"},{"name":"Daily Nation","region":"Africa","country":"Kenya","topic":"East African news, politics, public life, and business","url":"https://nation.africa/"},{"name":"The Hindu","region":"Asia","country":"India","topic":"Indian public affairs, politics, culture, and world news","url":"https://www.thehindu.com/"},{"name":"Japan Times","region":"Asia","country":"Japan","topic":"Japanese politics, society, culture, and regional affairs","url":"https://www.japantimes.co.jp/"},{"name":"RNZ News","region":"Oceania","country":"New Zealand","topic":"New Zealand public-service and Pacific-region reporting","url":"https://www.rnz.co.nz/news"},{"name":"Arab News","region":"Middle East","country":"Saudi Arabia","topic":"Regional affairs, business, society, and international news","url":"https://www.arabnews.com/"},{"name":"South China Morning Post","region":"Asia","country":"Hong Kong","topic":"China, Asia, business, diplomacy, and regional affairs","url":"https://www.scmp.com/"}];
+const TITLE_BREAKS={"Interactive Live News Dashboard":"Interactive Live<br>News Dashboard","Interactive News Dashboard":"Interactive News<br>Dashboard","The Verifier Daily News Quiz":"The Verifier<br>Daily News Quiz","Financial Learning Library":"Financial Learning<br>Library","Science & Technology":"Science &<br>Technology","Animals & Biodiversity":"Animals &<br>Biodiversity","Religion & Culture":"Religion &<br>Culture","Arts & Humanities":"Arts &<br>Humanities","Health & Lifestyle":"Health &<br>Lifestyle","Khaemenes Kinder Garden":"Khaemenes<br>Kinder Garden","Khaemenes Higher Learning":"Khaemenes<br>Higher Learning","Khaemenes Linguistics":"Khaemenes<br>Linguistics","Khaemenes Elementary":"Khaemenes<br>Elementary","Khaemenes Preschool":"Khaemenes<br>Preschool","Jennifer Pearl 2028":"Jennifer Pearl<br>2028","ProResource Hub":"ProResource<br>Hub","My Art Gallery":"My Art<br>Gallery"};
+
+const FAVORITES_KEY="the-verifier-favorites-v3";
+const CURRENT_SITE="theverifier.github.io";
+const NETWORK_ANCHORS=["Verve N Veda","The Verifier","One Nation For All","PLERA Search","Jennifer Pearl 2028"];
+const GLOBAL_REGIONS=new Set(["North America","Europe","Global","Oceania"]);
+const REQUIRED_IDS=[
+  "tickerGlobal","tickerRegional","localClock","appStat","columnStat","repositoryStat",
+  "manifestStatus","repositoryManifestStatus","networkTrail","categoryFilter","appGroups",
+  "columnGrid","networkGrid","drawerContent","drawer","drawerSearch","menuButton","drawerClose",
+  "favoriteCount","favoritesButton","appSearch","results","empty","randomButton","topButton","toast"
 ];
-const FAVORITES_KEY="the-verifier-favorites-v2";
+
+const $=id=>document.getElementById(id);
+const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+const formatTitle=title=>TITLE_BREAKS[title]||escapeHTML(title);
+const appUrl=app=>"./apps/"+encodeURI(app.file);
+const columnUrl=file=>"./columns/"+encodeURI(file);
+const categoryLabel=key=>CATEGORIES[key]?.label||key;
+const healthLabel=health=>health==="needs-content"?"In development":health==="shared-build"?"Shared build":"Ready";
+const actionLabel=health=>health==="needs-content"?"Open development page":health==="shared-build"?"Open shared application":"Open application";
+const statusLabel=status=>status==="building"?"Landing page in development":"Public destination";
+
 const SAFE_STORAGE=(()=>{
   try{
     const probe="__verifier_storage_probe__";
@@ -1790,168 +2000,326 @@ const SAFE_STORAGE=(()=>{
     return {getItem:()=>null,setItem:()=>{},removeItem:()=>{}};
   }
 })();
-let favorites=new Set(JSON.parse(SAFE_STORAGE.getItem(FAVORITES_KEY)||"[]"));
-let favoritesOnly=false;
-const $=id=>document.getElementById(id);
-const appUrl=app=>"./apps/"+encodeURI(app.file);
-const categoryLabel=key=>CATEGORIES[key]?.label||key;
-function toast(message){$("toast").textContent=message;$("toast").classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>$("toast").classList.remove("show"),1800)}
 
-const OUTLETS=[
-  {name:"Associated Press",region:"North America",country:"USA",topic:"Breaking news and public-service reporting",url:"https://apnews.com/"},
-  {name:"Reuters",region:"Global",country:"Worldwide",topic:"International, political, and business wire coverage",url:"https://www.reuters.com/"},
-  {name:"BBC News",region:"Europe",country:"United Kingdom",topic:"World reporting, analysis, and public-service coverage",url:"https://www.bbc.com/news"},
-  {name:"NPR",region:"North America",country:"USA",topic:"News, culture, science, and public radio reporting",url:"https://www.npr.org/"},
-  {name:"CBC News",region:"North America",country:"Canada",topic:"Canadian and international public-service news",url:"https://www.cbc.ca/news"},
-  {name:"ABC News Australia",region:"Oceania",country:"Australia",topic:"Australian and Asia-Pacific public-service reporting",url:"https://www.abc.net.au/news"},
-  {name:"Deutsche Welle",region:"Europe",country:"Germany",topic:"International reporting and European perspectives",url:"https://www.dw.com/"},
-  {name:"France 24",region:"Europe",country:"France",topic:"International live coverage and global analysis",url:"https://www.france24.com/"},
-  {name:"ProPublica",region:"North America",country:"USA",topic:"Independent investigative and accountability reporting",url:"https://www.propublica.org/"},
-  {name:"The Guardian",region:"Europe",country:"United Kingdom",topic:"Investigations, climate, politics, and world affairs",url:"https://www.theguardian.com/"},
-  {name:"Al Jazeera",region:"Middle East",country:"Qatar",topic:"International coverage with Middle East and Global South focus",url:"https://www.aljazeera.com/"},
-  {name:"AllAfrica",region:"Africa",country:"Pan-Africa",topic:"Regional reporting gathered from across the African continent",url:"https://allafrica.com/"},
-  {name:"Daily Nation",region:"Africa",country:"Kenya",topic:"East African news, politics, public life, and business",url:"https://nation.africa/"},
-  {name:"The Hindu",region:"Asia",country:"India",topic:"Indian public affairs, politics, culture, and world news",url:"https://www.thehindu.com/"},
-  {name:"Japan Times",region:"Asia",country:"Japan",topic:"Japanese politics, society, culture, and regional affairs",url:"https://www.japantimes.co.jp/"},
-  {name:"RNZ News",region:"Oceania",country:"New Zealand",topic:"New Zealand public-service and Pacific-region reporting",url:"https://www.rnz.co.nz/news"},
-  {name:"Arab News",region:"Middle East",country:"Saudi Arabia",topic:"Regional affairs, business, society, and international news",url:"https://www.arabnews.com/"},
-  {name:"South China Morning Post",region:"Asia",country:"Hong Kong",topic:"China, Asia, business, diplomacy, and regional affairs",url:"https://www.scmp.com/"}
-];
-const GLOBAL_REGIONS=new Set(["North America","Europe","Global","Oceania"]);
+function loadFavorites(){
+  try{
+    const parsed=JSON.parse(SAFE_STORAGE.getItem(FAVORITES_KEY)||"[]");
+    const validIds=new Set(APPS.map(app=>app.id));
+    return new Set(Array.isArray(parsed)?parsed.filter(id=>validIds.has(id)):[]);
+  }catch{
+    SAFE_STORAGE.removeItem(FAVORITES_KEY);
+    return new Set();
+  }
+}
+
+let favorites=loadFavorites();
+let favoritesOnly=false;
+let lastFocusedElement=null;
+
+function toast(message){
+  const element=$("toast");
+  if(!element)return;
+  element.textContent=message;
+  element.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer=setTimeout(()=>element.classList.remove("show"),1800);
+}
+
 function tickerItem(outlet){
-  const item=document.createElement("span");
+  const item=document.createElement("a");
   item.className="ticker-link";
-  item.setAttribute("role","text");
-  item.innerHTML=`<span class="label">${outlet.name}</span><span class="preview">${outlet.topic}</span><span class="meta">${outlet.region} · ${outlet.country}</span>`;
+  item.href=outlet.url;
+  item.target="_blank";
+  item.rel="noopener noreferrer";
+  item.setAttribute("aria-label",`${outlet.name}: ${outlet.topic}. Opens in a new tab.`);
+  item.innerHTML=`<span class="label">${escapeHTML(outlet.name)}</span><span class="preview">${escapeHTML(outlet.topic)}</span><span class="meta">${escapeHTML(outlet.region)} · ${escapeHTML(outlet.country)}</span>`;
 
   const separator=document.createElement("span");
   separator.className="ticker-sep";
+  separator.setAttribute("aria-hidden","true");
   separator.textContent=" • ";
-
   return [item,separator];
 }
-function buildTicker(id,outlets){
+
+function buildTicker(id,outletList){
   const track=$(id);
+  if(!track)return;
   const sequence=document.createElement("span");
-  outlets.forEach(outlet=>sequence.append(...tickerItem(outlet)));
+  sequence.className="ticker-sequence";
+  outletList.forEach(outlet=>sequence.append(...tickerItem(outlet)));
+
   const duplicate=sequence.cloneNode(true);
+  duplicate.setAttribute("aria-hidden","true");
+  duplicate.querySelectorAll("a").forEach(link=>link.tabIndex=-1);
+  if("inert" in duplicate)duplicate.inert=true;
   track.replaceChildren(sequence,duplicate);
 }
+
 function renderSourceStrip(){
   buildTicker("tickerGlobal",OUTLETS.filter(outlet=>GLOBAL_REGIONS.has(outlet.region)));
   buildTicker("tickerRegional",OUTLETS.filter(outlet=>!GLOBAL_REGIONS.has(outlet.region)));
 }
-function updateClock(){$("localClock").textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"medium"}).format(new Date())}
+
+function updateClock(){
+  const clock=$("localClock");
+  if(clock)clock.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"medium"}).format(new Date());
+}
+
+function orderedSites(){
+  return [
+    ...NETWORK_ANCHORS.map(title=>SITES.find(site=>site.title===title)).filter(Boolean),
+    ...SITES.filter(site=>!NETWORK_ANCHORS.includes(site.title))
+  ];
+}
 
 function syncCounts(){
   const needsContent=APPS.filter(app=>app.health==="needs-content").length;
-  const populated=APPS.length-needsContent;
-  const liveRepos=SITES.filter(site=>site.status==="live").length;
-  const buildingRepos=0;
+  const sharedBuilds=APPS.filter(app=>app.health==="shared-build").length;
+  const ready=APPS.length-needsContent-sharedBuilds;
+  const buildingSites=SITES.filter(site=>site.status==="building").length;
+  const liveSites=SITES.length-buildingSites;
+
   $("appStat").textContent=APPS.length;
   $("columnStat").textContent=COLUMNS.length;
   $("repositoryStat").textContent=SITES.length;
-  $("manifestStatus").textContent=`${APPS.length} paths confirmed · ${populated} populated · ${needsContent} needs content`;
-  $("repositoryManifestStatus").textContent=`${SITES.length} public landing pages connected`;
+  $("manifestStatus").textContent=`${APPS.length} application paths · ${ready} ready · ${sharedBuilds} shared builds · ${needsContent} in development`;
+  $("repositoryManifestStatus").textContent=`${SITES.length} public destinations · ${liveSites} published · ${buildingSites} landing pages in development`;
 }
-
 
 function renderTrail(){
-  const anchors=["Verve N Veda","One Nation For All","PLERA Search","Jennifer Pearl 2028"];
-  const ordered=[
-    ...anchors.map(title=>SITES.find(site=>site.title===title)).filter(Boolean),
-    ...SITES.filter(site=>!anchors.includes(site.title))
-  ];
-  $("networkTrail").innerHTML=ordered.map(site=>{
-    const current=site.repo==="theverifier.github.io";
-    return `<a class="trail-link ${current?"active":""}" href="${site.url}" ${current?'aria-current="page"':'target="_blank" rel="noopener noreferrer"'}>${site.title}</a>`;
+  $("networkTrail").innerHTML=orderedSites().map(site=>{
+    const current=site.repo===CURRENT_SITE;
+    const building=site.status==="building";
+    return `<a class="trail-link ${current?"active":""} ${building?"building":""}" href="${escapeHTML(site.url)}" ${current?'aria-current="page"':'target="_blank" rel="noopener noreferrer"'} aria-label="${escapeHTML(site.title)}${building?", landing page in development":""}">${escapeHTML(site.title)}</a>`;
   }).join("");
 }
+
 function buildCategory(){
-  $("categoryFilter").innerHTML=Object.entries(CATEGORIES).map(([key,value])=>`<option value="${key}">${value.label}</option>`).join("");
+  $("categoryFilter").innerHTML=Object.entries(CATEGORIES).map(([key,value])=>`<option value="${escapeHTML(key)}">${escapeHTML(value.label)}</option>`).join("");
 }
+
 function renderApps(){
   const ordered=Object.keys(CATEGORIES).filter(key=>key!=="all");
   $("appGroups").innerHTML=ordered.map(category=>{
     const items=APPS.filter(app=>app.category===category);
-    return `<section class="app-group" data-group="${category}"><h3 class="group-heading">${CATEGORIES[category].icon} ${CATEGORIES[category].label}</h3><div class="app-grid">${items.map(app=>`
-      <article class="card app-card ${app.health||"ready"}" data-id="${app.id}" data-category="${app.category}" data-search="${(app.title+" "+app.description+" "+app.tags+" "+app.file+" "+categoryLabel(app.category)).toLowerCase()}">
-        <div class="card-top"><span class="app-icon" aria-hidden="true">${app.icon}</span><button class="favorite" type="button" data-favorite="${app.id}" aria-label="Save ${app.title}" aria-pressed="${favorites.has(app.id)}">${favorites.has(app.id)?"♥":"♡"}</button></div>
-        <span class="card-badge">${app.badge}</span><span class="app-health">Verifier desk</span><h3>${app.title}</h3><p>${app.description}</p>
-        <div class="card-actions"><a class="open" href="${appUrl(app)}">Open Application</a></div>
-      </article>`).join("")}</div></section>`;
+    return `<section class="app-group" data-group="${escapeHTML(category)}"><h3 class="group-heading">${escapeHTML(CATEGORIES[category].icon)} ${escapeHTML(CATEGORIES[category].label)}</h3><div class="app-grid">${items.map(app=>{
+      const health=app.health||"ready";
+      return `<article class="card app-card ${escapeHTML(health)}" data-id="${escapeHTML(app.id)}" data-category="${escapeHTML(app.category)}" data-search="${escapeHTML((app.title+" "+app.description+" "+app.tags+" "+app.file+" "+categoryLabel(app.category)).toLowerCase())}">
+        <div class="card-top"><span class="app-icon" aria-hidden="true">${escapeHTML(app.icon)}</span><button class="favorite" type="button" data-favorite="${escapeHTML(app.id)}" aria-label="${favorites.has(app.id)?"Remove":"Save"} ${escapeHTML(app.title)} ${favorites.has(app.id)?"from":"to"} saved applications" aria-pressed="${favorites.has(app.id)}">${favorites.has(app.id)?"♥":"♡"}</button></div>
+        <span class="card-badge">${escapeHTML(app.badge)}</span>
+        <span class="app-health ${escapeHTML(health)}">${escapeHTML(healthLabel(health))}</span>
+        <h3>${formatTitle(app.title)}</h3>
+        <p>${escapeHTML(app.description)}</p>
+        <div class="card-actions"><a class="open ${health==="needs-content"?"development":""}" href="${appUrl(app)}" aria-label="${escapeHTML(actionLabel(health))}: ${escapeHTML(app.title)}">${escapeHTML(actionLabel(health))}</a></div>
+      </article>`;
+    }).join("")}</div></section>`;
   }).join("");
-  document.querySelectorAll("[data-favorite]").forEach(button=>button.addEventListener("click",()=>toggleFavorite(button.dataset.favorite,button)));
+
+  document.querySelectorAll("[data-favorite]").forEach(button=>{
+    button.addEventListener("click",()=>toggleFavorite(button.dataset.favorite,button));
+  });
 }
+
 function toggleFavorite(id,button){
   favorites.has(id)?favorites.delete(id):favorites.add(id);
   SAFE_STORAGE.setItem(FAVORITES_KEY,JSON.stringify([...favorites]));
-  button.textContent=favorites.has(id)?"♥":"♡";button.setAttribute("aria-pressed",String(favorites.has(id)));
-  updateFavoriteCount();filterApps();
+  const app=APPS.find(item=>item.id===id);
+  const isSaved=favorites.has(id);
+  button.textContent=isSaved?"♥":"♡";
+  button.setAttribute("aria-pressed",String(isSaved));
+  button.setAttribute("aria-label",`${isSaved?"Remove":"Save"} ${app?.title||"application"} ${isSaved?"from":"to"} saved applications`);
+  updateFavoriteCount();
+  filterApps();
 }
 
-function updateFavoriteCount(){$("favoriteCount").textContent=favorites.size;$("favoritesButton").setAttribute("aria-pressed",String(favoritesOnly))}
+function updateFavoriteCount(){
+  $("favoriteCount").textContent=favorites.size;
+  $("favoritesButton").setAttribute("aria-pressed",String(favoritesOnly));
+  $("favoritesButton").setAttribute("aria-label",favoritesOnly?"Show all applications":"Show saved applications only");
+}
+
 function filterApps(){
-  const query=$("appSearch").value.trim().toLowerCase(),category=$("categoryFilter").value;let count=0;
+  const query=$("appSearch").value.trim().toLowerCase();
+  const category=$("categoryFilter").value;
+  let count=0;
+
   document.querySelectorAll(".app-card").forEach(card=>{
-    const visible=(category==="all"||card.dataset.category===category)&&(!query||card.dataset.search.includes(query))&&(!favoritesOnly||favorites.has(card.dataset.id));
-    card.hidden=!visible;if(visible)count++;
+    const visible=(category==="all"||card.dataset.category===category)&&
+      (!query||card.dataset.search.includes(query))&&
+      (!favoritesOnly||favorites.has(card.dataset.id));
+    card.hidden=!visible;
+    if(visible)count++;
   });
-  document.querySelectorAll(".app-group").forEach(group=>{group.hidden=![...group.querySelectorAll(".app-card")].some(card=>!card.hidden)});
+
+  document.querySelectorAll(".app-group").forEach(group=>{
+    group.hidden=![...group.querySelectorAll(".app-card")].some(card=>!card.hidden);
+  });
+
   $("results").textContent=`${count} of ${APPS.length} Verifier applications shown${favoritesOnly?" · saved only":""}.`;
   $("empty").classList.toggle("show",count===0);
 }
+
 function randomApp(){
   let pool=APPS.filter(app=>app.health!=="needs-content"&&($("categoryFilter").value==="all"||app.category===$("categoryFilter").value));
   if(favoritesOnly)pool=pool.filter(app=>favorites.has(app.id));
   const app=pool[Math.floor(Math.random()*pool.length)];
-  if(app)location.href=appUrl(app);else toast("No applications are available in that selection.");
+  if(app)location.assign(appUrl(app));
+  else toast("No ready applications are available in that selection.");
 }
-function renderColumns(){$("columnGrid").innerHTML=COLUMNS.map(([title,file])=>`<a class="category" href="./columns/${encodeURI(file)}">${title}</a>`).join("")}
+
+function renderColumns(){
+  $("columnGrid").innerHTML=COLUMNS.map(([title,file])=>`<a class="category" href="${columnUrl(file)}" aria-label="Open ${escapeHTML(title)} editorial column"><span>${formatTitle(title)}</span></a>`).join("");
+}
+
 function renderNetwork(){
-  const anchors=["Verve N Veda","One Nation For All","PLERA Search","Jennifer Pearl 2028"];
-  const ordered=[
-    ...anchors.map(title=>SITES.find(site=>site.title===title)).filter(Boolean),
-    ...SITES.filter(site=>!anchors.includes(site.title))
-  ];
-  $("networkGrid").innerHTML=ordered.map(site=>{
-    const current=site.repo==="theverifier.github.io";
-    return `<a class="card site-card ${current?"current":""}" href="${site.url}" ${current?'aria-current="page"':'target="_blank" rel="noopener noreferrer"'}><span class="site-icon">${site.icon}</span><span class="site-status">Public destination</span><h3>${site.title}</h3><p>${site.description}</p></a>`;
+  $("networkGrid").innerHTML=orderedSites().map(site=>{
+    const current=site.repo===CURRENT_SITE;
+    const building=site.status==="building";
+    return `<a class="card site-card ${current?"current":""} ${building?"building":""}" href="${escapeHTML(site.url)}" ${current?'aria-current="page"':'target="_blank" rel="noopener noreferrer"'} aria-label="${escapeHTML(site.title)}${building?", landing page in development":""}">
+      <span class="site-icon" aria-hidden="true">${escapeHTML(site.icon)}</span>
+      <span class="site-status ${building?"building":"live"}">${escapeHTML(current?"Current site":statusLabel(site.status))}</span>
+      <h3>${formatTitle(site.title)}</h3>
+      <p>${escapeHTML(site.description)}</p>
+    </a>`;
   }).join("");
 }
+
 function buildDrawer(query=""){
   const q=query.trim().toLowerCase();
   const appMatches=APPS.filter(app=>!q||(app.title+" "+app.description+" "+app.tags+" "+app.file).toLowerCase().includes(q));
   const columnMatches=COLUMNS.filter(([title,file])=>!q||(title+" "+file).toLowerCase().includes(q));
-  const anchors=["Verve N Veda","One Nation For All","PLERA Search","Jennifer Pearl 2028"];
-  const orderedSites=[
-    ...anchors.map(title=>SITES.find(site=>site.title===title)).filter(Boolean),
-    ...SITES.filter(site=>!anchors.includes(site.title))
-  ];
-  const siteMatches=orderedSites.filter(site=>!q||(site.title+" "+site.description).toLowerCase().includes(q));
+  const sites=orderedSites();
+  const siteMatches=sites.filter(site=>!q||(site.title+" "+site.description+" "+site.repo).toLowerCase().includes(q));
+  const anchorMatches=siteMatches.filter(site=>NETWORK_ANCHORS.includes(site.title));
+  const networkMatches=siteMatches.filter(site=>!NETWORK_ANCHORS.includes(site.title));
+
+  const siteLink=site=>`<a class="menu-link" href="${escapeHTML(site.url)}" ${site.repo===CURRENT_SITE?'aria-current="page"':'target="_blank" rel="noopener noreferrer"'}><i aria-hidden="true">${escapeHTML(site.icon)}</i><span><strong>${escapeHTML(site.title)}</strong><small>${escapeHTML(site.status==="building"?"Landing page in development":site.description)}</small></span><span aria-hidden="true">↗</span></a>`;
 
   $("drawerContent").innerHTML=`
-    <p class="menu-group">Network Anchors</p>
-    <div class="menu-list">${siteMatches.filter(site=>anchors.includes(site.title)).map(site=>`<a class="menu-link" href="${site.url}" target="_blank" rel="noopener noreferrer"><i>${site.icon}</i><span><strong>${site.title}</strong><small>${site.description}</small></span><span>↗</span></a>`).join("")}</div>
+    <p class="menu-group">Network Anchors · ${anchorMatches.length}</p>
+    <div class="menu-list">${anchorMatches.map(siteLink).join("")||"<small class='drawer-empty'>No network anchors matched.</small>"}</div>
     <p class="menu-group">Verifier Applications · ${appMatches.length}</p>
-    <div class="menu-list">${appMatches.map(app=>`<a class="menu-link" href="${appUrl(app)}"><i>${app.icon}</i><span><strong>${app.title}</strong><small>${categoryLabel(app.category)} · ${app.health==="needs-content"?"needs content":app.health==="shared-build"?"shared build":"ready"}</small></span><span>→</span></a>`).join("")||"<small style='color:white'>No applications matched.</small>"}</div>
+    <div class="menu-list">${appMatches.map(app=>`<a class="menu-link" href="${appUrl(app)}"><i aria-hidden="true">${escapeHTML(app.icon)}</i><span><strong>${escapeHTML(app.title)}</strong><small>${escapeHTML(categoryLabel(app.category))} · ${escapeHTML(healthLabel(app.health||"ready"))}</small></span><span aria-hidden="true">→</span></a>`).join("")||"<small class='drawer-empty'>No applications matched.</small>"}</div>
     <p class="menu-group">Editorial Columns · ${columnMatches.length}</p>
-    <div class="menu-list">${columnMatches.map(([title,file])=>`<a class="menu-link" href="./columns/${encodeURI(file)}"><i>§</i><span><strong>${title}</strong><small>Editorial column</small></span><span>→</span></a>`).join("")||"<small style='color:white'>No columns matched.</small>"}</div>
-    <p class="menu-group">Public Landing Pages · ${siteMatches.filter(site=>!anchors.includes(site.title)).length}</p>
-    <div class="menu-list">${siteMatches.filter(site=>!anchors.includes(site.title)).map(site=>`<a class="menu-link" href="${site.url}" target="_blank" rel="noopener noreferrer"><i>${site.icon}</i><span><strong>${site.title}</strong><small>${site.description}</small></span><span>↗</span></a>`).join("")||"<small style='color:white'>No landing pages matched.</small>"}</div>`;
+    <div class="menu-list">${columnMatches.map(([title,file])=>`<a class="menu-link" href="${columnUrl(file)}"><i aria-hidden="true">§</i><span><strong>${escapeHTML(title)}</strong><small>Editorial column</small></span><span aria-hidden="true">→</span></a>`).join("")||"<small class='drawer-empty'>No columns matched.</small>"}</div>
+    <p class="menu-group">Public Landing Pages · ${networkMatches.length}</p>
+    <div class="menu-list">${networkMatches.map(siteLink).join("")||"<small class='drawer-empty'>No landing pages matched.</small>"}</div>`;
 }
-function openDrawer(){$("drawer").classList.add("open");$("drawer").setAttribute("aria-hidden","false");$("menuButton").setAttribute("aria-expanded","true");document.body.classList.add("drawer-open");setTimeout(()=>$("drawerSearch").focus(),80)}
-function closeDrawer(){$("drawer").classList.remove("open");$("drawer").setAttribute("aria-hidden","true");$("menuButton").setAttribute("aria-expanded","false");document.body.classList.remove("drawer-open")}
 
-renderSourceStrip();updateClock();syncCounts();setInterval(updateClock,1000);renderTrail();buildCategory();renderApps();renderColumns();renderNetwork();buildDrawer();updateFavoriteCount();filterApps();
-$("appSearch").addEventListener("input",filterApps);$("categoryFilter").addEventListener("change",filterApps);
-$("favoritesButton").addEventListener("click",()=>{favoritesOnly=!favoritesOnly;updateFavoriteCount();filterApps()});
-$("randomButton").addEventListener("click",randomApp);
-$("menuButton").addEventListener("click",openDrawer);$("drawerClose").addEventListener("click",closeDrawer);$("drawer").addEventListener("click",event=>{if(event.target===$("drawer"))closeDrawer()});$("drawerSearch").addEventListener("input",event=>buildDrawer(event.target.value));
-$("topButton").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
-document.addEventListener("keydown",event=>{if(event.key==="Escape")closeDrawer();if(event.key==="/"&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){event.preventDefault();$("appSearch").focus()}});
-  </script>
-  <script id="verifier-public-navigation-guard">
+function setDrawerState(open){
+  const overlay=$("drawer");
+  overlay.classList.toggle("open",open);
+  overlay.setAttribute("aria-hidden",String(!open));
+  $("menuButton").setAttribute("aria-expanded",String(open));
+  document.body.classList.toggle("drawer-open",open);
+  if("inert" in overlay)overlay.inert=!open;
+}
+
+function openDrawer(){
+  lastFocusedElement=document.activeElement;
+  setDrawerState(true);
+  setTimeout(()=>$("drawerSearch").focus(),80);
+}
+
+function closeDrawer({restoreFocus=true}={}){
+  if(!$("drawer").classList.contains("open"))return;
+  setDrawerState(false);
+  if(restoreFocus&&lastFocusedElement instanceof HTMLElement)lastFocusedElement.focus();
+}
+
+function trapDrawerFocus(event){
+  if(event.key!=="Tab"||!$("drawer").classList.contains("open"))return;
+  const focusable=[...$("drawer").querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(element=>!element.hidden);
+  if(!focusable.length)return;
+  const first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+}
+
+function auditManifest(){
+  const issues=[];
+  const duplicateValues=(items,key)=>[...new Set(items.map(item=>item[key]).filter((value,index,array)=>array.indexOf(value)!==index))];
+  const appIds=duplicateValues(APPS,"id");
+  const appFiles=duplicateValues(APPS,"file");
+  const siteTitles=duplicateValues(SITES,"title");
+  const siteUrls=duplicateValues(SITES,"url");
+  const columnTitles=[...new Set(COLUMNS.map(item=>item[0]).filter((value,index,array)=>array.indexOf(value)!==index))];
+  const columnFiles=[...new Set(COLUMNS.map(item=>item[1]).filter((value,index,array)=>array.indexOf(value)!==index))];
+
+  if(appIds.length)issues.push(`Duplicate application IDs: ${appIds.join(", ")}`);
+  if(appFiles.length)issues.push(`Duplicate application files: ${appFiles.join(", ")}`);
+  if(siteTitles.length)issues.push(`Duplicate site titles: ${siteTitles.join(", ")}`);
+  if(siteUrls.length)issues.push(`Duplicate site URLs: ${siteUrls.join(", ")}`);
+  if(columnTitles.length)issues.push(`Duplicate column titles: ${columnTitles.join(", ")}`);
+  if(columnFiles.length)issues.push(`Duplicate column files: ${columnFiles.join(", ")}`);
+
+  APPS.forEach(app=>{
+    if(!CATEGORIES[app.category])issues.push(`Unknown category for ${app.title}: ${app.category}`);
+    if(!/^[\w .&'™-]+\.html$/u.test(app.file))issues.push(`Unusual application filename: ${app.file}`);
+  });
+  COLUMNS.forEach(([title,file])=>{
+    if(!/^[\w .&'™-]+\.html$/u.test(file))issues.push(`Unusual column filename: ${title} → ${file}`);
+  });
+  SITES.forEach(site=>{
+    try{
+      const parsed=new URL(site.url);
+      if(parsed.protocol!=="https:")issues.push(`Non-HTTPS site URL: ${site.title}`);
+    }catch{
+      issues.push(`Invalid site URL: ${site.title}`);
+    }
+  });
+  REQUIRED_IDS.forEach(id=>{if(!$(id))issues.push(`Missing required element #${id}`);});
+
+  if(issues.length)console.warn("The Verifier audit found issues:",issues);
+  else console.info(`The Verifier audit passed: ${APPS.length} applications, ${COLUMNS.length} columns, ${SITES.length} public destinations.`);
+  return issues;
+}
+
+function initialize(){
+  renderSourceStrip();
+  updateClock();
+  setInterval(updateClock,1000);
+  syncCounts();
+  renderTrail();
+  buildCategory();
+  renderApps();
+  renderColumns();
+  renderNetwork();
+  buildDrawer();
+  updateFavoriteCount();
+  filterApps();
+  setDrawerState(false);
+  auditManifest();
+
+  $("appSearch").addEventListener("input",filterApps);
+  $("categoryFilter").addEventListener("change",filterApps);
+  $("favoritesButton").addEventListener("click",()=>{
+    favoritesOnly=!favoritesOnly;
+    updateFavoriteCount();
+    filterApps();
+  });
+  $("randomButton").addEventListener("click",randomApp);
+  $("menuButton").addEventListener("click",openDrawer);
+  $("drawerClose").addEventListener("click",()=>closeDrawer());
+  $("drawer").addEventListener("click",event=>{
+    if(event.target===$("drawer"))closeDrawer();
+    if(event.target.closest(".menu-link"))closeDrawer({restoreFocus:false});
+  });
+  $("drawerSearch").addEventListener("input",event=>buildDrawer(event.target.value));
+  $("topButton").addEventListener("click",()=>scrollTo({top:0,behavior:"smooth"}));
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape")closeDrawer();
+    if(event.key==="/"&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
+      event.preventDefault();
+      $("appSearch").focus();
+    }
+    trapDrawerFocus(event);
+  });
+}
+
+initialize();
+</script>
+<script id="verifier-public-navigation-guard">
    document.addEventListener("click",function(event){
   const link=event.target.closest("a[href]");
   if(!link)return;
@@ -1964,5 +2332,5 @@ document.addEventListener("keydown",event=>{if(event.key==="Escape")closeDrawer(
   }catch(_){}
 });
   </script>
- </body>
+</body>
 </html>
