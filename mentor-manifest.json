@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "sourceId": "verve.verifier",
+  "name": "The Verifier",
+  "classification": "research-information",
+  "mentorSearchable": true,
+  "audiences": [
+    "middle",
+    "high",
+    "higher-learning",
+    "adult",
+    "parent"
+  ],
+  "roles": [
+    "student",
+    "parent",
+    "educator"
+  ],
+  "homepage": "https://vervenveda.com/theverifier.github.io/",
+  "repository": "vervenveda/theverifier.github.io",
+  "resources": [
+    {
+      "id": "verifier-home",
+      "title": "The Verifier",
+      "description": "",
+      "url": "https://vervenveda.com/theverifier.github.io/",
+      "audiences": [
+        "middle",
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "research"
+      ],
+      "skills": [
+        "media-literacy",
+        "research"
+      ],
+      "tags": [
+        "news",
+        "research",
+        "current-info"
+      ],
+      "mentorEligible": true,
+      "featured": true,
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true
+    },
+    {
+      "id": "education-news",
+      "title": "Education News",
+      "description": "",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/education_news_index.html",
+      "audiences": [
+        "middle",
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "education"
+      ],
+      "skills": [
+        "media-literacy"
+      ],
+      "tags": [
+        "news",
+        "education",
+        "current-info"
+      ],
+      "mentorEligible": true,
+      "minutes": 15,
+      "energy": "curious",
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true
+    },
+    {
+      "id": "eco-pulse",
+      "title": "EcoPulse News",
+      "description": "",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/EcoPulse_news_index.html",
+      "audiences": [
+        "middle",
+        "high",
+        "higher-learning",
+        "adult"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "environment"
+      ],
+      "skills": [
+        "media-literacy",
+        "environmental-literacy"
+      ],
+      "tags": [
+        "news",
+        "environment",
+        "current-info"
+      ],
+      "mentorEligible": true,
+      "minutes": 15,
+      "energy": "curious",
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true
+    },
+    {
+      "id": "interactive-news",
+      "title": "Interactive News Dashboard",
+      "description": "",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/interactive_news_index.html",
+      "audiences": [
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "research"
+      ],
+      "skills": [
+        "news-navigation",
+        "media-literacy"
+      ],
+      "tags": [
+        "news",
+        "dashboard",
+        "current-info"
+      ],
+      "mentorEligible": true,
+      "minutes": 20,
+      "energy": "focused",
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true
+    },
+    {
+      "id": "global-digest",
+      "title": "Global News Digest",
+      "description": "",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/global_news_digest_index.html",
+      "audiences": [
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "global-studies"
+      ],
+      "skills": [
+        "media-literacy",
+        "global-awareness"
+      ],
+      "tags": [
+        "news",
+        "global",
+        "current-info"
+      ],
+      "mentorEligible": true,
+      "minutes": 15,
+      "energy": "curious",
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true
+    },
+    {
+      "id": "live-research-news",
+      "title": "Live Research News",
+      "description": "",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/Live_Research_News_index.html",
+      "audiences": [
+        "high",
+        "higher-learning",
+        "adult"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "research"
+      ],
+      "skills": [
+        "research",
+        "source-comparison"
+      ],
+      "tags": [
+        "news",
+        "research",
+        "current-info"
+      ],
+      "mentorEligible": true,
+      "minutes": 20,
+      "energy": "focused",
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true
+    }
+  ],
+  "mentorNotes": "News resources must be treated as dynamic. Mentor should verify freshness and distinguish reporting, analysis, and opinion before summarizing."
+}
