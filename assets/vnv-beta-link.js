@@ -1,0 +1,10 @@
+/* Verve N Veda · Beta Program universal button widget · v1.2.0 */
+(() => {
+  "use strict";
+  const ID="vnvBetaProgramLink", STYLE_ID="vnvBetaProgramLinkStyles", BETA_URL="https://vervenveda.com/beta/";
+  if(document.getElementById(ID))return;
+  const safeSource=()=>{try{const host=String(location.hostname||"").replace(/[^a-z0-9.:-]/gi,"").slice(0,120);const path=String(location.pathname||"/").replace(/[\u0000-\u001f\u007f]/g,"").slice(0,240);return `${host}${path}`.slice(0,320)||"ecosystem";}catch{return "ecosystem"}};
+  const href=()=>`${BETA_URL}?source=${encodeURIComponent(safeSource())}`;
+  function mount(){if(document.getElementById(ID)||!document.body)return;if(!document.getElementById(STYLE_ID)){const s=document.createElement("style");s.id=STYLE_ID;s.textContent=`#${ID}{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:2147482000;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:8px 12px;border:1px solid rgba(183,147,77,.72);border-radius:999px;color:#f7efe0;background:rgba(15,25,37,.94);box-shadow:0 8px 24px rgba(0,0,0,.18);font:600 10px/1.2 "Avenir Next","Segoe UI",Arial,sans-serif;letter-spacing:.045em;cursor:pointer}#${ID}:hover{transform:translateY(-1px);border-color:#dfc48e;background:#152538}#${ID}:focus-visible{outline:3px solid #dfc48e;outline-offset:3px}#${ID} .vnv-beta-mark{font:600 15px/1 Georgia,serif;color:#dfc48e}@media print{#${ID}{display:none!important}}@media(prefers-reduced-motion:reduce){#${ID}{transition:none!important;transform:none!important}}`;document.head.append(s)}const b=document.createElement("button");b.id=ID;b.type="button";b.setAttribute("aria-label","Open the Verve N Veda Beta Program for this page");b.innerHTML='<span class="vnv-beta-mark" aria-hidden="true">β</span><span>Beta Program</span>';b.addEventListener("click",()=>{try{location.assign(href())}catch{location.href=BETA_URL}});document.body.append(b)}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",mount,{once:true});else mount();
+})();
