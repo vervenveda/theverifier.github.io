@@ -56,6 +56,7 @@ jobs:
               root / 'apps' / 'global_news_digest_index.html',
               root / 'apps' / 'interactive_news_index.html',
               root / 'apps' / 'education_news_index.html',
+              root / 'apps' / 'kids_news_network_index.html',
               root / 'apps' / 'live_news_index.html',
               root / 'apps' / 'news_feed_index.html',
               root / 'apps' / 'world_wire_index.html',
@@ -72,6 +73,7 @@ jobs:
               root / 'apps' / 'daily_digest_index.html',
               root / 'apps' / 'interactive_news_index.html',
               root / 'apps' / 'education_news_index.html',
+              root / 'apps' / 'kids_news_network_index.html',
           ]
           for path in hardened_pages:
               text = path.read_text(encoding='utf-8')
@@ -89,6 +91,12 @@ jobs:
           assert 'Spicy / Unusual' not in interactive, 'Sensationalism ranking must not return to the canonical interactive explorer'
           assert 'Kid-Safe' not in interactive, 'Canonical explorer must not overpromise a Kid-Safe guarantee'
           assert 'Sensitive Content Filter' in interactive, 'Canonical explorer must explain sensitive-content screening'
+
+          kids = (root / 'apps' / 'kids_news_network_index.html').read_text(encoding='utf-8')
+          assert 'Young Readers Newsroom' in kids, 'Youth surface must retain curated newsroom identity'
+          assert 'cfgWorker' not in kids and 'Worker URL' not in kids, 'Public youth page must not request a proxy worker URL'
+          assert 'cfgApod' not in kids and 'NASA APOD key' not in kids, 'Public youth page must not request an API key'
+          assert 'Kid-Safe' not in kids, 'Youth surface must not promise an automated Kid-Safe guarantee'
 
           print(f'Validated {len(sources)} canonical sources and {len(feeds)} configured feeds.')
           PY
@@ -111,6 +119,7 @@ jobs:
               'apps/daily_digest_index.html',
               'apps/interactive_news_index.html',
               'apps/education_news_index.html',
+              'apps/kids_news_network_index.html',
               'apps/Interactive_Live_ News_ Dashboard_index.html',
           ]
           for page in pages:
