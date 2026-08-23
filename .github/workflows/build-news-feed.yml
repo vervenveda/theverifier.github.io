@@ -62,7 +62,11 @@ jobs:
             echo "No generated feed changes to commit."
           else
             git commit -m "chore(news): refresh generated Verifier feed [skip beta-rollout]"
-            git pull --rebase origin "${GITHUB_REF_NAME}"
+            if [ "${GITHUB_REF_NAME}" = "main" ]; then
+              git pull --rebase origin main
+            else
+              git pull --rebase origin "${GITHUB_REF_NAME}"
+            fi
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
 
