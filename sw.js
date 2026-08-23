@@ -1,14 +1,17 @@
-/* The Verifier · offline application shell · v1.1.0
-   Caches only same-origin application assets. News/feed responses remain in IndexedDB
-   through the Local Browser Cloud and are not intercepted here. */
-const CACHE_NAME = "the-verifier-shell-v2";
+/* The Verifier · offline application shell · v1.2.0
+   Caches same-origin application code and stable directory data.
+   Generated news JSON is deliberately network-first and is NOT cache-first here;
+   user editions/history live in IndexedDB through the Local Browser Cloud. */
+const CACHE_NAME = "the-verifier-shell-v3";
 const SHELL = [
   "./",
   "./index.html",
   "./assets/verifier-safety.js",
   "./assets/verifier-local-cloud.js",
+  "./assets/verifier-news-data.js",
   "./data/sources.json",
   "./apps/daily_digest_index.html",
+  "./apps/Modern_News_Engine_index.html",
   "./apps/global_news_digest_index.html",
   "./apps/interactive_news_index.html",
   "./apps/education_news_index.html",
@@ -45,6 +48,10 @@ self.addEventListener("fetch", event => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // Generated current-news data must not become stale because of a cache-first shell.
+  // If the network is unavailable, the apps fall back to IndexedDB editions/history.
+  if (url.pathname.includes("/data/generated/")) return;
 
   if (request.mode === "navigate") {
     event.respondWith(
