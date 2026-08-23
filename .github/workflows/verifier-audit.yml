@@ -24,7 +24,7 @@ jobs:
       - name: Validate source registry and hardened surfaces
         run: |
           python - <<'PY'
-          import json, pathlib, re, sys
+          import json, pathlib, re
 
           root = pathlib.Path('.')
           registry_path = root / 'data' / 'sources.json'
@@ -44,15 +44,22 @@ jobs:
           assert len(feeds) >= 15, f'Expected at least 15 feed-capable sources, found {len(feeds)}'
           assert all(url.startswith('https://') for url in feeds), 'All configured feeds must use HTTPS'
 
+          manifest = json.loads((root / 'mentor-manifest.json').read_text(encoding='utf-8'))
+          resource_ids = {r.get('id') for r in manifest.get('resources', [])}
+          assert 'daily-top-30' in resource_ids, 'Mentor manifest is missing Daily Top 30'
+          assert 'global-source-directory' in resource_ids, 'Mentor manifest is missing canonical source directory'
+
           required = [
               root / 'assets' / 'verifier-safety.js',
               root / 'assets' / 'verifier-local-cloud.js',
               root / 'apps' / 'daily_digest_index.html',
               root / 'apps' / 'global_news_digest_index.html',
+              root / 'apps' / 'interactive_news_index.html',
               root / 'apps' / 'live_news_index.html',
               root / 'apps' / 'news_feed_index.html',
               root / 'apps' / 'world_wire_index.html',
               root / 'sw.js',
+              root / 'EDITORIAL_STANDARD.md',
           ]
           for path in required:
               assert path.exists(), f'Missing required file: {path}'
@@ -62,12 +69,12 @@ jobs:
               root / 'apps' / 'news_feed_index.html',
               root / 'apps' / 'world_wire_index.html',
               root / 'apps' / 'daily_digest_index.html',
+              root / 'apps' / 'interactive_news_index.html',
           ]
           for path in hardened_pages:
               text = path.read_text(encoding='utf-8')
               assert 'verifier-safety.js' in text, f'{path} must load the shared safety layer'
               assert '<meta name="viewport"' in text, f'{path} is missing viewport metadata'
-              # Guard against the old high-risk pattern: interpolating remote item fields directly into innerHTML.
               dangerous = re.findall(r'innerHTML\s*=\s*`[^`]*(?:item|article|it)\.(?:title|link|description|thumbnail|image)', text, flags=re.S)
               assert not dangerous, f'{path} appears to inject remote feed fields through innerHTML'
 
@@ -75,6 +82,11 @@ jobs:
           assert 'MAX_STORIES=30' in digest, 'Daily digest must retain the Top-30 limit'
           assert 'MAX_PER_SOURCE=2' in digest, 'Daily digest must retain source concentration limit'
           assert 'VerifierLocalCloud' in digest, 'Daily digest must use Local Browser Cloud persistence'
+
+          interactive = (root / 'apps' / 'interactive_news_index.html').read_text(encoding='utf-8')
+          assert 'Spicy / Unusual' not in interactive, 'Sensationalism ranking must not return to the canonical interactive explorer'
+          assert 'Kid-Safe' not in interactive, 'Canonical explorer must not overpromise a Kid-Safe guarantee'
+          assert 'Sensitive Content Filter' in interactive, 'Canonical explorer must explain sensitive-content screening'
 
           print(f'Validated {len(sources)} canonical sources and {len(feeds)} configured feeds.')
           PY
@@ -95,6 +107,8 @@ jobs:
               'apps/world_wire_index.html',
               'apps/global_news_digest_index.html',
               'apps/daily_digest_index.html',
+              'apps/interactive_news_index.html',
+              'apps/Interactive_Live_ News_ Dashboard_index.html',
           ]
           for page in pages:
               text = pathlib.Path(page).read_text(encoding='utf-8')
