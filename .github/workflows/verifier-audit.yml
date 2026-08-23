@@ -2,7 +2,7 @@ name: Verifier Integrity Audit
 
 on:
   push:
-    branches: [main, editorial-evidence-wave-3-2026-08-22]
+    branches: [main, editorial-evidence-loader-hotfix-2026-08-22]
   pull_request:
     branches: [main]
 
@@ -135,6 +135,9 @@ jobs:
           assert 'VerifierEditorialEvidence' in editorial_layer
           assert 'verifier-evidence-addendum' in editorial_layer
           assert 'safeExternalLink' in editorial_layer
+          assert 'ensureEvidenceRegistry' in editorial_layer, 'Editorial integrity layer must self-load evidence registry'
+          assert 'editorial-evidence-registry.js' in editorial_layer, 'Self-loader must point to evidence registry asset'
+          assert 'document.createElement("script")' in editorial_layer, 'Self-loader must be able to attach evidence registry without HTML mutation'
 
           evidence = (root / 'assets' / 'editorial-evidence-registry.js').read_text(encoding='utf-8')
           assert 'The Quiet Consensus No One Voted For' in evidence
@@ -166,7 +169,7 @@ jobs:
           assert 'The Quiet Consensus No One Voted For' in queue
           assert 'Do not mark an item complete solely because it carries the global Editorial / Opinion banner.' in queue
 
-          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, first-party news architecture, and article-level editorial correction infrastructure.')
+          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, first-party news architecture, article-level editorial correction infrastructure, and self-loading evidence deployment.')
           PY
 
       - name: Syntax-check Python feed builder
