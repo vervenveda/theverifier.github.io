@@ -1,7 +1,34 @@
-# Beta Index Coverage
+# Public Index Coverage
 
-- Added in this run: **0**
-- Already covered: **41**
+- Beta widget added in this run: **0**
+- Beta widget already covered: **42**
+- Homepage architecture extension added: **1**
+- Editorial integrity layer added to columns: **18**
 - Skipped: **0**
 
-Rule: visible public HTML filenames ending in `index.html` (including `_index.html` and common `inndex.html` typos) receive `/assets/vnv-beta-link.js`. The widget reports only public hostname + pathname; never learner/family IDs, answers, form values, query/hash, storage, report text, or credentials.
+Public visible index-style HTML receives the shared beta widget. The root Verifier homepage receives the non-destructive news-architecture extension. Column pages receive the public Editorial / Opinion integrity notice. No credentials, query/hash values, form values, learner/family data, answers, report text, or private storage are transmitted by these layers.
+
+## Homepage Extension Added
+
+- `index.html`
+
+## Editorial Integrity Added
+
+- `columns/animals_biodiversity_index.html`
+- `columns/arts_humanities_index.html`
+- `columns/corruption_index.html`
+- `columns/culture_religion_index.html`
+- `columns/debunked_index.html`
+- `columns/editors_choice_index.html`
+- `columns/education_index.html`
+- `columns/environment_index.html`
+- `columns/finance_index.html`
+- `columns/foreign_politics_index.html`
+- `columns/health_lifestyle_index.html`
+- `columns/immigration_index.html`
+- `columns/presidents_index.html`
+- `columns/science_tech_index.html`
+- `columns/sports_index.html`
+- `columns/universe_index.html`
+- `columns/us_politics_index.html`
+- `columns/world_conflict_index.html`
