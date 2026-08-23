@@ -1,88 +1,74 @@
 {
-  "version": 1,
+  "version": 2,
   "sourceId": "verve.verifier",
   "name": "The Verifier",
   "classification": "research-information",
   "mentorSearchable": true,
-  "audiences": [
-    "middle",
-    "high",
-    "higher-learning",
-    "adult",
-    "parent"
-  ],
-  "roles": [
-    "student",
-    "parent",
-    "educator"
-  ],
+  "audiences": ["middle", "high", "higher-learning", "adult", "parent"],
+  "roles": ["student", "parent", "educator"],
   "homepage": "https://vervenveda.com/theverifier.github.io/",
   "repository": "vervenveda/theverifier.github.io",
   "resources": [
     {
       "id": "verifier-home",
       "title": "The Verifier",
-      "description": "",
+      "description": "Public news, research, verification, editorial, and media-literacy portal.",
       "url": "https://vervenveda.com/theverifier.github.io/",
-      "audiences": [
-        "middle",
-        "high",
-        "higher-learning",
-        "adult",
-        "parent"
-      ],
-      "roles": [
-        "student",
-        "parent",
-        "educator"
-      ],
-      "domains": [
-        "news",
-        "research"
-      ],
-      "skills": [
-        "media-literacy",
-        "research"
-      ],
-      "tags": [
-        "news",
-        "research",
-        "current-info"
-      ],
+      "audiences": ["middle", "high", "higher-learning", "adult", "parent"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "research"],
+      "skills": ["media-literacy", "research"],
+      "tags": ["news", "research", "current-info"],
       "mentorEligible": true,
       "featured": true,
       "requiresFreshnessCheck": true,
       "dynamicContent": true
     },
     {
+      "id": "daily-top-30",
+      "title": "Daily Top 30",
+      "description": "A locally archived daily edition selected from configured public feeds using freshness, regional rotation, and source-diversity limits.",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/daily_digest_index.html",
+      "audiences": ["high", "higher-learning", "adult", "parent"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "global-studies", "research"],
+      "skills": ["media-literacy", "source-comparison", "global-awareness"],
+      "tags": ["news", "daily-edition", "global", "current-info", "local-first"],
+      "mentorEligible": true,
+      "featured": true,
+      "minutes": 20,
+      "energy": "focused",
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true,
+      "mentorCaution": "Edition inclusion is not a verification status. Open originals and compare independent evidence before presenting disputed claims as established fact."
+    },
+    {
+      "id": "global-source-directory",
+      "title": "Global Source Directory",
+      "description": "Canonical directory of Verifier news and research sources with region, language, topic, access, and feed configuration metadata.",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/global_news_digest_index.html",
+      "audiences": ["high", "higher-learning", "adult", "parent"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "global-studies", "research"],
+      "skills": ["media-literacy", "source-comparison", "global-awareness"],
+      "tags": ["news", "sources", "global", "provenance"],
+      "mentorEligible": true,
+      "minutes": 15,
+      "energy": "curious",
+      "requiresFreshnessCheck": false,
+      "dynamicContent": true,
+      "mentorCaution": "Source inclusion is not endorsement and does not imply that every article from the source is accurate."
+    },
+    {
       "id": "education-news",
       "title": "Education News",
-      "description": "",
+      "description": "Education-focused news discovery with local favorites, alerts, and reading tools.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/education_news_index.html",
-      "audiences": [
-        "middle",
-        "high",
-        "higher-learning",
-        "adult",
-        "parent"
-      ],
-      "roles": [
-        "student",
-        "parent",
-        "educator"
-      ],
-      "domains": [
-        "news",
-        "education"
-      ],
-      "skills": [
-        "media-literacy"
-      ],
-      "tags": [
-        "news",
-        "education",
-        "current-info"
-      ],
+      "audiences": ["middle", "high", "higher-learning", "adult", "parent"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "education"],
+      "skills": ["media-literacy"],
+      "tags": ["news", "education", "current-info"],
       "mentorEligible": true,
       "minutes": 15,
       "energy": "curious",
@@ -92,32 +78,13 @@
     {
       "id": "eco-pulse",
       "title": "EcoPulse News",
-      "description": "",
+      "description": "Environment and climate current-information surface.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/EcoPulse_news_index.html",
-      "audiences": [
-        "middle",
-        "high",
-        "higher-learning",
-        "adult"
-      ],
-      "roles": [
-        "student",
-        "parent",
-        "educator"
-      ],
-      "domains": [
-        "news",
-        "environment"
-      ],
-      "skills": [
-        "media-literacy",
-        "environmental-literacy"
-      ],
-      "tags": [
-        "news",
-        "environment",
-        "current-info"
-      ],
+      "audiences": ["middle", "high", "higher-learning", "adult"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "environment"],
+      "skills": ["media-literacy", "environmental-literacy"],
+      "tags": ["news", "environment", "current-info"],
       "mentorEligible": true,
       "minutes": 15,
       "energy": "curious",
@@ -127,32 +94,13 @@
     {
       "id": "interactive-news",
       "title": "Interactive News Dashboard",
-      "description": "",
+      "description": "Interactive current-news dashboard with filters, source views, and locally saved reading lists.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/interactive_news_index.html",
-      "audiences": [
-        "high",
-        "higher-learning",
-        "adult",
-        "parent"
-      ],
-      "roles": [
-        "student",
-        "parent",
-        "educator"
-      ],
-      "domains": [
-        "news",
-        "research"
-      ],
-      "skills": [
-        "news-navigation",
-        "media-literacy"
-      ],
-      "tags": [
-        "news",
-        "dashboard",
-        "current-info"
-      ],
+      "audiences": ["high", "higher-learning", "adult", "parent"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "research"],
+      "skills": ["news-navigation", "media-literacy"],
+      "tags": ["news", "dashboard", "current-info"],
       "mentorEligible": true,
       "minutes": 20,
       "energy": "focused",
@@ -160,68 +108,15 @@
       "dynamicContent": true
     },
     {
-      "id": "global-digest",
-      "title": "Global News Digest",
-      "description": "",
-      "url": "https://vervenveda.com/theverifier.github.io/apps/global_news_digest_index.html",
-      "audiences": [
-        "high",
-        "higher-learning",
-        "adult",
-        "parent"
-      ],
-      "roles": [
-        "student",
-        "parent",
-        "educator"
-      ],
-      "domains": [
-        "news",
-        "global-studies"
-      ],
-      "skills": [
-        "media-literacy",
-        "global-awareness"
-      ],
-      "tags": [
-        "news",
-        "global",
-        "current-info"
-      ],
-      "mentorEligible": true,
-      "minutes": 15,
-      "energy": "curious",
-      "requiresFreshnessCheck": true,
-      "dynamicContent": true
-    },
-    {
       "id": "live-research-news",
       "title": "Live Research News",
-      "description": "",
+      "description": "Research-oriented current-information feed for source comparison and follow-up investigation.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/Live_Research_News_index.html",
-      "audiences": [
-        "high",
-        "higher-learning",
-        "adult"
-      ],
-      "roles": [
-        "student",
-        "parent",
-        "educator"
-      ],
-      "domains": [
-        "news",
-        "research"
-      ],
-      "skills": [
-        "research",
-        "source-comparison"
-      ],
-      "tags": [
-        "news",
-        "research",
-        "current-info"
-      ],
+      "audiences": ["high", "higher-learning", "adult"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "research"],
+      "skills": ["research", "source-comparison"],
+      "tags": ["news", "research", "current-info"],
       "mentorEligible": true,
       "minutes": 20,
       "energy": "focused",
@@ -229,5 +124,5 @@
       "dynamicContent": true
     }
   ],
-  "mentorNotes": "News resources must be treated as dynamic. Mentor should verify freshness and distinguish reporting, analysis, and opinion before summarizing."
+  "mentorNotes": "News resources are dynamic. Verify freshness, identify event date separately from publication date, distinguish reporting from analysis/opinion/advocacy, and do not treat feed inclusion or automated ranking as a truth determination."
 }
