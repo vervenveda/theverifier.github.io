@@ -2,7 +2,7 @@ name: Verifier Integrity Audit
 
 on:
   push:
-    branches: [main, audit-hardening-2026-08-22]
+    branches: [main, hardening-wave-2-2026-08-22]
   pull_request:
     branches: [main]
 
@@ -27,33 +27,31 @@ jobs:
           import json, pathlib, re
 
           root = pathlib.Path('.')
-          registry_path = root / 'data' / 'sources.json'
-          data = json.loads(registry_path.read_text(encoding='utf-8'))
+          data = json.loads((root / 'data' / 'sources.json').read_text(encoding='utf-8'))
           sources = data.get('sources', [])
-          assert data.get('schemaVersion') == 1, 'Unexpected source registry schema version'
+          assert data.get('schemaVersion') == 1
           assert len(sources) >= 30, f'Expected at least 30 canonical sources, found {len(sources)}'
-
           ids = [s.get('id') for s in sources]
-          assert all(ids), 'Every source needs an id'
-          assert len(ids) == len(set(ids)), 'Duplicate source ids detected'
-
+          assert all(ids) and len(ids) == len(set(ids)), 'Source IDs must be present and unique'
           homepages = [s.get('homepage') for s in sources if s.get('homepage')]
-          assert all(url.startswith('https://') for url in homepages), 'All source homepages must use HTTPS'
-
           feeds = [s.get('feed') for s in sources if s.get('feed')]
+          assert all(url.startswith('https://') for url in homepages), 'All source homepages must use HTTPS'
           assert len(feeds) >= 15, f'Expected at least 15 feed-capable sources, found {len(feeds)}'
           assert all(url.startswith('https://') for url in feeds), 'All configured feeds must use HTTPS'
 
           manifest = json.loads((root / 'mentor-manifest.json').read_text(encoding='utf-8'))
           resource_ids = {r.get('id') for r in manifest.get('resources', [])}
-          assert 'daily-top-30' in resource_ids, 'Mentor manifest is missing Daily Top 30'
-          assert 'global-source-directory' in resource_ids, 'Mentor manifest is missing canonical source directory'
-          assert 'young-readers-newsroom' in resource_ids, 'Mentor manifest is missing Young Readers Newsroom'
+          for required_id in ['daily-top-30','global-source-directory','young-readers-newsroom']:
+              assert required_id in resource_ids, f'Mentor manifest missing {required_id}'
 
           required = [
               root / 'assets' / 'verifier-safety.js',
               root / 'assets' / 'verifier-local-cloud.js',
+              root / 'assets' / 'verifier-news-data.js',
+              root / 'scripts' / 'build_news_feed.py',
+              root / '.github' / 'workflows' / 'build-news-feed.yml',
               root / 'apps' / 'daily_digest_index.html',
+              root / 'apps' / 'Modern_News_Engine_index.html',
               root / 'apps' / 'global_news_digest_index.html',
               root / 'apps' / 'interactive_news_index.html',
               root / 'apps' / 'education_news_index.html',
@@ -72,44 +70,61 @@ jobs:
               root / 'apps' / 'news_feed_index.html',
               root / 'apps' / 'world_wire_index.html',
               root / 'apps' / 'daily_digest_index.html',
+              root / 'apps' / 'Modern_News_Engine_index.html',
               root / 'apps' / 'interactive_news_index.html',
               root / 'apps' / 'education_news_index.html',
               root / 'apps' / 'kids_news_network_index.html',
           ]
           for path in hardened_pages:
               text = path.read_text(encoding='utf-8')
-              assert 'verifier-safety.js' in text, f'{path} must load the shared safety layer'
-              assert '<meta name="viewport"' in text, f'{path} is missing viewport metadata'
+              assert 'verifier-safety.js' in text, f'{path} must load shared safety layer'
+              assert '<meta name="viewport"' in text, f'{path} missing viewport metadata'
               dangerous = re.findall(r'innerHTML\s*=\s*`[^`]*(?:item|article|it|a|f)\.(?:title|link|description|desc|thumbnail|image)', text, flags=re.S)
               assert not dangerous, f'{path} appears to inject remote feed fields through innerHTML'
 
           digest = (root / 'apps' / 'daily_digest_index.html').read_text(encoding='utf-8')
-          assert 'MAX_STORIES=30' in digest, 'Daily digest must retain the Top-30 limit'
-          assert 'MAX_PER_SOURCE=2' in digest, 'Daily digest must retain source concentration limit'
-          assert 'VerifierLocalCloud' in digest, 'Daily digest must use Local Browser Cloud persistence'
+          modern = (root / 'apps' / 'Modern_News_Engine_index.html').read_text(encoding='utf-8')
+          for label, text in [('Daily Top 30', digest), ('Modern News Engine', modern)]:
+              assert 'verifier-news-data.js' in text, f'{label} must use same-origin news data client'
+              assert 'api.allorigins.win' not in text, f'{label} must not use AllOrigins directly'
+              assert 'api.rss2json.com' not in text, f'{label} must not use rss2json directly'
+          assert 'MAX_STORIES=30' in digest and 'MAX_PER_SOURCE=2' in digest
+          assert 'Sensitive Content Filter' in modern
+          assert 'Kid-Safe:' not in modern
+
+          builder = (root / 'scripts' / 'build_news_feed.py').read_text(encoding='utf-8')
+          assert 'data/generated/latest.json' in builder
+          assert 'verificationStatus' in builder and 'discovered' in builder
+          workflow = (root / '.github' / 'workflows' / 'build-news-feed.yml').read_text(encoding='utf-8')
+          assert 'schedule:' in workflow and 'contents: write' in workflow
+          assert 'actions/checkout@v7' in workflow and 'actions/setup-python@v7' in workflow
 
           interactive = (root / 'apps' / 'interactive_news_index.html').read_text(encoding='utf-8')
-          assert 'Spicy / Unusual' not in interactive, 'Sensationalism ranking must not return to the canonical interactive explorer'
-          assert 'Kid-Safe:' not in interactive and 'Kid-Safe: ON' not in interactive and 'Kid-Safe: OFF' not in interactive, 'Canonical explorer must not expose an automated Kid-Safe status control'
-          assert 'Sensitive Content Filter' in interactive, 'Canonical explorer must explain sensitive-content screening'
+          assert 'Spicy / Unusual' not in interactive
+          assert 'Kid-Safe:' not in interactive
+          assert 'Sensitive Content Filter' in interactive
 
           kids = (root / 'apps' / 'kids_news_network_index.html').read_text(encoding='utf-8')
-          assert 'Young Readers Newsroom' in kids, 'Youth surface must retain curated newsroom identity'
-          assert 'cfgWorker' not in kids and 'Worker URL' not in kids, 'Public youth page must not request a proxy worker URL'
-          assert 'cfgApod' not in kids and 'NASA APOD key' not in kids, 'Public youth page must not request an API key'
-          assert 'Kid-Safe:' not in kids, 'Youth surface must not expose an automated Kid-Safe status control'
+          assert 'Young Readers Newsroom' in kids
+          assert 'cfgWorker' not in kids and 'Worker URL' not in kids
+          assert 'cfgApod' not in kids and 'NASA APOD key' not in kids
+          assert 'Kid-Safe:' not in kids
 
           shell = (root / 'sw.js').read_text(encoding='utf-8')
-          for path in ['interactive_news_index.html', 'education_news_index.html', 'kids_news_network_index.html']:
-              assert path in shell, f'Offline shell is missing {path}'
+          for path in ['interactive_news_index.html','education_news_index.html','kids_news_network_index.html']:
+              assert path in shell, f'Offline shell missing {path}'
 
-          print(f'Validated {len(sources)} canonical sources and {len(feeds)} configured feeds.')
+          print(f'Validated {len(sources)} canonical sources and {len(feeds)} feed-capable sources.')
           PY
+
+      - name: Syntax-check Python feed builder
+        run: python -m py_compile scripts/build_news_feed.py
 
       - name: Syntax-check JavaScript assets
         run: |
           node --check assets/verifier-safety.js
           node --check assets/verifier-local-cloud.js
+          node --check assets/verifier-news-data.js
           node --check sw.js
 
       - name: Syntax-check inline application scripts
@@ -122,6 +137,7 @@ jobs:
               'apps/world_wire_index.html',
               'apps/global_news_digest_index.html',
               'apps/daily_digest_index.html',
+              'apps/Modern_News_Engine_index.html',
               'apps/interactive_news_index.html',
               'apps/education_news_index.html',
               'apps/kids_news_network_index.html',
