@@ -54,7 +54,6 @@ jobs:
           PY
 
       - name: Commit generated feed when changed
-        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name "The Verifier Feed Builder"
           git config user.email "actions@users.noreply.github.com"
@@ -63,10 +62,10 @@ jobs:
             echo "No generated feed changes to commit."
           else
             git commit -m "chore(news): refresh generated Verifier feed [skip beta-rollout]"
-            git pull --rebase origin main
-            git push origin HEAD:main
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
 
-      - name: Branch smoke-test note
+      - name: Smoke-test boundary
         if: github.ref != 'refs/heads/main'
-        run: echo "Live publisher-feed retrieval and generated payload validation passed; branch runs do not publish generated data."
+        run: echo "Branch smoke test published only generated JSON to ${GITHUB_REF_NAME}; generated-data paths do not retrigger this workflow."
