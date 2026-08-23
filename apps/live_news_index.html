@@ -2,152 +2,67 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ultra-Polished Live News Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Verifier — Live News Desk</title>
+<meta name="description" content="A source-transparent live news desk for comparing current reporting across public feeds.">
 <style>
-  body { font-family: Arial, sans-serif; margin:0; background:#f7f9fc; color:#333; }
-  header { background:#1f2937; color:#fff; padding:1rem; text-align:center; }
-  main { max-width:1200px; margin:2rem auto; padding:0 1rem; }
-  h1 { margin:0; }
-  .top-story { background:#1e3a8a; color:#fff; padding:1rem; border-radius:8px; margin-bottom:2rem; }
-  .top-story h2 { margin:0 0 0.5rem 0; font-size:1.2rem; }
-  .issue { margin-bottom:2rem; border-radius:8px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
-  .summary-card { padding:1rem; border-left:6px solid; margin-bottom:1rem; cursor:pointer; }
-  .summary-card h3 { margin:0.5rem 0; font-size:1rem; display:flex; align-items:center; }
-  .summary-card h3 img { width:60px; height:40px; object-fit:cover; margin-right:0.5rem; border-radius:4px; }
-  .issue-content { display:none; padding:1rem; border-top:1px solid #e5e7eb; }
-  .feed-item { border-bottom:1px solid #e5e7eb; padding:0.5rem 0; display:flex; align-items:flex-start; }
-  .feed-item:last-child { border-bottom:none; }
-  .feed-item img { width:100px; height:60px; object-fit:cover; margin-right:1rem; border-radius:4px; }
-  .feed-item div { flex:1; }
-  .feed-item h4 { margin:0; font-size:1rem; }
-  .feed-item p { margin:0.2rem 0 0 0; font-size:0.85rem; color:#555; }
-  a { color:#1e40af; text-decoration:none; }
-  a:hover { text-decoration:underline; }
+:root{--bg:#f5f7fa;--card:#fff;--ink:#172033;--muted:#64748b;--nav:#0f3d64;--line:#dce4ee;--gold:#d5a93d;--ok:#0f766e;--warn:#a16207;--radius:14px;--shadow:0 10px 28px rgba(15,31,50,.09)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}a{color:#1d4ed8}button,input,select{font:inherit}.mast{background:var(--nav);color:#fff;padding:22px clamp(16px,4vw,42px)}.mast-wrap{max-width:1180px;margin:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}.mast h1{margin:0;font-size:clamp(1.7rem,4vw,2.8rem)}.mast p{margin:.35rem 0 0;color:#dbeafe;max-width:760px}.status{display:flex;gap:8px;flex-wrap:wrap}.pill{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid rgba(255,255,255,.26);border-radius:999px;font-size:.78rem;background:rgba(255,255,255,.08)}main{max-width:1180px;margin:auto;padding:20px 16px 44px}.notice{background:#fff9e7;border:1px solid #ead7a1;border-radius:12px;padding:11px 13px;color:#674c12;font-size:.88rem}.toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 210px auto;gap:10px;margin:16px 0}.toolbar input,.toolbar select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink)}.btn{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;color:var(--ink);cursor:pointer;font-weight:750}.btn.primary{background:var(--nav);color:#fff;border-color:var(--nav)}.btn:hover{transform:translateY(-1px)}.top{background:linear-gradient(135deg,#0f3d64,#172b49);color:#fff;border-radius:var(--radius);padding:20px;margin:4px 0 18px;box-shadow:var(--shadow)}.top small{color:#bfdbfe}.top h2{font-size:clamp(1.25rem,3vw,2rem);margin:.35rem 0}.top p{color:#dbeafe;margin:.35rem 0}.top a{color:#fff}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.issue{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}.issue-head{padding:15px 16px;border-bottom:1px solid var(--line)}.issue-head h2{font-size:1.05rem;margin:0;color:var(--nav)}.issue-head p{font-size:.84rem;color:var(--muted);margin:.3rem 0 0}.story{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:14px 16px;border-bottom:1px solid #edf1f5}.story:last-child{border-bottom:0}.thumb{width:96px;height:68px;border-radius:9px;background:#e8edf3;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover;display:block}.story h3{font-size:.96rem;line-height:1.25;margin:0}.story p{font-size:.82rem;color:var(--muted);margin:.3rem 0}.meta{font-size:.74rem;color:var(--muted);margin:.2rem 0}.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.actions a,.actions button{font-size:.74rem;padding:5px 8px;border:1px solid var(--line);border-radius:999px;background:#f8fafc;color:var(--nav);font-weight:700;text-decoration:none;cursor:pointer}.empty{padding:18px;color:var(--muted)}.source-note{margin-top:18px;color:var(--muted);font-size:.8rem}.drawer{position:fixed;inset:0 0 0 auto;width:min(540px,94vw);background:#fff;border-left:1px solid var(--line);box-shadow:-15px 0 35px rgba(0,0,0,.18);z-index:80;transform:translateX(105%);transition:.2s ease;display:flex;flex-direction:column}.drawer.open{transform:none}.drawer-head{background:var(--nav);color:#fff;padding:16px;display:flex;justify-content:space-between;gap:12px}.drawer-head h2{margin:0;font-size:1.15rem}.drawer-body{padding:16px;overflow:auto}.verify-box{border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:12px}.verify-box h3{margin:0 0 8px;font-size:.95rem}.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:70;display:none}.backdrop.open{display:block}@media(max-width:760px){.toolbar{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.story{grid-template-columns:1fr}.thumb{width:100%;height:160px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}.btn:hover{transform:none}}
 </style>
+<script src="../assets/verifier-safety.js"></script>
 </head>
 <body>
-<header>
-  <h1> Live News Dashboard</h1>
-  <p>Top stories and live news across 10 major issues</p>
-</header>
-<main id="dashboard">
-  <div id="top-story" class="top-story"><p>Loading top story...</p></div>
+<header class="mast"><div class="mast-wrap"><div><h1>The Verifier · Live News Desk</h1><p>Current public-feed reporting organized for comparison. Headlines are source material, not automatic verification.</p></div><div class="status"><span class="pill" id="feedState">Feeds: starting</span><span class="pill" id="storyCount">Stories: 0</span></div></div></header>
+<main>
+<div class="notice"><strong>Verification rule:</strong> The presence of a story in this feed means a configured source published it. Use <em>Verify</em> to compare coverage and seek primary records before treating a disputed claim as established fact.</div>
+<div class="toolbar"><input id="search" type="search" placeholder="Search current stories…" aria-label="Search current stories"><select id="issueFilter" aria-label="Filter by issue"><option value="all">All issues</option></select><button class="btn primary" id="refresh" type="button">Refresh Feeds</button></div>
+<section class="top" id="topStory" aria-live="polite"><small>TOP CURRENT ITEM</small><h2>Loading current reporting…</h2><p>Checking configured public feeds.</p></section>
+<section class="grid" id="grid"></section>
+<p class="source-note">Feed retrieval currently uses public RSS interoperability services because this static GitHub Pages application has no private server. Cached stories remain on this device only. A first-party ingestion service is the planned production architecture.</p>
 </main>
-
+<div class="backdrop" id="backdrop"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Verification tools"><div class="drawer-head"><div><h2>Verify This Story</h2><small>Compare reporting and primary records</small></div><button class="btn" id="closeDrawer" type="button">Close</button></div><div class="drawer-body" id="drawerBody"></div></aside>
 <script>
-const issues = [
-  { title: "Climate Change and Extreme Weather", color:"#16a34a", summary:"Rising global temperatures and extreme weather events demand urgent action.", sources:["https://www.ipcc.ch/rss.xml","https://www.un.org/en/climatechange/news/feed"] },
-  { title: "AI and Automation Ethics", color:"#f59e0b", summary:"AI raises ethical questions and societal impact that require careful consideration.", sources:["https://www.technologyreview.com/feed/","https://www.weforum.org/rss/"] },
-  { title: "Global Economic Inequality", color:"#ef4444", summary:"Economic disparities continue to widen globally, highlighting systemic challenges.", sources:["https://www.worldbank.org/en/news/press-release/rss","https://www.imf.org/en/News/Feed"] },
-  { title: "Book Bans and Intellectual Freedom", color:"#3b82f6", summary:"Censorship and book bans threaten intellectual freedom worldwide.", sources:["https://www.ala.org/news/rss.xml","https://pen.org/feed/"] },
-  { title: "Gene Editing and Human Enhancement", color:"#8b5cf6", summary:"CRISPR advances raise ethical questions about human enhancement.", sources:["https://www.nationalacademies.org/news/rss.xml","https://www.nature.com/subjects/genome-editing.rss"] },
-  { title: "Social Media, Misinformation, and Free Speech", color:"#10b981", summary:"Misinformation spreads rapidly online, challenging societal responsibility.", sources:["https://www.pewresearch.org/feed/","https://www.eff.org/rss.xml"] },
-  { title: "Transgender Athletes and Fairness in Sports", color:"#f97316", summary:"Debates over fairness and inclusion continue in competitive sports.", sources:["https://olympics.com/rss.xml","https://www.nbcnews.com/section/olympics/rss.xml"] },
-  { title: "Cancel Culture and Public Accountability", color:"#ec4899", summary:"Public shaming and cancel culture raise questions about accountability and justice.", sources:["https://www.theguardian.com/world/rss","https://www.nytimes.com/svc/collections/rss/"] },
-  { title: "Labor Rights and the Gig Economy", color:"#6366f1", summary:"Gig economy workers fight for fair compensation and protections.", sources:["https://www.economicpolicyinstitute.org/feed","https://www.ft.com/?format=rss"] },
-  { title: "Global Health and Pandemic Preparedness", color:"#0ea5e9", summary:"Global health threats highlight the need for coordinated pandemic preparedness.", sources:["https://www.who.int/feeds/entity/csr/don/en/rss.xml","https://www.cidrap.umn.edu/rss.xml"] }
+(() => {
+"use strict";
+const S = window.VerifierSafety;
+if(!S){ document.getElementById("feedState").textContent="Safety layer unavailable"; return; }
+const storage=S.safeStorage("verifier-live-news-v3");
+const CACHE_KEY="feed-cache";
+const MAX_CACHE_AGE=6*60*60*1000;
+const SOURCES=[
+ {id:"bbc-world",name:"BBC World",issue:"World",url:"https://feeds.bbci.co.uk/news/world/rss.xml"},
+ {id:"guardian-world",name:"The Guardian World",issue:"World",url:"https://www.theguardian.com/world/rss"},
+ {id:"aljazeera",name:"Al Jazeera",issue:"World",url:"https://www.aljazeera.com/xml/rss/all.xml"},
+ {id:"npr",name:"NPR",issue:"United States",url:"https://feeds.npr.org/1001/rss.xml"},
+ {id:"pbs",name:"PBS NewsHour",issue:"United States",url:"https://www.pbs.org/newshour/feeds/rss/headlines"},
+ {id:"ft",name:"Financial Times",issue:"Economy",url:"https://www.ft.com/?format=rss"},
+ {id:"bbc-science",name:"BBC Science & Environment",issue:"Science & Climate",url:"https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"},
+ {id:"nasa",name:"NASA",issue:"Science & Climate",url:"https://www.nasa.gov/rss/dyn/breaking_news.rss"},
+ {id:"pew",name:"Pew Research Center",issue:"Media & Society",url:"https://www.pewresearch.org/feed/"},
+ {id:"eff",name:"Electronic Frontier Foundation",issue:"Rights & Technology",url:"https://www.eff.org/rss.xml"}
 ];
+let articles=[];
+const $=id=>document.getElementById(id);
+const issueFilter=$("issueFilter"), search=$("search"), grid=$("grid");
+[...new Set(SOURCES.map(x=>x.issue))].sort().forEach(issue=>{const o=document.createElement("option");o.value=issue;o.textContent=issue;issueFilter.append(o)});
 
-const dashboard = document.getElementById('dashboard');
-const topStoryDiv = document.getElementById('top-story');
-
-// --- Helper: fetch RSS via rss2json ---
-async function fetchRSS(url) {
-  try {
-    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
-    const data = await res.json();
-    return data.items.slice(0,5);
-  } catch(e) {
-    console.error("RSS fetch error:",e);
-    return [];
-  }
-}
-
-// --- Load dashboard ---
-async function loadDashboard() {
-  let topStorySet = false;
-
-  for(const issue of issues){
-    const div = document.createElement('div');
-    div.className = 'issue';
-    
-    // Fetch news for issue
-    let news = [];
-    for(const src of issue.sources){
-      const items = await fetchRSS(src);
-      news = news.concat(items);
-    }
-    if(news.length===0) news=[{title:"No news available", link:"#", pubDate:"", description:""}];
-    
-    // Top 1-2 stories for summary card
-    const summaryHTML = news.slice(0,2).map(item=>{
-      const img = item.thumbnail || item.enclosure?.link || 'https://via.placeholder.com/60x40?text=No+Image';
-      const date = item.pubDate ? new Date(item.pubDate).toLocaleDateString() : '';
-      return `<h3><img loading="lazy" src="${img}" alt="img"><a href="${item.link}" target="_blank">${item.title}</a></h3><p style="font-size:0.8rem; color:#555;">${date}</p>`;
-    }).join("");
-
-    div.innerHTML = `
-      <div class="summary-card" style="border-left-color:${issue.color}">
-        <p>${issue.summary}</p>
-        ${summaryHTML}
-        <span class="read-more">View Full Feed ▼</span>
-      </div>
-      <div class="issue-content"></div>
-    `;
-    dashboard.appendChild(div);
-
-    const summaryCard = div.querySelector('.summary-card');
-    const contentDiv = div.querySelector('.issue-content');
-    const readMore = div.querySelector('.read-more');
-
-    readMore.addEventListener('click', ()=>{
-      const visible = contentDiv.style.display==='block';
-      contentDiv.style.display = visible?'none':'block';
-      readMore.textContent = visible?'View Full Feed ▼':'Hide Full Feed ▲';
-    });
-
-    // Fill full feed
-    contentDiv.innerHTML = "";
-    news.forEach(item=>{
-      const img = item.thumbnail || item.enclosure?.link || 'https://via.placeholder.com/100x60?text=No+Image';
-      const date = item.pubDate ? new Date(item.pubDate).toLocaleString() : '';
-      const feedItem = document.createElement('div');
-      feedItem.className = 'feed-item';
-      feedItem.innerHTML = `
-        <img loading="lazy" src="${img}" alt="img">
-        <div>
-          <h4><a href="${item.link}" target="_blank">${item.title}</a></h4>
-          <p>${date}</p>
-          <p>${item.description || ""}</p>
-        </div>
-      `;
-      contentDiv.appendChild(feedItem);
-    });
-
-    // Set top story (first story from first issue)
-    if(!topStorySet && news.length>0){
-      const item = news[0];
-      const img = item.thumbnail || item.enclosure?.link || 'https://via.placeholder.com/150x80?text=No+Image';
-      const date = item.pubDate ? new Date(item.pubDate).toLocaleString() : '';
-      topStoryDiv.innerHTML = `
-        <h2>Top Story: <a href="${item.link}" target="_blank">${item.title}</a></h2>
-        <p>${date}</p>
-        <img loading="lazy" src="${img}" alt="img" style="width:100%; max-height:200px; object-fit:cover; border-radius:6px; margin-top:0.5rem;">
-        <p>${item.description || ""}</p>
-      `;
-      topStorySet = true;
-    }
-  }
-}
-
-// --- Auto-refresh daily ---
-function dailyRefresh(){
-  loadDashboard();
-  setInterval(loadDashboard,24*60*60*1000);
-}
-
-dailyRefresh();
+async function fetchText(url,timeout=12000){const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{signal:c.signal,cache:"no-store"});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.text()}finally{clearTimeout(t)}}
+function parseXML(xml,src){const doc=new DOMParser().parseFromString(xml,"text/xml");if(doc.querySelector("parsererror"))throw new Error("Invalid XML");let nodes=[...doc.querySelectorAll("item")];let atom=false;if(!nodes.length){nodes=[...doc.querySelectorAll("entry")];atom=true}return nodes.slice(0,8).map(node=>{let link="";if(atom){const l=node.querySelector("link[rel='alternate']")||node.querySelector("link");link=l?.getAttribute("href")||""}else{link=node.querySelector("link")?.textContent||""}const enc=node.querySelector("enclosure[url]")?.getAttribute("url")||"";return S.normalizeArticle({title:node.querySelector("title")?.textContent||"Untitled",link,description:node.querySelector("description")?.textContent||node.querySelector("summary")?.textContent||node.querySelector("content")?.textContent||"",pubDate:node.querySelector("pubDate")?.textContent||node.querySelector("published")?.textContent||node.querySelector("updated")?.textContent||"",image:enc},{name:src.name,category:src.issue})})}
+async function fetchSource(src){const allOrigins="https://api.allorigins.win/raw?url="+encodeURIComponent(src.url);try{return parseXML(await fetchText(allOrigins),src)}catch(first){try{const raw=await fetchText("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(src.url));const data=JSON.parse(raw);if(!Array.isArray(data.items))throw new Error("No feed items");return data.items.slice(0,8).map(item=>S.normalizeArticle(item,{name:src.name,category:src.issue}))}catch(second){console.warn("Feed unavailable",src.name,first,second);return[]}}}
+function dateMs(a){const n=Date.parse(a.pubDate||"");return Number.isFinite(n)?n:0}
+function filtered(){const q=search.value.trim().toLowerCase(),issue=issueFilter.value;return articles.filter(a=>(issue==="all"||a.category===issue)&&(!q||`${a.title} ${a.description} ${a.source}`.toLowerCase().includes(q)))}
+function makeLink(label,url){const a=document.createElement("a");a.textContent=label;if(!S.externalLink(a,url)){a.remove();return null}return a}
+function storyNode(a){const wrap=document.createElement("article");wrap.className="story";const thumb=document.createElement("div");thumb.className="thumb";if(a.image){const img=document.createElement("img");img.alt="";S.image(img,a.image);thumb.append(img)}const body=document.createElement("div");const h=document.createElement("h3");h.textContent=a.title;const meta=document.createElement("div");meta.className="meta";meta.textContent=[a.source,a.pubDate?new Date(a.pubDate).toLocaleString():"Undated"].join(" · ");const p=document.createElement("p");p.textContent=(a.description||"No summary supplied by the source.").slice(0,300);const actions=document.createElement("div");actions.className="actions";const open=makeLink("Open source",a.link);if(open)actions.append(open);const verify=document.createElement("button");verify.type="button";verify.textContent="Verify";verify.addEventListener("click",()=>openVerify(a));actions.append(verify);body.append(h,meta,p,actions);wrap.append(thumb,body);return wrap}
+function renderTop(list){const box=$("topStory");box.replaceChildren();const label=document.createElement("small");label.textContent="TOP CURRENT ITEM";const h=document.createElement("h2");const p=document.createElement("p");if(!list.length){h.textContent="No stories match the current filters.";p.textContent="Clear filters or refresh feeds.";box.append(label,h,p);return}const a=list[0];h.textContent=a.title;p.textContent=`${a.source} · ${a.pubDate?new Date(a.pubDate).toLocaleString():"Undated"}`;const actions=document.createElement("div");actions.className="actions";const open=makeLink("Open source",a.link);if(open)actions.append(open);const verify=document.createElement("button");verify.type="button";verify.textContent="Verify";verify.addEventListener("click",()=>openVerify(a));actions.append(verify);box.append(label,h,p,actions)}
+function render(){const list=filtered().sort((a,b)=>dateMs(b)-dateMs(a));$("storyCount").textContent=`Stories: ${list.length}`;renderTop(list);grid.replaceChildren();const groups=new Map();list.forEach(a=>{if(!groups.has(a.category))groups.set(a.category,[]);groups.get(a.category).push(a)});if(!groups.size){const e=document.createElement("div");e.className="issue empty";e.textContent="No stories match the current filters.";grid.append(e);return}for(const [issue,items] of groups){const section=document.createElement("section");section.className="issue";const head=document.createElement("div");head.className="issue-head";const h=document.createElement("h2");h.textContent=issue;const p=document.createElement("p");p.textContent=`${items.length} current item${items.length===1?"":"s"}`;head.append(h,p);section.append(head);items.slice(0,8).forEach(a=>section.append(storyNode(a)));grid.append(section)}}
+function verifyExternal(label,url){const a=makeLink(label,url);if(a)a.className="btn";return a}
+function box(title,links){const d=document.createElement("section");d.className="verify-box";const h=document.createElement("h3");h.textContent=title;const actions=document.createElement("div");actions.className="actions";links.forEach(([label,url])=>{const a=verifyExternal(label,url);if(a)actions.append(a)});d.append(h,actions);return d}
+function openVerify(a){const body=$("drawerBody");body.replaceChildren();const title=document.createElement("section");title.className="verify-box";const h=document.createElement("h3");h.textContent=a.title;const p=document.createElement("p");p.textContent=`Source: ${a.source}`;title.append(h,p);body.append(title);const q=encodeURIComponent(`"${a.title}"`);body.append(box("Compare Coverage",[["Google News",`https://news.google.com/search?q=${q}`],["Reuters Search",`https://www.reuters.com/site-search/?query=${q}`],["AP Search",`https://apnews.com/search?q=${q}`],["BBC Search",`https://www.bbc.co.uk/search?q=${q}`]]));body.append(box("Primary Records",[["UN",`https://www.google.com/search?q=${q}+site%3Aun.org`],["Congress.gov",`https://www.congress.gov/search?q=${q}`],["Federal Register",`https://www.federalregister.gov/documents/search?conditions%5Bterm%5D=${q}`],["PubMed",`https://pubmed.ncbi.nlm.nih.gov/?term=${q}`]]));body.append(box("Fact Checking",[["AP Fact Check","https://apnews.com/hub/fact-checking"],["Reuters Fact Check","https://www.reuters.com/fact-check/"],["FactCheck.org","https://www.factcheck.org/"],["Full Fact","https://fullfact.org/"]]));$("drawer").classList.add("open");$("backdrop").classList.add("open");$("drawer").setAttribute("aria-hidden","false")}
+function closeDrawer(){$("drawer").classList.remove("open");$("backdrop").classList.remove("open");$("drawer").setAttribute("aria-hidden","true")}
+async function load(force=false){$("feedState").textContent="Feeds: loading";const cache=storage.get(CACHE_KEY,null);if(!force&&cache?.savedAt&&Array.isArray(cache.items)&&Date.now()-cache.savedAt<MAX_CACHE_AGE){articles=cache.items.map(x=>S.normalizeArticle(x,{name:x.source,category:x.category}));$("feedState").textContent="Feeds: cached";render()}const results=await Promise.allSettled(SOURCES.map(fetchSource));const fresh=results.flatMap(r=>r.status==="fulfilled"?r.value:[]);if(fresh.length){const seen=new Set();articles=fresh.filter(a=>{const key=`${a.link}::${a.title}`;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>dateMs(b)-dateMs(a));storage.set(CACHE_KEY,{savedAt:Date.now(),items:articles});$("feedState").textContent=`Feeds: live ${new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}`;render()}else if(cache?.items?.length){articles=cache.items.map(x=>S.normalizeArticle(x,{name:x.source,category:x.category}));$("feedState").textContent="Feeds: cache fallback";render()}else{$("feedState").textContent="Feeds: unavailable";articles=[];render()}}
+search.addEventListener("input",render);issueFilter.addEventListener("change",render);$("refresh").addEventListener("click",()=>load(true));$("closeDrawer").addEventListener("click",closeDrawer);$("backdrop").addEventListener("click",closeDrawer);document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer()});load(false);setInterval(()=>load(true),60*60*1000);
+})();
 </script>
 <script src="/assets/vnv-beta-link.js" defer></script>
 </body>
