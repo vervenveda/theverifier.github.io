@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-23T02:13:51.790152Z",
+  "generatedAt": "2026-08-23T02:15:08.171534Z",
   "sourceRegistryVersion": 1,
   "sourceRegistryUpdated": "2026-08-22",
   "method": "direct server-side RSS/Atom retrieval from configured canonical feeds; same-origin JSON publication",
   "disclosure": "Stories are discovered from publisher feeds. Inclusion is not endorsement or factual verification.",
-  "feedSourcesConfigured": 18,
+  "feedSourcesConfigured": 17,
   "feedSourcesSuccessful": 16,
   "storyCount": 280,
   "stories": [
@@ -100,30 +100,6 @@
       ],
       "sourceType": "newspaper",
       "sourceHomepage": "https://www.thehindu.com/",
-      "verificationStatus": "discovered"
-    },
-    {
-      "id": "aljazeera:https://www.aljazeera.com/video/newsfeed/2026/8/23/thousands-flee-sudans-kordofan-fighting-for-relative-safety-of-el-obeid?traffic_source=rss",
-      "title": "Thousands flee Sudan’s Kordofan fighting for relative safety of El Obeid",
-      "description": "Thousands flee Sudan’s Kordofan fighting for relative safety of El Obeid.",
-      "link": "https://www.aljazeera.com/video/newsfeed/2026/8/23/thousands-flee-sudans-kordofan-fighting-for-relative-safety-of-el-obeid?traffic_source=rss",
-      "image": "",
-      "pubDate": "2026-08-23T01:51:47Z",
-      "pubMs": 1787449907000,
-      "sourceId": "aljazeera",
-      "source": "Al Jazeera",
-      "region": "Middle East",
-      "country": "Qatar",
-      "languages": [
-        "English",
-        "Arabic"
-      ],
-      "topics": [
-        "Middle East",
-        "International"
-      ],
-      "sourceType": "international broadcaster",
-      "sourceHomepage": "https://www.aljazeera.com/",
       "verificationStatus": "discovered"
     },
     {
@@ -3213,6 +3189,30 @@
       "image": "",
       "pubDate": "2026-08-22T17:58:15Z",
       "pubMs": 1787421495000,
+      "sourceId": "aljazeera",
+      "source": "Al Jazeera",
+      "region": "Middle East",
+      "country": "Qatar",
+      "languages": [
+        "English",
+        "Arabic"
+      ],
+      "topics": [
+        "Middle East",
+        "International"
+      ],
+      "sourceType": "international broadcaster",
+      "sourceHomepage": "https://www.aljazeera.com/",
+      "verificationStatus": "discovered"
+    },
+    {
+      "id": "aljazeera:https://www.aljazeera.com/video/newsfeed/2026/8/22/08-22-26-israel-rabbi-palestinians-clip?traffic_source=rss",
+      "title": "Israel’s Chief Rabbi says Palestinians are not a people and have no rights",
+      "description": "Israel’s Chief Rabbi denied Palestinians are a people, claimed Gaza for Jews and called for its destruction and return.",
+      "link": "https://www.aljazeera.com/video/newsfeed/2026/8/22/08-22-26-israel-rabbi-palestinians-clip?traffic_source=rss",
+      "image": "",
+      "pubDate": "2026-08-22T17:54:52Z",
+      "pubMs": 1787421292000,
       "sourceId": "aljazeera",
       "source": "Al Jazeera",
       "region": "Middle East",
@@ -6618,8 +6618,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:30.612624Z",
-      "elapsedMs": 455
+      "checkedAt": "2026-08-23T02:14:46.538726Z",
+      "elapsedMs": 350
     },
     {
       "id": "vox",
@@ -6628,8 +6628,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:31.067667Z",
-      "elapsedMs": 55
+      "checkedAt": "2026-08-23T02:14:46.888551Z",
+      "elapsedMs": 99
     },
     {
       "id": "cbc",
@@ -6638,8 +6638,8 @@
       "ok": false,
       "count": 0,
       "error": "The read operation timed out",
-      "checkedAt": "2026-08-23T02:13:31.122291Z",
-      "elapsedMs": 18134
+      "checkedAt": "2026-08-23T02:14:46.987566Z",
+      "elapsedMs": 18074
     },
     {
       "id": "global-news-ca",
@@ -6648,8 +6648,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:49.255959Z",
-      "elapsedMs": 56
+      "checkedAt": "2026-08-23T02:15:05.061462Z",
+      "elapsedMs": 146
     },
     {
       "id": "bbc",
@@ -6658,8 +6658,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:49.312451Z",
-      "elapsedMs": 82
+      "checkedAt": "2026-08-23T02:15:05.207911Z",
+      "elapsedMs": 230
     },
     {
       "id": "guardian",
@@ -6668,8 +6668,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:49.394431Z",
-      "elapsedMs": 123
+      "checkedAt": "2026-08-23T02:15:05.437821Z",
+      "elapsedMs": 82
     },
     {
       "id": "dw",
@@ -6678,8 +6678,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:49.517841Z",
-      "elapsedMs": 202
+      "checkedAt": "2026-08-23T02:15:05.520325Z",
+      "elapsedMs": 599
     },
     {
       "id": "france24",
@@ -6688,8 +6688,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:49.720187Z",
-      "elapsedMs": 96
+      "checkedAt": "2026-08-23T02:15:06.119223Z",
+      "elapsedMs": 131
     },
     {
       "id": "politico-eu",
@@ -6698,8 +6698,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:49.816473Z",
-      "elapsedMs": 112
+      "checkedAt": "2026-08-23T02:15:06.250365Z",
+      "elapsedMs": 95
     },
     {
       "id": "the-hindu",
@@ -6708,8 +6708,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:49.928577Z",
-      "elapsedMs": 487
+      "checkedAt": "2026-08-23T02:15:06.345173Z",
+      "elapsedMs": 346
     },
     {
       "id": "times-of-india",
@@ -6718,8 +6718,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:50.415804Z",
-      "elapsedMs": 106
+      "checkedAt": "2026-08-23T02:15:06.690987Z",
+      "elapsedMs": 114
     },
     {
       "id": "japan-times",
@@ -6728,8 +6728,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:50.521957Z",
-      "elapsedMs": 221
+      "checkedAt": "2026-08-23T02:15:06.804634Z",
+      "elapsedMs": 240
     },
     {
       "id": "fmt",
@@ -6738,18 +6738,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:50.743403Z",
-      "elapsedMs": 245
-    },
-    {
-      "id": "mail-guardian",
-      "name": "Mail & Guardian",
-      "feed": "https://mg.co.za/feed/",
-      "ok": false,
-      "count": 0,
-      "error": "HTTP Error 404: Not Found",
-      "checkedAt": "2026-08-23T02:13:50.988105Z",
-      "elapsedMs": 151
+      "checkedAt": "2026-08-23T02:15:07.044793Z",
+      "elapsedMs": 138
     },
     {
       "id": "abc-au",
@@ -6758,8 +6748,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:51.139183Z",
-      "elapsedMs": 223
+      "checkedAt": "2026-08-23T02:15:07.182638Z",
+      "elapsedMs": 292
     },
     {
       "id": "rnz",
@@ -6768,8 +6758,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:51.361816Z",
-      "elapsedMs": 216
+      "checkedAt": "2026-08-23T02:15:07.474705Z",
+      "elapsedMs": 386
     },
     {
       "id": "aljazeera",
@@ -6778,8 +6768,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:51.577419Z",
-      "elapsedMs": 107
+      "checkedAt": "2026-08-23T02:15:07.860838Z",
+      "elapsedMs": 132
     },
     {
       "id": "npr",
@@ -6788,8 +6778,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:51.684744Z",
-      "elapsedMs": 104
+      "checkedAt": "2026-08-23T02:15:07.993341Z",
+      "elapsedMs": 177
     }
   ]
 }
