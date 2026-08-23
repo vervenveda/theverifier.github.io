@@ -23,9 +23,10 @@ jobs:
 
           beta_tag='<script src="/assets/vnv-beta-link.js" defer></script>'
           home_tag='<script src="./assets/verifier-home-extension.js" defer></script>'
+          evidence_tag='<script src="../assets/editorial-evidence-registry.js" defer></script>'
           editorial_tag='<script src="../assets/editorial-integrity.js" defer></script>'
           excluded={'.git','.github','node_modules','vendor','archive','archives','backup','backups','deprecated','private','admin'}
-          beta_added=[]; beta_existing=[]; skipped=[]; home_added=[]; editorial_added=[]
+          beta_added=[]; beta_existing=[]; skipped=[]; home_added=[]; evidence_added=[]; editorial_added=[]
 
           def insert_tag(text, tag):
               if tag in text:
@@ -65,7 +66,13 @@ jobs:
                   if did:
                       home_added.append(str(p)); changed=True
 
-              if 'columns' in {part.lower() for part in p.parts} and 'editorial-integrity.js' not in text:
+              is_column='columns' in {part.lower() for part in p.parts}
+              if is_column and 'editorial-evidence-registry.js' not in text:
+                  text, did=insert_tag(text,evidence_tag)
+                  if did:
+                      evidence_added.append(str(p)); changed=True
+
+              if is_column and 'editorial-integrity.js' not in text:
                   text, did=insert_tag(text,editorial_tag)
                   if did:
                       editorial_added.append(str(p)); changed=True
@@ -78,12 +85,14 @@ jobs:
               f'- Beta widget added in this run: **{len(beta_added)}**',
               f'- Beta widget already covered: **{len(beta_existing)}**',
               f'- Homepage architecture extension added: **{len(home_added)}**',
+              f'- Editorial evidence registry added to columns: **{len(evidence_added)}**',
               f'- Editorial integrity layer added to columns: **{len(editorial_added)}**',
               f'- Skipped: **{len(skipped)}**','',
-              'Public visible index-style HTML receives the shared beta widget. The root Verifier homepage receives the non-destructive news-architecture extension. Column pages receive the public Editorial / Opinion integrity notice. No credentials, query/hash values, form values, learner/family data, answers, report text, or private storage are transmitted by these layers.'
+              'Public visible index-style HTML receives the shared beta widget. The root Verifier homepage receives the non-destructive news-architecture extension. Column pages receive the public Editorial / Opinion integrity notice and article-specific correction/evidence registry. No credentials, query/hash values, form values, learner/family data, answers, report text, or private storage are transmitted by these layers.'
           ]
           if beta_added: lines+=['','## Beta Added','']+[f'- `{x}`' for x in beta_added]
           if home_added: lines+=['','## Homepage Extension Added','']+[f'- `{x}`' for x in home_added]
+          if evidence_added: lines+=['','## Editorial Evidence Registry Added','']+[f'- `{x}`' for x in evidence_added]
           if editorial_added: lines+=['','## Editorial Integrity Added','']+[f'- `{x}`' for x in editorial_added]
           if skipped: lines+=['','## Skipped','']+[f'- `{x}` — {y}' for x,y in skipped]
           Path('BETA_INDEX_COVERAGE.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
