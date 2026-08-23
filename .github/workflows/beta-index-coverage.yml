@@ -1,4 +1,4 @@
-name: Beta index coverage
+name: Public index coverage
 on:
   push:
     branches: [main]
@@ -6,44 +6,94 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: beta-index-coverage-main
+  group: public-index-coverage-main
   cancel-in-progress: true
 jobs:
   ensure:
     if: ${{ !contains(github.event.head_commit.message || '', '[skip beta-rollout]') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: {fetch-depth: 0}
-      - name: Ensure visible index coverage
+      - name: Ensure visible index and integrity coverage
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          tag='<script src="/assets/vnv-beta-link.js" defer></script>'
+
+          beta_tag='<script src="/assets/vnv-beta-link.js" defer></script>'
+          home_tag='<script src="./assets/verifier-home-extension.js" defer></script>'
+          editorial_tag='<script src="../assets/editorial-integrity.js" defer></script>'
           excluded={'.git','.github','node_modules','vendor','archive','archives','backup','backups','deprecated','private','admin'}
-          changed=[];already=[];skipped=[]
+          beta_added=[]; beta_existing=[]; skipped=[]; home_added=[]; editorial_added=[]
+
+          def insert_tag(text, tag):
+              if tag in text:
+                  return text, False
+              body=list(re.finditer(r'</body\s*>',text,re.I))
+              html=list(re.finditer(r'</html\s*>',text,re.I))
+              if body:
+                  i=body[-1].start(); return text[:i].rstrip()+'\n'+tag+'\n'+text[i:], True
+              if html:
+                  i=html[-1].start(); return text[:i].rstrip()+'\n'+tag+'\n'+text[i:], True
+              return text.rstrip()+'\n'+tag+'\n', True
+
           for p in sorted(Path('.').rglob('*.html')):
-            if not re.search(r'in+dex\.html$',p.name.lower()): continue
-            if {x.lower() for x in p.parts}&excluded: skipped.append((str(p),'excluded-path'));continue
-            try:t=p.read_text(encoding='utf-8')
-            except UnicodeDecodeError: skipped.append((str(p),'non-utf8'));continue
-            if 'vnv-beta-link.js' in t: already.append(str(p));continue
-            c=re.search(r'<meta[^>]+http-equiv=["\']Content-Security-Policy["\'][^>]+content=["\']([^"\']*)',t,re.I)
-            if c and re.search(r"(?:^|;)\s*script-src\s+'none'\s*(?:;|$)",c.group(1),re.I): skipped.append((str(p),'csp-script-none'));continue
-            body=list(re.finditer(r'</body\s*>',t,re.I)); html=list(re.finditer(r'</html\s*>',t,re.I))
-            if body:i=body[-1].start();u=t[:i].rstrip()+'\n'+tag+'\n'+t[i:]
-            elif html:i=html[-1].start();u=t[:i].rstrip()+'\n'+tag+'\n'+t[i:]
-            else:u=t.rstrip()+'\n'+tag+'\n'
-            p.write_text(u,encoding='utf-8');changed.append(str(p))
-          lines=['# Beta Index Coverage','',f'- Added in this run: **{len(changed)}**',f'- Already covered: **{len(already)}**',f'- Skipped: **{len(skipped)}**','', 'Rule: visible public HTML filenames ending in `index.html` (including `_index.html` and common `inndex.html` typos) receive `/assets/vnv-beta-link.js`. The widget reports only public hostname + pathname; never learner/family IDs, answers, form values, query/hash, storage, report text, or credentials.']
-          if changed:lines+=['','## Added','']+[f'- `{x}`' for x in changed]
-          if skipped:lines+=['','## Skipped','']+[f'- `{x}` — {y}' for x,y in skipped]
+              if not re.search(r'in+dex\.html$',p.name.lower()):
+                  continue
+              if {x.lower() for x in p.parts}&excluded:
+                  skipped.append((str(p),'excluded-path')); continue
+              try:
+                  text=p.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  skipped.append((str(p),'non-utf8')); continue
+
+              c=re.search(r'<meta[^>]+http-equiv=["\']Content-Security-Policy["\'][^>]+content=["\']([^"\']*)',text,re.I)
+              if c and re.search(r"(?:^|;)\s*script-src\s+'none'\s*(?:;|$)",c.group(1),re.I):
+                  skipped.append((str(p),'csp-script-none')); continue
+
+              changed=False
+              if 'vnv-beta-link.js' in text:
+                  beta_existing.append(str(p))
+              else:
+                  text, did=insert_tag(text,beta_tag)
+                  if did:
+                      beta_added.append(str(p)); changed=True
+
+              if p == Path('index.html') and 'verifier-home-extension.js' not in text:
+                  text, did=insert_tag(text,home_tag)
+                  if did:
+                      home_added.append(str(p)); changed=True
+
+              if 'columns' in {part.lower() for part in p.parts} and 'editorial-integrity.js' not in text:
+                  text, did=insert_tag(text,editorial_tag)
+                  if did:
+                      editorial_added.append(str(p)); changed=True
+
+              if changed:
+                  p.write_text(text,encoding='utf-8')
+
+          lines=[
+              '# Public Index Coverage','',
+              f'- Beta widget added in this run: **{len(beta_added)}**',
+              f'- Beta widget already covered: **{len(beta_existing)}**',
+              f'- Homepage architecture extension added: **{len(home_added)}**',
+              f'- Editorial integrity layer added to columns: **{len(editorial_added)}**',
+              f'- Skipped: **{len(skipped)}**','',
+              'Public visible index-style HTML receives the shared beta widget. The root Verifier homepage receives the non-destructive news-architecture extension. Column pages receive the public Editorial / Opinion integrity notice. No credentials, query/hash values, form values, learner/family data, answers, report text, or private storage are transmitted by these layers.'
+          ]
+          if beta_added: lines+=['','## Beta Added','']+[f'- `{x}`' for x in beta_added]
+          if home_added: lines+=['','## Homepage Extension Added','']+[f'- `{x}`' for x in home_added]
+          if editorial_added: lines+=['','## Editorial Integrity Added','']+[f'- `{x}`' for x in editorial_added]
+          if skipped: lines+=['','## Skipped','']+[f'- `{x}` — {y}' for x,y in skipped]
           Path('BETA_INDEX_COVERAGE.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
           PY
       - name: Commit coverage
         run: |
           if git diff --quiet; then exit 0; fi
-          git config user.name "Verve N Veda Beta Coverage"
+          git config user.name "Verve N Veda Public Coverage"
           git config user.email "actions@users.noreply.github.com"
-          git add --all && git commit -m "chore(beta): ensure visible index coverage [skip beta-rollout]" && git push
+          git add --all
+          git commit -m "chore(public): ensure index and integrity coverage [skip beta-rollout]"
+          git pull --rebase origin main
+          git push
