@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -36,6 +38,7 @@ jobs:
           assert data.get('schemaVersion') == 1
           assert data.get('storyCount') == len(data.get('stories', []))
           assert data.get('storyCount', 0) > 0, 'No stories were generated'
+          assert data.get('feedSourcesSuccessful', 0) > 0, 'No configured publisher feeds succeeded'
           for story in data['stories']:
               assert story.get('title')
               assert str(story.get('link', '')).startswith('https://')
@@ -52,6 +55,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No generated feed changes to commit."
           else
-            git commit -m "chore(news): refresh generated Verifier feed"
-            git push
+            git commit -m "chore(news): refresh generated Verifier feed [skip beta-rollout]"
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
