@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "sourceId": "verve.verifier",
   "name": "The Verifier",
   "classification": "research-information",
@@ -60,9 +60,27 @@
       "mentorCaution": "Source inclusion is not endorsement and does not imply that every article from the source is accurate."
     },
     {
+      "id": "young-readers-newsroom",
+      "title": "Young Readers Newsroom",
+      "description": "Curated, age-banded science and current-events doorway for young readers using youth-focused sources rather than an unrestricted breaking-news feed.",
+      "url": "https://vervenveda.com/theverifier.github.io/apps/kids_news_network_index.html",
+      "audiences": ["middle", "parent"],
+      "roles": ["student", "parent", "educator"],
+      "domains": ["news", "science", "media-literacy"],
+      "skills": ["media-literacy", "source-awareness", "evidence-checking"],
+      "tags": ["young-readers", "curated", "science", "current-events"],
+      "mentorEligible": true,
+      "featured": true,
+      "minutes": 15,
+      "energy": "curious",
+      "requiresFreshnessCheck": true,
+      "dynamicContent": true,
+      "mentorCaution": "This is a curated youth doorway, not a guarantee that every external linked page will always be age-appropriate. Use age and context judgment before assigning open-web reading."
+    },
+    {
       "id": "education-news",
       "title": "Education News",
-      "description": "Education-focused news discovery with local favorites, alerts, and reading tools.",
+      "description": "Education-focused news discovery with locally stored favorites, alerts, and reading tools.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/education_news_index.html",
       "audiences": ["middle", "high", "higher-learning", "adult", "parent"],
       "roles": ["student", "parent", "educator"],
@@ -93,19 +111,20 @@
     },
     {
       "id": "interactive-news",
-      "title": "Interactive News Dashboard",
-      "description": "Interactive current-news dashboard with filters, source views, and locally saved reading lists.",
+      "title": "Interactive Edition Explorer",
+      "description": "Interactive exploration of locally archived Verifier daily editions with filters, comparison tools, and a transparent sensitive-content screening aid.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/interactive_news_index.html",
       "audiences": ["high", "higher-learning", "adult", "parent"],
       "roles": ["student", "parent", "educator"],
       "domains": ["news", "research"],
       "skills": ["news-navigation", "media-literacy"],
-      "tags": ["news", "dashboard", "current-info"],
+      "tags": ["news", "dashboard", "current-info", "local-first"],
       "mentorEligible": true,
       "minutes": 20,
       "energy": "focused",
       "requiresFreshnessCheck": true,
-      "dynamicContent": true
+      "dynamicContent": true,
+      "mentorCaution": "Sensitive-content screening is a local text filter, not a guarantee of age suitability."
     },
     {
       "id": "live-research-news",
