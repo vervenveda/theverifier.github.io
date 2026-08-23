@@ -3,7 +3,7 @@ name: Build Verifier News Feed
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "17 12 * * *"
 
 permissions:
   contents: write
