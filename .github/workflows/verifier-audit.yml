@@ -55,6 +55,7 @@ jobs:
               root / 'apps' / 'daily_digest_index.html',
               root / 'apps' / 'global_news_digest_index.html',
               root / 'apps' / 'interactive_news_index.html',
+              root / 'apps' / 'education_news_index.html',
               root / 'apps' / 'live_news_index.html',
               root / 'apps' / 'news_feed_index.html',
               root / 'apps' / 'world_wire_index.html',
@@ -70,12 +71,13 @@ jobs:
               root / 'apps' / 'world_wire_index.html',
               root / 'apps' / 'daily_digest_index.html',
               root / 'apps' / 'interactive_news_index.html',
+              root / 'apps' / 'education_news_index.html',
           ]
           for path in hardened_pages:
               text = path.read_text(encoding='utf-8')
               assert 'verifier-safety.js' in text, f'{path} must load the shared safety layer'
               assert '<meta name="viewport"' in text, f'{path} is missing viewport metadata'
-              dangerous = re.findall(r'innerHTML\s*=\s*`[^`]*(?:item|article|it)\.(?:title|link|description|thumbnail|image)', text, flags=re.S)
+              dangerous = re.findall(r'innerHTML\s*=\s*`[^`]*(?:item|article|it|a|f)\.(?:title|link|description|desc|thumbnail|image)', text, flags=re.S)
               assert not dangerous, f'{path} appears to inject remote feed fields through innerHTML'
 
           digest = (root / 'apps' / 'daily_digest_index.html').read_text(encoding='utf-8')
@@ -108,6 +110,7 @@ jobs:
               'apps/global_news_digest_index.html',
               'apps/daily_digest_index.html',
               'apps/interactive_news_index.html',
+              'apps/education_news_index.html',
               'apps/Interactive_Live_ News_ Dashboard_index.html',
           ]
           for page in pages:
