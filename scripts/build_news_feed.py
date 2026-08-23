@@ -173,6 +173,9 @@ def fetch_feed(source: dict) -> tuple[list[dict], dict]:
     )
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
+            final_url = safe_https_url(response.geturl())
+            if not final_url:
+                raise ValueError("Feed redirect did not remain on an explicit HTTPS URL")
             raw = response.read(4_000_000)
         root = ET.fromstring(raw)
         nodes = [n for n in root.iter() if local_name(n.tag) in {"item", "entry"}]
