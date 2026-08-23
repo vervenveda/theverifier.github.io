@@ -4,18 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 * * * *"
-  push:
-    branches: [hardening-wave-2-2026-08-22]
-    paths:
-      - "scripts/build_news_feed.py"
-      - "data/sources.json"
-      - ".github/workflows/build-news-feed.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: verifier-news-feed-${{ github.ref }}
+  group: verifier-news-feed
   cancel-in-progress: false
 
 jobs:
@@ -54,6 +48,7 @@ jobs:
           PY
 
       - name: Commit generated feed when changed
+        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name "The Verifier Feed Builder"
           git config user.email "actions@users.noreply.github.com"
@@ -62,14 +57,10 @@ jobs:
             echo "No generated feed changes to commit."
           else
             git commit -m "chore(news): refresh generated Verifier feed [skip beta-rollout]"
-            if [ "${GITHUB_REF_NAME}" = "main" ]; then
-              git pull --rebase origin main
-            else
-              git pull --rebase origin "${GITHUB_REF_NAME}"
-            fi
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
 
-      - name: Smoke-test boundary
+      - name: Non-main validation note
         if: github.ref != 'refs/heads/main'
-        run: echo "Branch smoke test published only generated JSON to ${GITHUB_REF_NAME}; generated-data paths do not retrigger this workflow."
+        run: echo "Feed build validated successfully. Generated data is only published automatically from main."
