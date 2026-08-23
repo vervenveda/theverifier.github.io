@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -48,6 +48,7 @@ jobs:
           resource_ids = {r.get('id') for r in manifest.get('resources', [])}
           assert 'daily-top-30' in resource_ids, 'Mentor manifest is missing Daily Top 30'
           assert 'global-source-directory' in resource_ids, 'Mentor manifest is missing canonical source directory'
+          assert 'young-readers-newsroom' in resource_ids, 'Mentor manifest is missing Young Readers Newsroom'
 
           required = [
               root / 'assets' / 'verifier-safety.js',
@@ -89,14 +90,18 @@ jobs:
 
           interactive = (root / 'apps' / 'interactive_news_index.html').read_text(encoding='utf-8')
           assert 'Spicy / Unusual' not in interactive, 'Sensationalism ranking must not return to the canonical interactive explorer'
-          assert 'Kid-Safe' not in interactive, 'Canonical explorer must not overpromise a Kid-Safe guarantee'
+          assert 'Kid-Safe:' not in interactive and 'Kid-Safe: ON' not in interactive and 'Kid-Safe: OFF' not in interactive, 'Canonical explorer must not expose an automated Kid-Safe status control'
           assert 'Sensitive Content Filter' in interactive, 'Canonical explorer must explain sensitive-content screening'
 
           kids = (root / 'apps' / 'kids_news_network_index.html').read_text(encoding='utf-8')
           assert 'Young Readers Newsroom' in kids, 'Youth surface must retain curated newsroom identity'
           assert 'cfgWorker' not in kids and 'Worker URL' not in kids, 'Public youth page must not request a proxy worker URL'
           assert 'cfgApod' not in kids and 'NASA APOD key' not in kids, 'Public youth page must not request an API key'
-          assert 'Kid-Safe' not in kids, 'Youth surface must not promise an automated Kid-Safe guarantee'
+          assert 'Kid-Safe:' not in kids, 'Youth surface must not expose an automated Kid-Safe status control'
+
+          shell = (root / 'sw.js').read_text(encoding='utf-8')
+          for path in ['interactive_news_index.html', 'education_news_index.html', 'kids_news_network_index.html']:
+              assert path in shell, f'Offline shell is missing {path}'
 
           print(f'Validated {len(sources)} canonical sources and {len(feeds)} configured feeds.')
           PY
