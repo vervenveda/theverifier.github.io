@@ -2,7 +2,7 @@ name: Verifier Integrity Audit
 
 on:
   push:
-    branches: [main, hardening-wave-2-2026-08-22]
+    branches: [main, editorial-evidence-wave-3-2026-08-22]
   pull_request:
     branches: [main]
 
@@ -50,6 +50,7 @@ jobs:
               root / 'assets' / 'verifier-news-data.js',
               root / 'assets' / 'verifier-home-extension.js',
               root / 'assets' / 'editorial-integrity.js',
+              root / 'assets' / 'editorial-evidence-registry.js',
               root / 'scripts' / 'build_news_feed.py',
               root / '.github' / 'workflows' / 'build-news-feed.yml',
               root / '.github' / 'workflows' / 'beta-index-coverage.yml',
@@ -131,6 +132,25 @@ jobs:
           editorial_layer = (root / 'assets' / 'editorial-integrity.js').read_text(encoding='utf-8')
           assert 'Editorial / Opinion' in editorial_layer
           assert 'editorial_standard_index.html' in editorial_layer
+          assert 'VerifierEditorialEvidence' in editorial_layer
+          assert 'verifier-evidence-addendum' in editorial_layer
+          assert 'safeExternalLink' in editorial_layer
+
+          evidence = (root / 'assets' / 'editorial-evidence-registry.js').read_text(encoding='utf-8')
+          assert 'The Quiet Consensus No One Voted For' in evidence
+          assert 'CORRECTION ISSUED' in evidence
+          assert 'Criminal allegations withdrawn as factual claims' in evidence
+          assert 'Public opinion was overstated' in evidence
+          assert 'Statehood language corrected' in evidence
+          assert 'https://www.fec.gov/data/committee/C00797670/' in evidence
+          assert 'https://www.fec.gov/data/committee/C00799031/' in evidence
+          assert 'https://www.pewresearch.org/' in evidence
+          assert 'https://news.gallup.com/' in evidence
+          assert 'https://digitallibrary.un.org/' in evidence
+          urls = re.findall(r'url:\s*"([^"]+)"', evidence)
+          assert len(urls) >= 6, 'Priority-A correction should carry a substantive evidence record'
+          assert all(url.startswith('https://') for url in urls), 'Editorial evidence links must use HTTPS'
+
           standard_html = (root / 'editorial_standard_index.html').read_text(encoding='utf-8')
           assert 'Source inclusion is not endorsement' in standard_html
           assert 'Human dignity' in standard_html
@@ -138,6 +158,7 @@ jobs:
           coverage = (root / '.github' / 'workflows' / 'beta-index-coverage.yml').read_text(encoding='utf-8')
           assert 'actions/checkout@v7' in coverage
           assert 'verifier-home-extension.js' in coverage
+          assert 'editorial-evidence-registry.js' in coverage
           assert 'editorial-integrity.js' in coverage
           assert "'columns'" in coverage
 
@@ -145,7 +166,7 @@ jobs:
           assert 'The Quiet Consensus No One Voted For' in queue
           assert 'Do not mark an item complete solely because it carries the global Editorial / Opinion banner.' in queue
 
-          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, first-party news architecture, and public integrity layers.')
+          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, first-party news architecture, and article-level editorial correction infrastructure.')
           PY
 
       - name: Syntax-check Python feed builder
@@ -157,6 +178,7 @@ jobs:
           node --check assets/verifier-local-cloud.js
           node --check assets/verifier-news-data.js
           node --check assets/verifier-home-extension.js
+          node --check assets/editorial-evidence-registry.js
           node --check assets/editorial-integrity.js
           node --check sw.js
 
