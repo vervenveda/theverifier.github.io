@@ -3,49 +3,525 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The Verifier — Sovereign World Wire</title>
-<meta name="description" content="A global headline wire with source transparency, safe feed rendering, search, and local caching.">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="The Verifier Sovereign World Wire — a source-first global headline reader with local caching, source health, transparent transport, search, filters, and saved stories.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src https: data:; connect-src https:; base-uri 'none'; form-action 'none'; object-src 'none'; frame-src 'none';">
+<title>The Verifier — Sovereign World Wire v4</title>
 <style>
-:root{--paper:#fffcf5;--paper2:#f5ecdd;--ink:#2a2520;--soft:#6f6254;--gold:#c9a667;--nav:#111522;--line:#dac9aa;--card:#fffaf0;--radius:16px;--shadow:0 14px 34px rgba(34,30,26,.12)}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,rgba(70,80,120,.12),transparent 55%),var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{max-width:1100px;margin:auto;padding:24px 16px 44px}.mast{text-align:center}.mast h1{font-family:Georgia,serif;letter-spacing:.14em;text-transform:uppercase;font-size:clamp(1.55rem,4vw,2.25rem);margin:0}.mast p{color:var(--soft);margin:.4rem 0}.ticker{margin-top:18px;background:linear-gradient(90deg,#111522,#2b384f);color:white;border-radius:var(--radius);padding:11px 14px;box-shadow:var(--shadow);display:flex;gap:10px;align-items:center;overflow:hidden}.ticker b{font-size:.72rem;letter-spacing:.12em;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 8px;white-space:nowrap}.ticker a{color:white;text-decoration:none}.ticker-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.notice{margin-top:14px;background:#fff8df;border:1px solid #e5cf91;color:#654c11;border-radius:11px;padding:10px 12px;font-size:.84rem}.controls{display:grid;grid-template-columns:minmax(220px,1fr) 190px auto;gap:9px;margin-top:15px}.controls input,.controls select,.controls button{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fffdf8;color:var(--ink)}.controls button{background:var(--nav);color:#fff;font-weight:750;cursor:pointer}.status{font-size:.78rem;color:var(--soft);margin:9px 2px}.news{display:grid;gap:12px}.article{display:grid;grid-template-columns:150px 1fr;gap:14px;background:linear-gradient(#fffdf8,#f8eddb);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}.img{height:108px;border-radius:12px;background:#d7c7ac;overflow:hidden}.img img{width:100%;height:100%;object-fit:cover;display:block}.source{font-size:.72rem;color:#7c6b55;text-transform:uppercase;letter-spacing:.08em}.article h2{font-family:Georgia,serif;font-size:1.08rem;line-height:1.3;margin:.25rem 0}.article p{font-size:.87rem;color:var(--soft);margin:.35rem 0}.meta{font-size:.75rem;color:#877663}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.actions a,.actions button{border:1px solid #cbb890;background:#fffaf0;color:#463a2b;border-radius:999px;padding:5px 8px;font-size:.74rem;font-weight:700;text-decoration:none;cursor:pointer}.empty{padding:20px;text-align:center;color:var(--soft)}@media(max-width:700px){.controls{grid-template-columns:1fr}.article{grid-template-columns:1fr}.img{height:180px}}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:root{
+  --paper:#fffcf5;--paper2:#f5ecdd;--ink:#28231f;--soft:#6d6157;--muted:#8a7c70;
+  --gold:#b99352;--gold2:#d8bf8d;--nav:#111522;--nav2:#263650;--line:#d8c8aa;
+  --card:#fffaf0;--good:#245f43;--warn:#815d13;--bad:#8e3434;--radius:16px;
+  --shadow:0 14px 34px rgba(34,30,26,.10);--focus:0 0 0 3px rgba(185,147,82,.28)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 50% 0,rgba(70,80,120,.12),transparent 52%),var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+button,input,select{font:inherit}
+button,a,input,select{outline:none}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{box-shadow:var(--focus)}
+a{color:inherit}
+.wrap{max-width:1180px;margin:auto;padding:24px 16px 52px}
+.mast{text-align:center;padding:8px 0 2px}
+.eyebrow{margin:0 0 7px;color:var(--gold);font-size:.72rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.mast h1{font-family:Cinzel,Georgia,serif;letter-spacing:.13em;text-transform:uppercase;font-size:clamp(1.6rem,4vw,2.45rem);margin:0}
+.mast .sub{color:var(--soft);margin:.45rem 0 .18rem}
+.mast .date{font-size:.82rem;color:var(--muted);margin:0}
+.meta-strip{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,250,240,.76);border-radius:999px;padding:5px 9px;font-size:.72rem;color:var(--soft)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.good{background:var(--good)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.ticker{margin-top:18px;background:linear-gradient(90deg,var(--nav),var(--nav2));color:white;border-radius:var(--radius);padding:11px 14px;box-shadow:var(--shadow);display:flex;gap:10px;align-items:center;overflow:hidden}
+.ticker b{font-size:.71rem;letter-spacing:.12em;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.ticker a{color:white;text-decoration:none}.ticker a:hover{text-decoration:underline}
+.ticker-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.notice{margin-top:14px;background:#fff8df;border:1px solid #e5cf91;color:#654c11;border-radius:12px;padding:10px 12px;font-size:.84rem}
+.toolbar{margin-top:15px;padding:12px;background:rgba(255,250,240,.78);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 24px rgba(34,30,26,.06)}
+.controls{display:grid;grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(145px,.55fr)) auto;gap:9px}
+.control{display:grid;gap:4px}.control label{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.controls input,.controls select,.controls button,.utility button{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fffdf8;color:var(--ink);min-height:42px}
+.controls button,.utility button{background:var(--nav);color:#fff;font-weight:760;cursor:pointer}
+.controls button:hover,.utility button:hover{background:var(--nav2)}
+.controls button:disabled{opacity:.6;cursor:wait}
+.utility{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;color:var(--soft);user-select:none}.toggle input{width:17px;height:17px;accent-color:var(--nav)}
+.utility-actions{display:flex;gap:7px;flex-wrap:wrap}.utility button{min-height:auto;padding:6px 10px;font-size:.76rem;background:#fffaf0;color:#463a2b}
+.status{font-size:.79rem;color:var(--soft);margin:10px 2px 8px;min-height:1.3em}
+.status strong{color:var(--ink)}
+.health{margin:6px 0 14px;border:1px solid var(--line);background:rgba(255,250,240,.72);border-radius:var(--radius);overflow:hidden}
+.health summary{cursor:pointer;padding:10px 12px;font-weight:780;font-size:.82rem;list-style:none}.health summary::-webkit-details-marker{display:none}
+.health summary::after{content:"＋";float:right}.health[open] summary::after{content:"−"}
+.health-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 12px 12px}
+.health-card{border:1px solid var(--line);border-radius:12px;padding:9px;background:#fffdf8;min-width:0}
+.health-top{display:flex;justify-content:space-between;gap:6px;align-items:center}.health-name{font-size:.76rem;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.health-state{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.health-state.good{color:var(--good)}.health-state.warn{color:var(--warn)}.health-state.bad{color:var(--bad)}
+.health-meta{margin-top:5px;color:var(--muted);font-size:.68rem;line-height:1.35}
+.news{display:grid;gap:12px}
+.article{display:grid;grid-template-columns:170px minmax(0,1fr);gap:15px;background:linear-gradient(#fffdf8,#f8eddb);border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
+.article.saved{border-color:var(--gold);box-shadow:0 14px 34px rgba(185,147,82,.13)}
+.img{height:122px;border-radius:12px;background:linear-gradient(135deg,#d8c8ac,#eee1ca);overflow:hidden;display:grid;place-items:center;color:#806f5a;font-family:Georgia,serif;font-size:1.75rem;letter-spacing:.08em}
+.img img{width:100%;height:100%;object-fit:cover;display:block}
+.article-body{min-width:0}.source-line{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.source{font-size:.7rem;color:#75634e;text-transform:uppercase;letter-spacing:.08em;font-weight:760}.coverage{font-size:.67rem;color:var(--good);border:1px solid rgba(36,95,67,.25);border-radius:999px;padding:3px 7px;background:rgba(36,95,67,.05)}
+.article h2{font-family:Georgia,serif;font-size:1.1rem;line-height:1.3;margin:.27rem 0}.article p{font-size:.88rem;color:var(--soft);margin:.38rem 0;max-width:84ch}
+.meta{font-size:.74rem;color:#82715d;display:flex;gap:8px;flex-wrap:wrap}.meta span+span::before{content:"·";margin-right:8px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.actions a,.actions button{border:1px solid #cbb890;background:#fffaf0;color:#463a2b;border-radius:999px;padding:5px 9px;font-size:.73rem;font-weight:760;text-decoration:none;cursor:pointer}
+.actions a:hover,.actions button:hover{background:#f4e4c8}.actions button[aria-pressed="true"]{background:var(--nav);border-color:var(--nav);color:#fff}
+.empty{padding:30px 20px;text-align:center;color:var(--soft);border:1px dashed var(--line);border-radius:var(--radius);background:rgba(255,250,240,.58)}
+.footer{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);font-size:.76rem;color:var(--soft)}
+.footer details{margin-top:8px}.footer summary{cursor:pointer;font-weight:780;color:var(--ink)}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:960px){.controls{grid-template-columns:1fr 1fr 1fr}.control.search{grid-column:1/-1}.controls .refresh{grid-column:1/-1}.health-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.controls{grid-template-columns:1fr}.control.search,.controls .refresh{grid-column:auto}.article{grid-template-columns:1fr}.img{height:190px}.health-grid{grid-template-columns:1fr}.utility{align-items:flex-start}.ticker{border-radius:12px}.source-line{display:block}.coverage{display:inline-flex;margin-top:4px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+@media(prefers-color-scheme:dark){:root{--paper:#151617;--paper2:#1d1d1c;--ink:#f3eadc;--soft:#c5b8a7;--muted:#9f9181;--line:#4e4438;--card:#211f1c;--nav:#090b10;--nav2:#1d2a3f;--shadow:0 14px 34px rgba(0,0,0,.28)}body{background:radial-gradient(circle at 50% 0,rgba(68,88,130,.20),transparent 52%),var(--paper)}.pill,.toolbar,.health{background:rgba(33,31,28,.88)}.controls input,.controls select,.health-card{background:#211f1c;color:var(--ink)}.notice{background:#312a16;border-color:#665525;color:#ead8a6}.article{background:linear-gradient(#211f1c,#27231d)}.actions a,.actions button,.utility button{background:#29251f;color:#eadfce;border-color:#5c4e3d}.actions a:hover,.actions button:hover{background:#352e25}.empty{background:#1d1c1a}.img{background:linear-gradient(135deg,#40372d,#2d2923);color:#bba889}}
 </style>
-<script src="../assets/verifier-safety.js"></script>
 </head>
 <body>
 <div class="wrap">
-<header class="mast"><h1>Sovereign World Wire</h1><p>Global headlines · source-first · locally cached</p><p id="date"></p></header>
-<section class="ticker"><b>LIVE FEED</b><div class="ticker-text" id="ticker">Checking current reporting…</div></section>
-<div class="notice"><strong>Important:</strong> “Live” describes feed freshness, not factual certification. The Verifier preserves source attribution and gives readers direct access to originals and comparison tools.</div>
-<section class="controls"><input id="search" type="search" placeholder="Search by keyword or source…" aria-label="Search world wire"><select id="category"><option value="all">All categories</option></select><button id="refresh" type="button">Refresh Wire</button></section>
-<div class="status" id="status">Starting…</div>
-<section class="news" id="news" aria-live="polite"></section>
+  <header class="mast">
+    <p class="eyebrow">The Verifier</p>
+    <h1>Sovereign World Wire</h1>
+    <p class="sub">Global headlines · source-first · locally cached · transport transparent</p>
+    <p class="date" id="date"></p>
+    <div class="meta-strip" aria-label="Wire summary">
+      <span class="pill"><span class="dot" id="networkDot"></span><span id="networkState">Starting</span></span>
+      <span class="pill" id="articleCount">0 stories</span>
+      <span class="pill" id="sourceCount">0 sources responding</span>
+      <span class="pill" id="cacheAge">No cache yet</span>
+    </div>
+  </header>
+
+  <section class="ticker" aria-label="Headline ticker">
+    <b>WORLD WIRE</b>
+    <div class="ticker-text" id="ticker">Checking current reporting…</div>
+  </section>
+
+  <div class="notice"><strong>Method note:</strong> Feed freshness is not factual certification. The Verifier preserves attribution, shows transport/source health, and links readers to originals, archives, and comparison search. Similar-coverage counts are title-based signals only.</div>
+
+  <section class="toolbar" aria-label="Wire controls">
+    <div class="controls">
+      <div class="control search"><label for="search">Search</label><input id="search" type="search" placeholder="Keyword, headline, source…" autocomplete="off"></div>
+      <div class="control"><label for="category">Category</label><select id="category"><option value="all">All categories</option></select></div>
+      <div class="control"><label for="sourceFilter">Source</label><select id="sourceFilter"><option value="all">All sources</option></select></div>
+      <div class="control"><label for="freshness">Freshness</label><select id="freshness"><option value="all">Any date</option><option value="24h">Past 24 hours</option><option value="72h">Past 3 days</option><option value="7d">Past 7 days</option></select></div>
+      <button class="refresh" id="refresh" type="button">Refresh Wire</button>
+    </div>
+    <div class="utility">
+      <label class="toggle"><input id="savedOnly" type="checkbox"> Saved stories only</label>
+      <div class="utility-actions">
+        <button id="sortToggle" type="button" data-sort="newest">Sort: newest</button>
+        <button id="clearFilters" type="button">Clear filters</button>
+        <button id="exportSaved" type="button">Export saved</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="status" id="status" role="status" aria-live="polite">Starting…</div>
+
+  <details class="health" id="healthPanel">
+    <summary>Source health &amp; transport diagnostics</summary>
+    <div class="health-grid" id="healthGrid"></div>
+  </details>
+
+  <main class="news" id="news" aria-live="polite" aria-busy="true"></main>
+
+  <footer class="footer">
+    <strong>Privacy:</strong> searches, saved stories, and cached headlines stay in this browser. Opening an original, archive, or comparison link leaves this page and follows that destination's policies.
+    <details><summary>How the wire works</summary><p>The page attempts each publisher feed directly when browser CORS permits it, then optionally uses a self-hosted gateway, then public compatibility fallbacks. The health panel tells you which path succeeded. For stronger sovereignty, point <code>CONFIG.gatewayURL</code> at your own raw CORS gateway and disable the public fallbacks.</p></details>
+  </footer>
 </div>
+<noscript><div class="wrap"><div class="notice">JavaScript is required to load and filter the wire.</div></div></noscript>
 <script>
 (() => {
 "use strict";
-const S=window.VerifierSafety;if(!S)return;const $=id=>document.getElementById(id);const store=S.safeStorage("verifier-world-wire-v3");
-const SOURCES=[
- {name:"BBC World",category:"World",url:"https://feeds.bbci.co.uk/news/world/rss.xml"},
- {name:"The Guardian World",category:"World",url:"https://www.theguardian.com/world/rss"},
- {name:"Al Jazeera",category:"World",url:"https://www.aljazeera.com/xml/rss/all.xml"},
- {name:"NPR",category:"Culture & U.S.",url:"https://feeds.npr.org/1001/rss.xml"},
- {name:"Financial Times",category:"Business",url:"https://www.ft.com/?format=rss"},
- {name:"BBC Science & Environment",category:"Environment",url:"https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"},
- {name:"France 24 English",category:"World",url:"https://www.france24.com/en/rss"},
- {name:"Electronic Frontier Foundation",category:"Rights & Technology",url:"https://www.eff.org/rss.xml"}
-];
-let articles=[],tickerIndex=0,tickerTimer=null;
+
+const CONFIG = Object.freeze({
+  cacheKey: "verifier-world-wire-v4",
+  cacheMaxAgeMs: 1000 * 60 * 60 * 24 * 7,
+  fetchTimeoutMs: 11000,
+  refreshEveryMs: 1000 * 60 * 60,
+  maxItemsPerSource: 12,
+  gatewayURL: "", // Optional self-hosted raw proxy, e.g. https://your-gateway.example/raw?url=
+  useAllOriginsFallback: true,
+  useRss2JsonFallback: true
+});
+
+const SOURCES = Object.freeze([
+  {name:"BBC World",category:"World",url:"https://feeds.bbci.co.uk/news/world/rss.xml"},
+  {name:"The Guardian World",category:"World",url:"https://www.theguardian.com/world/rss"},
+  {name:"Al Jazeera",category:"World",url:"https://www.aljazeera.com/xml/rss/all.xml"},
+  {name:"NPR",category:"Culture & U.S.",url:"https://feeds.npr.org/1001/rss.xml"},
+  {name:"Financial Times",category:"Business",url:"https://www.ft.com/?format=rss"},
+  {name:"BBC Science & Environment",category:"Environment",url:"https://feeds.bbci.co.uk/news/science_and_environment/rss.xml"},
+  {name:"France 24 English",category:"World",url:"https://www.france24.com/en/rss"},
+  {name:"Electronic Frontier Foundation",category:"Rights & Technology",url:"https://www.eff.org/rss.xml"}
+]);
+
+const $ = id => document.getElementById(id);
+const state = {
+  articles: [], saved: new Set(), health: new Map(), cacheSavedAt: 0,
+  tickerIndex: 0, tickerTimer: null, refreshing: false,
+  lastRefreshAt: 0, message: "Starting…", usingCache: false
+};
+
+function storageGet(key, fallback) {
+  try { const raw = localStorage.getItem(`${CONFIG.cacheKey}:${key}`); return raw == null ? fallback : JSON.parse(raw); }
+  catch { return fallback; }
+}
+function storageSet(key, value) {
+  try { localStorage.setItem(`${CONFIG.cacheKey}:${key}`, JSON.stringify(value)); return true; }
+  catch { return false; }
+}
+function textOnly(value) {
+  const raw = String(value ?? "");
+  if (!raw.includes("<") && !raw.includes("&")) return raw.replace(/\s+/g," ").trim();
+  const doc = new DOMParser().parseFromString(raw, "text/html");
+  return (doc.body.textContent || "").replace(/\s+/g," ").trim();
+}
+function safeURL(value) {
+  try {
+    const u = new URL(String(value || ""), location.href);
+    if (!/^https?:$/.test(u.protocol)) return "";
+    u.hash = "";
+    return u.href;
+  } catch { return ""; }
+}
+function safeImageURL(value) {
+  const u = safeURL(value);
+  return u.startsWith("https://") ? u : "";
+}
+function canonicalURL(value) {
+  const href = safeURL(value);
+  if (!href) return "";
+  try {
+    const u = new URL(href);
+    ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","gclid","fbclid","mc_cid","mc_eid"].forEach(k => u.searchParams.delete(k));
+    u.hash = "";
+    return u.href.replace(/\/$/,"");
+  } catch { return href; }
+}
+function hashString(value) {
+  let h = 2166136261;
+  for (let i=0;i<value.length;i++) { h ^= value.charCodeAt(i); h = Math.imul(h,16777619); }
+  return (h >>> 0).toString(36);
+}
+function normalizeArticle(input, src) {
+  const title = textOnly(input.title || "Untitled report").slice(0, 260);
+  const link = safeURL(input.link || input.url || input.guid || "");
+  const description = textOnly(input.description || input.summary || input.content || input.contentSnippet || "").slice(0, 520);
+  const pubDate = String(input.pubDate || input.published || input.updated || input.isoDate || "").trim();
+  const imageCandidate = typeof input.image === "string" ? input.image : (input.image?.url || input.thumbnail || "");
+  const image = safeImageURL(imageCandidate);
+  const source = String(src?.name || input.source || "Unknown source").slice(0,100);
+  const category = String(src?.category || input.category || "Other").slice(0,100);
+  const canonical = canonicalURL(link);
+  const id = hashString(`${source}|${canonical || link}|${title.toLowerCase()}`);
+  return {id,title,link,canonical,description,pubDate,image,source,category};
+}
+function parseDescriptionImage(raw) {
+  if (!raw) return "";
+  const doc = new DOMParser().parseFromString(String(raw), "text/html");
+  return safeImageURL(doc.querySelector("img")?.getAttribute("src") || "");
+}
+function queryText(node, selectors) {
+  for (const selector of selectors) {
+    const el = node.querySelector(selector);
+    const value = el?.textContent?.trim();
+    if (value) return value;
+  }
+  return "";
+}
+function queryAttr(node, selectors, attr) {
+  for (const selector of selectors) {
+    try {
+      const value = node.querySelector(selector)?.getAttribute(attr)?.trim();
+      if (value) return value;
+    } catch {}
+  }
+  return "";
+}
+function xmlItems(raw, src) {
+  const doc = new DOMParser().parseFromString(raw, "text/xml");
+  if (doc.querySelector("parsererror")) throw new Error("Invalid XML response");
+  let nodes = [...doc.querySelectorAll("item")];
+  let atom = false;
+  if (!nodes.length) { nodes = [...doc.querySelectorAll("entry")]; atom = true; }
+  if (!nodes.length) throw new Error("No feed items found");
+  return nodes.slice(0, CONFIG.maxItemsPerSource).map(node => {
+    const descriptionRaw = queryText(node,["description","summary","content"]);
+    let link = "";
+    if (atom) {
+      link = queryAttr(node,["link[rel='alternate']","link"],"href");
+    } else {
+      link = queryText(node,["link"]) || queryAttr(node,["link"],"href");
+    }
+    const enclosure = queryAttr(node,["enclosure[url]"],"url");
+    const mediaContent = queryAttr(node,["media\\:content[url]","media\\:thumbnail[url]"],"url");
+    const image = safeImageURL(enclosure) || safeImageURL(mediaContent) || parseDescriptionImage(descriptionRaw);
+    return normalizeArticle({
+      title: queryText(node,["title"]), link,
+      description: descriptionRaw,
+      pubDate: queryText(node,["pubDate","published","updated","dc\\:date"]), image
+    }, src);
+  }).filter(a => a.title && a.link);
+}
+async function fetchText(url, timeout = CONFIG.fetchTimeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url,{signal:controller.signal,cache:"no-store",headers:{Accept:"application/rss+xml, application/atom+xml, application/xml, text/xml, text/plain, */*"}});
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.text();
+  } finally { clearTimeout(timer); }
+}
+async function viaDirect(src) { return xmlItems(await fetchText(src.url), src); }
+async function viaGateway(src) {
+  if (!CONFIG.gatewayURL) throw new Error("Gateway not configured");
+  return xmlItems(await fetchText(CONFIG.gatewayURL + encodeURIComponent(src.url)), src);
+}
+async function viaAllOrigins(src) {
+  if (!CONFIG.useAllOriginsFallback) throw new Error("AllOrigins disabled");
+  return xmlItems(await fetchText("https://api.allorigins.win/raw?url=" + encodeURIComponent(src.url)), src);
+}
+async function viaRss2Json(src) {
+  if (!CONFIG.useRss2JsonFallback) throw new Error("rss2json disabled");
+  const raw = await fetchText("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(src.url));
+  const data = JSON.parse(raw);
+  if (data.status && data.status !== "ok") throw new Error(data.message || "rss2json rejected feed");
+  if (!Array.isArray(data.items)) throw new Error("rss2json returned no items");
+  return data.items.slice(0,CONFIG.maxItemsPerSource).map(item => normalizeArticle({
+    title:item.title, link:item.link, description:item.description || item.content,
+    pubDate:item.pubDate, image:item.thumbnail || item.enclosure?.link || ""
+  },src)).filter(a => a.title && a.link);
+}
+async function fetchSource(src) {
+  const started = performance.now();
+  state.health.set(src.name,{status:"loading",items:0,ms:0,via:"—",error:""});
+  renderHealth();
+  const transports = [
+    ["direct",viaDirect],
+    ...(CONFIG.gatewayURL ? [["self gateway",viaGateway]] : []),
+    ...(CONFIG.useAllOriginsFallback ? [["AllOrigins",viaAllOrigins]] : []),
+    ...(CONFIG.useRss2JsonFallback ? [["rss2json",viaRss2Json]] : [])
+  ];
+  const errors = [];
+  for (const [via, fn] of transports) {
+    try {
+      const items = await fn(src);
+      if (!items.length) throw new Error("Zero usable items");
+      const ms = Math.round(performance.now()-started);
+      state.health.set(src.name,{status:"ok",items:items.length,ms,via,error:""});
+      renderHealth();
+      return items;
+    } catch (error) {
+      errors.push(`${via}: ${error?.name === "AbortError" ? "timeout" : (error?.message || "failed")}`);
+    }
+  }
+  const ms = Math.round(performance.now()-started);
+  state.health.set(src.name,{status:"error",items:0,ms,via:"none",error:errors.slice(-2).join(" · ")});
+  renderHealth();
+  return [];
+}
+function ms(article) {
+  const n = Date.parse(article.pubDate || "");
+  return Number.isFinite(n) ? n : 0;
+}
+function ageLabel(timestamp) {
+  if (!timestamp) return "unknown";
+  const diff = Math.max(0,Date.now()-timestamp);
+  const min = Math.floor(diff/60000);
+  if (min < 1) return "just now";
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min/60);
+  if (hr < 24) return `${hr}h ago`;
+  return `${Math.floor(hr/24)}d ago`;
+}
+function freshnessCutoff() {
+  const value = $("freshness").value;
+  const map = {"24h":24,"72h":72,"7d":168};
+  return map[value] ? Date.now() - map[value]*60*60*1000 : 0;
+}
+function titleTokens(title) {
+  const stop = new Set(["the","a","an","and","or","but","to","of","in","on","for","with","from","at","as","is","are","was","were","be","been","by","after","before","over","under","into","amid","says","say","new","latest"]);
+  return new Set(String(title).toLowerCase().replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w => w.length>2 && !stop.has(w)));
+}
+function similarity(a,b) {
+  const A = titleTokens(a.title), B = titleTokens(b.title);
+  if (!A.size || !B.size) return 0;
+  let common = 0; A.forEach(x => { if (B.has(x)) common++; });
+  if (common < 2) return 0;
+  return common / Math.min(A.size,B.size);
+}
+function relatedSourceCount(article) {
+  const sources = new Set([article.source]);
+  for (const other of state.articles) {
+    if (other.id !== article.id && other.source !== article.source && similarity(article,other) >= .42) sources.add(other.source);
+  }
+  return sources.size;
+}
+function visibleArticles() {
+  const query = $("search").value.trim().toLowerCase();
+  const category = $("category").value;
+  const source = $("sourceFilter").value;
+  const cutoff = freshnessCutoff();
+  const savedOnly = $("savedOnly").checked;
+  const sort = $("sortToggle").dataset.sort || "newest";
+  const list = state.articles.filter(article => {
+    if (category !== "all" && article.category !== category) return false;
+    if (source !== "all" && article.source !== source) return false;
+    if (savedOnly && !state.saved.has(article.id)) return false;
+    if (cutoff && ms(article) < cutoff) return false;
+    if (query && !`${article.title} ${article.description} ${article.source} ${article.category}`.toLowerCase().includes(query)) return false;
+    return true;
+  });
+  if (sort === "oldest") list.sort((a,b)=>ms(a)-ms(b));
+  else if (sort === "source") list.sort((a,b)=>a.source.localeCompare(b.source)||ms(b)-ms(a));
+  else if (sort === "coverage") list.sort((a,b)=>relatedSourceCount(b)-relatedSourceCount(a)||ms(b)-ms(a));
+  else list.sort((a,b)=>ms(b)-ms(a));
+  return list;
+}
+function externalLink(label, url) {
+  const href = safeURL(url);
+  if (!href) return null;
+  const a = document.createElement("a");
+  a.textContent = label; a.href = href; a.target = "_blank"; a.rel = "noopener noreferrer";
+  return a;
+}
+function initials(source) {
+  return source.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase() || "W";
+}
+function exactDate(value) {
+  const t = Date.parse(value || "");
+  return Number.isFinite(t) ? new Date(t).toLocaleString() : "Undated";
+}
+function articleCard(article) {
+  const el = document.createElement("article"); el.className = "article" + (state.saved.has(article.id) ? " saved" : "");
+  const imageWrap = document.createElement("div"); imageWrap.className="img"; imageWrap.setAttribute("aria-hidden","true");
+  if (article.image) {
+    const img = document.createElement("img"); img.alt=""; img.loading="lazy"; img.decoding="async"; img.referrerPolicy="no-referrer"; img.src=article.image;
+    img.addEventListener("error",()=>{img.remove();imageWrap.textContent=initials(article.source)},{once:true}); imageWrap.append(img);
+  } else imageWrap.textContent = initials(article.source);
+  const body = document.createElement("div"); body.className="article-body";
+  const sourceLine = document.createElement("div"); sourceLine.className="source-line";
+  const source = document.createElement("div"); source.className="source"; source.textContent=`${article.source} · ${article.category}`; sourceLine.append(source);
+  const related = relatedSourceCount(article);
+  if (related > 1) { const badge=document.createElement("span"); badge.className="coverage"; badge.textContent=`Related coverage: ${related} sources`; badge.title="Approximate title similarity across loaded sources; not a verification score."; sourceLine.append(badge); }
+  const h2=document.createElement("h2"); h2.textContent=article.title;
+  const meta=document.createElement("div"); meta.className="meta";
+  const exact=document.createElement("span"); exact.textContent=exactDate(article.pubDate); meta.append(exact);
+  if (ms(article)) { const rel=document.createElement("span"); rel.textContent=ageLabel(ms(article)); meta.append(rel); }
+  const p=document.createElement("p"); p.textContent=(article.description || "No summary supplied by the source.").slice(0,360);
+  const actions=document.createElement("div"); actions.className="actions";
+  const open=externalLink("Open original ↗",article.link); if(open) actions.append(open);
+  const compare=externalLink("Compare coverage ↗",`https://news.google.com/search?q=${encodeURIComponent(`\"${article.title}\"`)}`); if(compare) actions.append(compare);
+  if (article.link) { const archive=externalLink("Archive ↗",`https://web.archive.org/web/*/${article.link}`); if(archive) actions.append(archive); }
+  const save=document.createElement("button"); save.type="button"; save.textContent=state.saved.has(article.id)?"Saved ✓":"Save"; save.setAttribute("aria-pressed",String(state.saved.has(article.id)));
+  save.addEventListener("click",()=>{ if(state.saved.has(article.id)) state.saved.delete(article.id); else state.saved.add(article.id); storageSet("saved",[...state.saved]); render(); }); actions.append(save);
+  const copy=document.createElement("button"); copy.type="button"; copy.textContent="Copy link"; copy.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(article.link);setMessage("Article link copied.")}catch{setMessage("Copy unavailable in this browser.")}}); actions.append(copy);
+  body.append(sourceLine,h2,meta,p,actions); el.append(imageWrap,body); return el;
+}
+function setMessage(message) { state.message=message; renderStatus(); }
+function renderStatus() {
+  const shown=visibleArticles().length;
+  const live=[...state.health.values()].filter(h=>h.status==="ok").length;
+  const parts=[`<strong>${shown}</strong> shown`,`<strong>${state.articles.length}</strong> loaded`,`<strong>${live}/${SOURCES.length}</strong> sources responding`];
+  if(state.usingCache && state.cacheSavedAt) parts.push(`cache ${ageLabel(state.cacheSavedAt)}`);
+  $("status").replaceChildren();
+  const prefix=document.createElement("span"); prefix.textContent=(state.message?state.message+" · ":""); $("status").append(prefix);
+  parts.forEach((part,i)=>{
+    if(i) $("status").append(document.createTextNode(" · "));
+    const m=part.match(/^<strong>(.*?)<\/strong>(.*)$/);
+    if(m){const strong=document.createElement("strong");strong.textContent=m[1];$("status").append(strong,document.createTextNode(m[2]));}
+    else $("status").append(document.createTextNode(part));
+  });
+}
+function renderSummary() {
+  const ok=[...state.health.values()].filter(h=>h.status==="ok").length;
+  const errors=[...state.health.values()].filter(h=>h.status==="error").length;
+  $("articleCount").textContent=`${state.articles.length} stories`;
+  $("sourceCount").textContent=`${ok}/${SOURCES.length} sources responding`;
+  $("cacheAge").textContent=state.cacheSavedAt?`Cache ${ageLabel(state.cacheSavedAt)}`:"No cache yet";
+  const dot=$("networkDot"), label=$("networkState"); dot.className="dot";
+  if(state.refreshing){dot.classList.add("warn");label.textContent="Refreshing";}
+  else if(ok===SOURCES.length){dot.classList.add("good");label.textContent="Wire healthy";}
+  else if(ok>0){dot.classList.add("warn");label.textContent="Partial wire";}
+  else if(errors){dot.classList.add("bad");label.textContent=state.usingCache?"Cache only":"Wire offline";}
+  else label.textContent="Starting";
+}
+function renderHealth() {
+  const root=$("healthGrid"); root.replaceChildren();
+  SOURCES.forEach(src=>{
+    const h=state.health.get(src.name)||{status:"idle",items:0,ms:0,via:"—",error:""};
+    const card=document.createElement("div");card.className="health-card";
+    const top=document.createElement("div");top.className="health-top";
+    const name=document.createElement("div");name.className="health-name";name.textContent=src.name;
+    const st=document.createElement("div");st.className="health-state "+(h.status==="ok"?"good":h.status==="error"?"bad":"warn");st.textContent=h.status;
+    const meta=document.createElement("div");meta.className="health-meta";
+    const pieces=[]; if(h.items)pieces.push(`${h.items} items`); if(h.via!=="—")pieces.push(h.via); if(h.ms)pieces.push(`${h.ms} ms`); meta.textContent=pieces.join(" · ") || src.category;
+    if(h.error)meta.title=h.error; top.append(name,st);card.append(top,meta);root.append(card);
+  }); renderSummary();
+}
+function startTicker(list) {
+  if(state.tickerTimer) clearInterval(state.tickerTimer); state.tickerIndex=0;
+  const root=$("ticker");
+  if(!list.length){root.textContent="No current headlines match these filters.";return;}
+  const show=()=>{const article=list[state.tickerIndex%Math.min(list.length,12)];root.replaceChildren();const link=externalLink(`${article.source} · ${article.title}`,article.link);root.append(link||document.createTextNode(`${article.source} · ${article.title}`));state.tickerIndex++;};
+  show(); state.tickerTimer=setInterval(show,8000);
+}
+function render() {
+  const list=visibleArticles(); const root=$("news"); root.replaceChildren();
+  if(!list.length){const empty=document.createElement("div");empty.className="empty";empty.textContent=state.articles.length?"No stories match the current filters.":"No stories are available yet.";root.append(empty);}
+  else list.forEach(a=>root.append(articleCard(a)));
+  root.setAttribute("aria-busy",String(state.refreshing)); renderStatus(); renderSummary(); startTicker(list);
+}
+function dedupe(items) {
+  const seenURL=new Set(), seenTitle=new Set(), out=[];
+  for(const article of items.sort((a,b)=>ms(b)-ms(a))){
+    const urlKey=article.canonical||article.link; const titleKey=article.title.toLowerCase().replace(/\s+/g," ").trim();
+    if((urlKey&&seenURL.has(urlKey)) || seenTitle.has(`${article.source}|${titleKey}`)) continue;
+    if(urlKey)seenURL.add(urlKey);seenTitle.add(`${article.source}|${titleKey}`);out.push(article);
+  }
+  return out;
+}
+function populateFilters() {
+  [...new Set(SOURCES.map(x=>x.category))].sort().forEach(value=>{const o=document.createElement("option");o.value=value;o.textContent=value;$("category").append(o)});
+  SOURCES.map(x=>x.name).sort().forEach(value=>{const o=document.createElement("option");o.value=value;o.textContent=value;$("sourceFilter").append(o)});
+}
+function loadCache() {
+  const cache=storageGet("cache",null); const saved=storageGet("saved",[]); state.saved=new Set(Array.isArray(saved)?saved:[]);
+  if(!cache?.items?.length || !cache.savedAt) return;
+  if(Date.now()-cache.savedAt > CONFIG.cacheMaxAgeMs) return;
+  state.articles=cache.items.map(x=>normalizeArticle(x,{name:x.source,category:x.category})).filter(a=>a.title&&a.link);
+  state.cacheSavedAt=cache.savedAt; state.usingCache=true; state.message="Showing local cache while checking feeds";
+  render();
+}
+async function load(force=false) {
+  if(state.refreshing) return; state.refreshing=true; $("refresh").disabled=true; $("refresh").setAttribute("aria-busy","true"); state.message=force?"Refreshing wire":"Checking feeds"; renderSummary(); renderStatus();
+  const results=await Promise.all(SOURCES.map(fetchSource)); const fresh=dedupe(results.flat());
+  if(fresh.length){state.articles=fresh;state.usingCache=false;state.lastRefreshAt=Date.now();state.cacheSavedAt=state.lastRefreshAt;storageSet("cache",{savedAt:state.cacheSavedAt,items:state.articles});state.message=`Wire refreshed ${new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`;}
+  else if(state.articles.length){state.usingCache=true;state.message="Feeds unavailable; retained local cache";}
+  else{state.message="No feeds responded and no local cache is available";}
+  state.refreshing=false;$("refresh").disabled=false;$("refresh").removeAttribute("aria-busy");renderHealth();render();
+}
+function cycleSort() {
+  const values=["newest","oldest","source","coverage"]; const button=$("sortToggle"); const current=button.dataset.sort||"newest"; const next=values[(values.indexOf(current)+1)%values.length]; button.dataset.sort=next; button.textContent=`Sort: ${next}`; render();
+}
+function clearFilters() { $("search").value="";$("category").value="all";$("sourceFilter").value="all";$("freshness").value="all";$("savedOnly").checked=false;render(); }
+function exportSaved() {
+  const items=state.articles.filter(a=>state.saved.has(a.id)).map(({title,link,pubDate,source,category})=>({title,link,pubDate,source,category}));
+  if(!items.length){setMessage("No saved stories to export.");return;}
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items},null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a");a.href=url;a.download=`verifier-saved-${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);setMessage(`Exported ${items.length} saved stor${items.length===1?"y":"ies"}.`);
+}
+function debounce(fn,wait=120){let t;return(...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),wait)}}
+
 $("date").textContent="Edition for "+new Date().toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-[...new Set(SOURCES.map(x=>x.category))].sort().forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;$("category").append(o)});
-async function fetchText(url,timeout=12000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{signal:c.signal,cache:"no-store"});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.text()}finally{clearTimeout(t)}}
-function xmlItems(raw,src){const doc=new DOMParser().parseFromString(raw,"text/xml");if(doc.querySelector("parsererror"))throw new Error("Invalid XML");let nodes=[...doc.querySelectorAll("item")],atom=false;if(!nodes.length){nodes=[...doc.querySelectorAll("entry")];atom=true}return nodes.slice(0,10).map(n=>{let href="";if(atom){const l=n.querySelector("link[rel='alternate']")||n.querySelector("link");href=l?.getAttribute("href")||""}else href=n.querySelector("link")?.textContent||"";const image=n.querySelector("enclosure[url]")?.getAttribute("url")||"";return S.normalizeArticle({title:n.querySelector("title")?.textContent,link:href,description:n.querySelector("description")?.textContent||n.querySelector("summary")?.textContent,pubDate:n.querySelector("pubDate")?.textContent||n.querySelector("published")?.textContent||n.querySelector("updated")?.textContent,image},{name:src.name,category:src.category})})}
-async function fetchSource(src){try{return xmlItems(await fetchText("https://api.allorigins.win/raw?url="+encodeURIComponent(src.url)),src)}catch(e){try{const data=JSON.parse(await fetchText("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(src.url)));return Array.isArray(data.items)?data.items.slice(0,10).map(x=>S.normalizeArticle(x,{name:src.name,category:src.category})):[]}catch(e2){console.warn("Wire source unavailable",src.name,e,e2);return[]}}}
-function ms(a){const n=Date.parse(a.pubDate||"");return Number.isFinite(n)?n:0}function visible(){const q=$("search").value.trim().toLowerCase(),cat=$("category").value;return articles.filter(a=>(cat==="all"||a.category===cat)&&(!q||`${a.title} ${a.description} ${a.source}`.toLowerCase().includes(q))).sort((a,b)=>ms(b)-ms(a))}
-function external(label,url){const a=document.createElement("a");a.textContent=label;return S.externalLink(a,url)?a:null}
-function card(a){const article=document.createElement("article");article.className="article";const imgWrap=document.createElement("div");imgWrap.className="img";if(a.image){const img=document.createElement("img");img.alt="";S.image(img,a.image);imgWrap.append(img)}const body=document.createElement("div");const source=document.createElement("div");source.className="source";source.textContent=`${a.source} · ${a.category}`;const h=document.createElement("h2");h.textContent=a.title;const meta=document.createElement("div");meta.className="meta";meta.textContent=a.pubDate?new Date(a.pubDate).toLocaleString():"Undated";const p=document.createElement("p");p.textContent=(a.description||"No summary supplied by the source.").slice(0,420);const actions=document.createElement("div");actions.className="actions";const open=external("Open original ↗",a.link);if(open)actions.append(open);const compare=external("Compare coverage ↗",`https://news.google.com/search?q=${encodeURIComponent(`"${a.title}"`)}`);if(compare)actions.append(compare);const archive=external("Archive ↗",`https://web.archive.org/web/*/${encodeURIComponent(a.link)}`);if(archive)actions.append(archive);body.append(source,h,meta,p,actions);article.append(imgWrap,body);return article}
-function render(){const list=visible();const root=$("news");root.replaceChildren();if(!list.length){const d=document.createElement("div");d.className="empty";d.textContent="No articles match the current filters.";root.append(d)}else list.forEach(a=>root.append(card(a)));$("status").textContent=`${list.length} shown · ${articles.length} loaded`;startTicker(list)}
-function startTicker(list){if(tickerTimer)clearInterval(tickerTimer);tickerIndex=0;if(!list.length){$("ticker").textContent="No current headlines available.";return}const show=()=>{const a=list[tickerIndex%Math.min(list.length,12)];$("ticker").replaceChildren();const link=external(`${a.source} · ${a.title}`,a.link);if(link)$("ticker").append(link);else $("ticker").textContent=`${a.source} · ${a.title}`;tickerIndex++};show();tickerTimer=setInterval(show,8000)}
-async function load(force=false){const cache=store.get("cache",null);if(!force&&cache?.items?.length){articles=cache.items.map(x=>S.normalizeArticle(x,{name:x.source,category:x.category}));$("status").textContent="Showing local cache while refreshing…";render()}const results=await Promise.allSettled(SOURCES.map(fetchSource));const fresh=results.flatMap(r=>r.status==="fulfilled"?r.value:[]);if(fresh.length){const seen=new Set();articles=fresh.filter(a=>{const k=`${a.link}::${a.title}`;if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>ms(b)-ms(a));store.set("cache",{savedAt:Date.now(),items:articles});$("status").textContent=`Wire refreshed ${new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}`;render()}else if(cache?.items?.length){$("status").textContent="Network feeds unavailable · local cache retained"}else{articles=[];$("status").textContent="Network feeds unavailable";render()}}
-$("search").addEventListener("input",render);$("category").addEventListener("change",render);$("refresh").addEventListener("click",()=>load(true));load(false);setInterval(()=>load(true),60*60*1000);
+populateFilters(); renderHealth(); loadCache();
+$("search").addEventListener("input",debounce(render));
+$("category").addEventListener("change",render);$("sourceFilter").addEventListener("change",render);$("freshness").addEventListener("change",render);$("savedOnly").addEventListener("change",render);
+$("refresh").addEventListener("click",()=>load(true));$("sortToggle").addEventListener("click",cycleSort);$("clearFilters").addEventListener("click",clearFilters);$("exportSaved").addEventListener("click",exportSaved);
+load(false); setInterval(()=>load(true),CONFIG.refreshEveryMs);
 })();
 </script>
 <script src="/assets/vnv-beta-link.js" defer></script>
