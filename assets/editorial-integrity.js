@@ -1,7 +1,52 @@
-/* The Verifier · Editorial Integrity Layer · v1.1.0
-   Non-destructive public labeling plus article-specific corrections/evidence. */
+/* The Verifier · Editorial Integrity Layer · v1.2.0
+   Non-destructive public labeling plus article-specific corrections/evidence.
+   The evidence registry is self-loaded so existing column HTML does not depend
+   on a second rollout mutation before corrections become available. */
 (() => {
   "use strict";
+
+  const SELF_SRC = document.currentScript?.src || "";
+  let evidenceLoadPromise = null;
+
+  function evidenceRegistryURL() {
+    try {
+      if (SELF_SRC) return new URL("editorial-evidence-registry.js", SELF_SRC).href;
+      return new URL("../assets/editorial-evidence-registry.js", window.location.href).href;
+    } catch (_) {
+      return "../assets/editorial-evidence-registry.js";
+    }
+  }
+
+  function ensureEvidenceRegistry() {
+    if (window.VerifierEditorialEvidence) return Promise.resolve(window.VerifierEditorialEvidence);
+    if (evidenceLoadPromise) return evidenceLoadPromise;
+
+    evidenceLoadPromise = new Promise(resolve => {
+      const existing = [...document.scripts].find(script =>
+        String(script.src || "").includes("editorial-evidence-registry.js")
+      );
+
+      const finish = () => resolve(window.VerifierEditorialEvidence || null);
+
+      if (existing) {
+        if (window.VerifierEditorialEvidence) { finish(); return; }
+        existing.addEventListener("load", finish, { once: true });
+        existing.addEventListener("error", () => resolve(null), { once: true });
+        window.setTimeout(finish, 4000);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = evidenceRegistryURL();
+      script.async = true;
+      script.referrerPolicy = "no-referrer";
+      script.addEventListener("load", finish, { once: true });
+      script.addEventListener("error", () => resolve(null), { once: true });
+      document.head.append(script);
+    });
+
+    return evidenceLoadPromise;
+  }
 
   function style() {
     if (document.getElementById("verifier-editorial-integrity-style")) return;
@@ -204,8 +249,11 @@
     style();
     addTopNotice();
     syncModalIntegrity();
+
     const observer = new MutationObserver(syncModalIntegrity);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    ensureEvidenceRegistry().then(() => syncModalIntegrity());
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply, { once: true });
