@@ -1,0 +1,57 @@
+name: Build Verifier News Feed
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verifier-news-feed
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Build same-origin feed JSON
+        run: python scripts/build_news_feed.py
+
+      - name: Validate generated payload
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('data/generated/latest.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          assert data.get('schemaVersion') == 1
+          assert data.get('storyCount') == len(data.get('stories', []))
+          assert data.get('storyCount', 0) > 0, 'No stories were generated'
+          for story in data['stories']:
+              assert story.get('title')
+              assert str(story.get('link', '')).startswith('https://')
+              assert story.get('sourceId')
+              assert story.get('verificationStatus') == 'discovered'
+          print(f"Validated {data['storyCount']} generated stories from {data.get('feedSourcesSuccessful')} successful source feeds.")
+          PY
+
+      - name: Commit generated feed when changed
+        run: |
+          git config user.name "The Verifier Feed Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/generated/latest.json data/generated/daily/
+          if git diff --cached --quiet; then
+            echo "No generated feed changes to commit."
+          else
+            git commit -m "chore(news): refresh generated Verifier feed"
+            git push
+          fi
