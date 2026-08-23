@@ -1,0 +1,112 @@
+name: Verifier Integrity Audit
+
+on:
+  push:
+    branches: [main, audit-hardening-2026-08-22]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate source registry and hardened surfaces
+        run: |
+          python - <<'PY'
+          import json, pathlib, re, sys
+
+          root = pathlib.Path('.')
+          registry_path = root / 'data' / 'sources.json'
+          data = json.loads(registry_path.read_text(encoding='utf-8'))
+          sources = data.get('sources', [])
+          assert data.get('schemaVersion') == 1, 'Unexpected source registry schema version'
+          assert len(sources) >= 30, f'Expected at least 30 canonical sources, found {len(sources)}'
+
+          ids = [s.get('id') for s in sources]
+          assert all(ids), 'Every source needs an id'
+          assert len(ids) == len(set(ids)), 'Duplicate source ids detected'
+
+          homepages = [s.get('homepage') for s in sources if s.get('homepage')]
+          assert all(url.startswith('https://') for url in homepages), 'All source homepages must use HTTPS'
+
+          feeds = [s.get('feed') for s in sources if s.get('feed')]
+          assert len(feeds) >= 15, f'Expected at least 15 feed-capable sources, found {len(feeds)}'
+          assert all(url.startswith('https://') for url in feeds), 'All configured feeds must use HTTPS'
+
+          required = [
+              root / 'assets' / 'verifier-safety.js',
+              root / 'assets' / 'verifier-local-cloud.js',
+              root / 'apps' / 'daily_digest_index.html',
+              root / 'apps' / 'global_news_digest_index.html',
+              root / 'apps' / 'live_news_index.html',
+              root / 'apps' / 'news_feed_index.html',
+              root / 'apps' / 'world_wire_index.html',
+              root / 'sw.js',
+          ]
+          for path in required:
+              assert path.exists(), f'Missing required file: {path}'
+
+          hardened_pages = [
+              root / 'apps' / 'live_news_index.html',
+              root / 'apps' / 'news_feed_index.html',
+              root / 'apps' / 'world_wire_index.html',
+              root / 'apps' / 'daily_digest_index.html',
+          ]
+          for path in hardened_pages:
+              text = path.read_text(encoding='utf-8')
+              assert 'verifier-safety.js' in text, f'{path} must load the shared safety layer'
+              assert '<meta name="viewport"' in text, f'{path} is missing viewport metadata'
+              # Guard against the old high-risk pattern: interpolating remote item fields directly into innerHTML.
+              dangerous = re.findall(r'innerHTML\s*=\s*`[^`]*(?:item|article|it)\.(?:title|link|description|thumbnail|image)', text, flags=re.S)
+              assert not dangerous, f'{path} appears to inject remote feed fields through innerHTML'
+
+          digest = (root / 'apps' / 'daily_digest_index.html').read_text(encoding='utf-8')
+          assert 'MAX_STORIES=30' in digest, 'Daily digest must retain the Top-30 limit'
+          assert 'MAX_PER_SOURCE=2' in digest, 'Daily digest must retain source concentration limit'
+          assert 'VerifierLocalCloud' in digest, 'Daily digest must use Local Browser Cloud persistence'
+
+          print(f'Validated {len(sources)} canonical sources and {len(feeds)} configured feeds.')
+          PY
+
+      - name: Syntax-check JavaScript assets
+        run: |
+          node --check assets/verifier-safety.js
+          node --check assets/verifier-local-cloud.js
+          node --check sw.js
+
+      - name: Syntax-check inline application scripts
+        run: |
+          python - <<'PY'
+          import pathlib, re, subprocess, tempfile
+          pages = [
+              'apps/live_news_index.html',
+              'apps/news_feed_index.html',
+              'apps/world_wire_index.html',
+              'apps/global_news_digest_index.html',
+              'apps/daily_digest_index.html',
+          ]
+          for page in pages:
+              text = pathlib.Path(page).read_text(encoding='utf-8')
+              scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', text, flags=re.S | re.I)
+              for index, script in enumerate(scripts):
+                  if not script.strip():
+                      continue
+                  with tempfile.NamedTemporaryFile('w', suffix='.js', encoding='utf-8', delete=False) as fh:
+                      fh.write(script)
+                      tmp = fh.name
+                  result = subprocess.run(['node', '--check', tmp], capture_output=True, text=True)
+                  if result.returncode:
+                      raise SystemExit(f'{page} inline script {index} failed syntax check:\n{result.stderr}')
+              print(f'{page}: {len(scripts)} inline script block(s) checked')
+          PY
