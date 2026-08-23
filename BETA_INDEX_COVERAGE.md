@@ -11,4 +11,4 @@ Public visible index-style HTML receives the shared beta widget. The root Verifi
 
 ## Beta Added
 
-- `apps/ultimate_news_index.html`
+- `apps/Live_Research_News_index.html`
