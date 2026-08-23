@@ -1,5 +1,5 @@
-/* The Verifier · Editorial Integrity Layer · v1.0.0
-   Non-destructive public labeling for opinion/column pages. */
+/* The Verifier · Editorial Integrity Layer · v1.1.0
+   Non-destructive public labeling plus article-specific corrections/evidence. */
 (() => {
   "use strict";
 
@@ -21,6 +21,29 @@
         margin:0 0 12px;padding:9px 11px;border-left:4px solid #b99b53;
         background:#fff8df;color:#4b4022;font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif
       }
+      .verifier-evidence-addendum{
+        margin:0 0 14px;padding:14px;border:1px solid #b8842f;border-radius:10px;
+        background:#fffaf0;color:#2d2619;font:13px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+        box-shadow:0 5px 18px rgba(80,55,15,.08)
+      }
+      .verifier-evidence-addendum h3{
+        margin:0 0 4px;color:#5c4315;font:700 1.05rem/1.25 system-ui,-apple-system,"Segoe UI",sans-serif
+      }
+      .verifier-evidence-addendum .evidence-status{
+        display:inline-block;margin:0 0 9px;padding:3px 7px;border-radius:999px;
+        background:#5c4315;color:#fff;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase
+      }
+      .verifier-evidence-addendum .evidence-dates{margin:0 0 9px;color:#6a5b3b;font-size:11px}
+      .verifier-evidence-addendum .evidence-summary{margin:0 0 11px}
+      .verifier-evidence-addendum details{margin:8px 0;border-top:1px solid #ead8b2;padding-top:8px}
+      .verifier-evidence-addendum summary{cursor:pointer;font-weight:800;color:#4d3a16}
+      .verifier-evidence-addendum .correction-item{margin:10px 0;padding:9px 10px;border-left:3px solid #b8842f;background:#fff}
+      .verifier-evidence-addendum .correction-item b{display:block;margin-bottom:3px;color:#3f3015}
+      .verifier-evidence-addendum .source-list{margin:8px 0 0;padding-left:18px}
+      .verifier-evidence-addendum .source-list li{margin:7px 0}
+      .verifier-evidence-addendum .source-list a{font-weight:800;color:#533f18}
+      .verifier-evidence-addendum .source-note{display:block;color:#6d6250;font-size:11px}
+      .verifier-evidence-addendum .editorial-note{margin:10px 0 0;padding-top:9px;border-top:1px solid #ead8b2;color:#5c5141;font-size:11px}
     `;
     document.head.append(css);
   }
@@ -44,8 +67,16 @@
     else document.body.prepend(notice);
   }
 
+  function modalBody() {
+    return document.querySelector("#articleModal .modal-body, #modalBody, .modal-body");
+  }
+
+  function modalTitle() {
+    return (document.querySelector("#modalTitle, #articleModal .modal-title, .modal-title")?.textContent || "").trim();
+  }
+
   function addModalNotice() {
-    const body = document.querySelector("#articleModal .modal-body, #modalBody, .modal-body");
+    const body = modalBody();
     if (!body || body.parentNode?.querySelector(".verifier-editorial-modal-note")) return;
     const note = document.createElement("div");
     note.className = "verifier-editorial-modal-note";
@@ -53,12 +84,128 @@
     body.parentNode.insertBefore(note, body);
   }
 
+  function safeExternalLink(label, url) {
+    try {
+      const parsed = new URL(String(url || ""));
+      if (parsed.protocol !== "https:" || parsed.username || parsed.password) return null;
+      const a = document.createElement("a");
+      a.href = parsed.href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.referrerPolicy = "no-referrer";
+      a.textContent = label;
+      return a;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function buildEvidenceAddendum(record) {
+    const box = document.createElement("section");
+    box.className = "verifier-evidence-addendum";
+    box.dataset.evidenceId = record.id || record.title;
+    box.setAttribute("role", "note");
+
+    const h = document.createElement("h3");
+    h.textContent = record.heading || "Correction & Evidence Addendum";
+
+    const status = document.createElement("div");
+    status.className = "evidence-status";
+    status.textContent = record.status || "Evidence note";
+
+    const dates = document.createElement("div");
+    dates.className = "evidence-dates";
+    dates.textContent = `Original publication: ${record.published || "undated"} · Addendum: ${record.correctionDate || "undated"}`;
+
+    const summary = document.createElement("p");
+    summary.className = "evidence-summary";
+    summary.textContent = record.summary || "";
+
+    box.append(h, status, dates, summary);
+
+    if (Array.isArray(record.corrections) && record.corrections.length) {
+      const details = document.createElement("details");
+      details.open = true;
+      const summaryEl = document.createElement("summary");
+      summaryEl.textContent = "Material corrections and clarifications";
+      details.append(summaryEl);
+      record.corrections.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "correction-item";
+        const label = document.createElement("b");
+        label.textContent = item.label || "Correction";
+        const text = document.createElement("div");
+        text.textContent = item.text || "";
+        row.append(label, text);
+        details.append(row);
+      });
+      box.append(details);
+    }
+
+    if (Array.isArray(record.sources) && record.sources.length) {
+      const details = document.createElement("details");
+      const summaryEl = document.createElement("summary");
+      summaryEl.textContent = "Evidence and reference record";
+      const list = document.createElement("ul");
+      list.className = "source-list";
+      record.sources.forEach(source => {
+        const li = document.createElement("li");
+        const link = safeExternalLink(source.label || "Source", source.url);
+        if (link) li.append(link);
+        else li.append(document.createTextNode(source.label || "Source"));
+        if (source.note) {
+          const note = document.createElement("span");
+          note.className = "source-note";
+          note.textContent = source.note;
+          li.append(note);
+        }
+        list.append(li);
+      });
+      details.append(summaryEl, list);
+      box.append(details);
+    }
+
+    if (record.editorialNote) {
+      const note = document.createElement("p");
+      note.className = "editorial-note";
+      note.textContent = record.editorialNote;
+      box.append(note);
+    }
+
+    return box;
+  }
+
+  function syncEvidenceAddendum() {
+    const body = modalBody();
+    if (!body?.parentNode) return;
+
+    const parent = body.parentNode;
+    const existing = parent.querySelector(".verifier-evidence-addendum");
+    const title = modalTitle();
+    const registry = window.VerifierEditorialEvidence;
+    const record = registry?.findByTitle?.(title) || null;
+
+    if (!record) {
+      existing?.remove();
+      return;
+    }
+
+    if (existing?.dataset.evidenceId === (record.id || record.title)) return;
+    existing?.remove();
+    parent.insertBefore(buildEvidenceAddendum(record), body);
+  }
+
+  function syncModalIntegrity() {
+    addModalNotice();
+    syncEvidenceAddendum();
+  }
+
   function apply() {
     style();
     addTopNotice();
-    addModalNotice();
-    const observer = new MutationObserver(addModalNotice);
-    observer.observe(document.body, { childList: true, subtree: true });
+    syncModalIntegrity();
+    const observer = new MutationObserver(syncModalIntegrity);
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply, { once: true });
