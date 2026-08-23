@@ -1,4 +1,4 @@
-/* The Verifier · shared external-data safety layer · v1.0.0
+/* The Verifier · shared external-data safety layer · v1.1.0
    Public client-side helper. No secrets, credentials, private routing, or hidden logic.
    Purpose: treat RSS/API/imported values strictly as untrusted data. */
 (() => {
@@ -43,6 +43,7 @@
     const {
       fallback = "",
       allowHttp = false,
+      allowRelative = false,
       allowDataImage = false,
       base = window.location.href
     } = options;
@@ -50,12 +51,16 @@
     const raw = String(value ?? "").trim().slice(0, MAX.url);
     if (!raw) return fallback;
 
-    if (allowDataImage && /^data:image\/(?:png|jpeg|jpg|gif|webp|svg\+xml);/i.test(raw)) {
+    if (allowDataImage && /^data:image\/(?:png|jpeg|jpg|gif|webp);/i.test(raw)) {
       return raw;
     }
 
+    const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(raw);
+    if (!hasScheme && !allowRelative) return fallback;
+
     try {
       const parsed = new URL(raw, base);
+      if (parsed.username || parsed.password) return fallback;
       if (parsed.protocol === "https:") return parsed.href;
       if (allowHttp && parsed.protocol === "http:") return parsed.href;
       return fallback;
@@ -83,7 +88,7 @@
     }
     anchor.href = href;
     anchor.target = "_blank";
-    anchor.rel = "noopener noreferrer";
+    anchor.rel = "noopener noreferrer external";
     anchor.referrerPolicy = "no-referrer";
     anchor.removeAttribute("aria-disabled");
     return true;
@@ -168,7 +173,7 @@
   }
 
   window.VerifierSafety = Object.freeze({
-    version: "1.0.0",
+    version: "1.1.0",
     MAX,
     text,
     stripHTML,
