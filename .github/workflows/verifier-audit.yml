@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate source registry and hardened surfaces
+      - name: Validate architecture and public integrity surfaces
         run: |
           python - <<'PY'
           import json, pathlib, re
@@ -48,8 +48,11 @@ jobs:
               root / 'assets' / 'verifier-safety.js',
               root / 'assets' / 'verifier-local-cloud.js',
               root / 'assets' / 'verifier-news-data.js',
+              root / 'assets' / 'verifier-home-extension.js',
+              root / 'assets' / 'editorial-integrity.js',
               root / 'scripts' / 'build_news_feed.py',
               root / '.github' / 'workflows' / 'build-news-feed.yml',
+              root / '.github' / 'workflows' / 'beta-index-coverage.yml',
               root / 'apps' / 'daily_digest_index.html',
               root / 'apps' / 'Modern_News_Engine_index.html',
               root / 'apps' / 'global_news_digest_index.html',
@@ -59,8 +62,10 @@ jobs:
               root / 'apps' / 'live_news_index.html',
               root / 'apps' / 'news_feed_index.html',
               root / 'apps' / 'world_wire_index.html',
-              root / 'sw.js',
+              root / 'editorial_standard_index.html',
               root / 'EDITORIAL_STANDARD.md',
+              root / 'EDITORIAL_AUDIT_QUEUE.md',
+              root / 'sw.js',
           ]
           for path in required:
               assert path.exists(), f'Missing required file: {path}'
@@ -98,6 +103,8 @@ jobs:
           workflow = (root / '.github' / 'workflows' / 'build-news-feed.yml').read_text(encoding='utf-8')
           assert 'schedule:' in workflow and 'contents: write' in workflow
           assert 'actions/checkout@v7' in workflow and 'actions/setup-python@v7' in workflow
+          assert '[skip beta-rollout]' in workflow, 'Generated feed commits must not trigger public HTML rollout'
+          assert 'git pull --rebase origin main' in workflow, 'Feed publication must rebase before push'
 
           interactive = (root / 'apps' / 'interactive_news_index.html').read_text(encoding='utf-8')
           assert 'Spicy / Unusual' not in interactive
@@ -111,10 +118,34 @@ jobs:
           assert 'Kid-Safe:' not in kids
 
           shell = (root / 'sw.js').read_text(encoding='utf-8')
-          for path in ['interactive_news_index.html','education_news_index.html','kids_news_network_index.html']:
+          assert '/data/generated/' in shell, 'Service worker must explicitly bypass generated current-news data'
+          assert 'verifier-news-data.js' in shell, 'Offline shell must cache same-origin news client code'
+          for path in ['Modern_News_Engine_index.html','interactive_news_index.html','education_news_index.html','kids_news_network_index.html']:
               assert path in shell, f'Offline shell missing {path}'
 
-          print(f'Validated {len(sources)} canonical sources and {len(feeds)} feed-capable sources.')
+          home_extension = (root / 'assets' / 'verifier-home-extension.js').read_text(encoding='utf-8')
+          assert 'daily-top-30' in home_extension and 'Daily Top 30' in home_extension
+          assert 'Global Source Directory' in home_extension
+          assert 'Young Readers Newsroom' in home_extension
+
+          editorial_layer = (root / 'assets' / 'editorial-integrity.js').read_text(encoding='utf-8')
+          assert 'Editorial / Opinion' in editorial_layer
+          assert 'editorial_standard_index.html' in editorial_layer
+          standard_html = (root / 'editorial_standard_index.html').read_text(encoding='utf-8')
+          assert 'Source inclusion is not endorsement' in standard_html
+          assert 'Human dignity' in standard_html
+
+          coverage = (root / '.github' / 'workflows' / 'beta-index-coverage.yml').read_text(encoding='utf-8')
+          assert 'actions/checkout@v7' in coverage
+          assert 'verifier-home-extension.js' in coverage
+          assert 'editorial-integrity.js' in coverage
+          assert "'columns'" in coverage
+
+          queue = (root / 'EDITORIAL_AUDIT_QUEUE.md').read_text(encoding='utf-8')
+          assert 'The Quiet Consensus No One Voted For' in queue
+          assert 'Do not mark an item complete solely because it carries the global Editorial / Opinion banner.' in queue
+
+          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, first-party news architecture, and public integrity layers.')
           PY
 
       - name: Syntax-check Python feed builder
@@ -125,6 +156,8 @@ jobs:
           node --check assets/verifier-safety.js
           node --check assets/verifier-local-cloud.js
           node --check assets/verifier-news-data.js
+          node --check assets/verifier-home-extension.js
+          node --check assets/editorial-integrity.js
           node --check sw.js
 
       - name: Syntax-check inline application scripts
@@ -142,6 +175,7 @@ jobs:
               'apps/education_news_index.html',
               'apps/kids_news_network_index.html',
               'apps/Interactive_Live_ News_ Dashboard_index.html',
+              'editorial_standard_index.html',
           ]
           for page in pages:
               text = pathlib.Path(page).read_text(encoding='utf-8')
