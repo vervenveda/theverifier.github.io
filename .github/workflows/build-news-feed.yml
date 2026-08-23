@@ -4,12 +4,18 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 * * * *"
+  push:
+    branches: [hardening-wave-2-2026-08-22]
+    paths:
+      - "scripts/build_news_feed.py"
+      - "data/sources.json"
+      - ".github/workflows/build-news-feed.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: verifier-news-feed
+  group: verifier-news-feed-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -48,6 +54,7 @@ jobs:
           PY
 
       - name: Commit generated feed when changed
+        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name "The Verifier Feed Builder"
           git config user.email "actions@users.noreply.github.com"
@@ -59,3 +66,7 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main
           fi
+
+      - name: Branch smoke-test note
+        if: github.ref != 'refs/heads/main'
+        run: echo "Live publisher-feed retrieval and generated payload validation passed; branch runs do not publish generated data."
