@@ -1,6 +1,6 @@
 # The Verifier Editorial Audit Queue
 
-Version 1.0 · August 22, 2026
+Version 1.1 · August 22, 2026
 
 This file is a public editorial quality-control queue. It does not silently rewrite historical opinion pieces. Its purpose is to identify articles that need deliberate evidence, framing, freshness, or human-dignity review under `EDITORIAL_STANDARD.md`.
 
@@ -21,24 +21,32 @@ For each queued item, review:
 
 **Location:** `columns/foreign_politics_index.html`  
 **Topic:** U.S. policy toward Israel / political influence  
-**Series currently labeled:** “Zionism is Terrorism”
+**Series currently labeled:** “Zionism is Terrorism”  
+**Wave 3 status:** `CORRECTION ISSUED · EVIDENCE ADDED · FRAMING REVISED` through the article-specific public evidence registry; historical article text is preserved.
 
-Review before treating the piece as compliant with the current standard:
+Completed correction/evidence actions:
 
-- Allegations involving criminality, bribery, blackmail, coercion, threats, or professional retaliation require specific evidence and careful attribution.
-- Claims about U.S. public opinion require named, dated polling rather than broad statements about what “the public” believes.
-- Claims about congressional behavior should distinguish documented voting patterns from asserted motives.
-- Language concerning the legitimacy or origins of a state should distinguish legal/history arguments from statements about the identity or worth of people living there.
-- Review the series title for whether it collapses a political ideology, state policy, organizations, and civilians into one category; revise if necessary to preserve analytical precision and the human-dignity standard.
+- The original article’s categorical “criminal,” “bribery,” and “blackmail” language is withdrawn as a factual finding because the article did not establish those crimes with sufficient evidence.
+- Federal Election Commission records for AIPAC PAC and United Democracy Project are supplied so readers can examine documented campaign-finance activity directly and distinguish disclosed political spending from criminal corruption.
+- The original broad statement about U.S. public opinion is corrected using dated Pew Research Center and Gallup polling. The revised framing recognizes substantial movement and division while rejecting the unsupported claim that Americans uniformly oppose Israel or U.S. support.
+- The “false state” formulation is corrected as factual language: the evidence record links to the United Nations record admitting Israel to UN membership on May 11, 1949. Historical, legal, ethical, and political arguments about Israel’s creation, Palestinian dispossession, occupation, borders, settlements, and government policy remain legitimate subjects of editorial debate when labeled and sourced appropriately.
+- The addendum explicitly distinguishes the Israeli government, military operations, U.S. aid policy, advocacy organizations, Zionism as a political ideology, Israeli people, and Jewish people.
+- International-crime terminology is required to identify the relevant court, prosecutor, commission, investigation, or adjudicative status rather than being presented as an unattributed legal conclusion.
+- The original article remains visible as part of the publication record; the dated addendum controls where the original makes the corrected factual assertions above.
 
-**Target outcome:** preserve the author's ability to criticize lobbying, military aid, Zionism, Israeli government policy, occupation, or U.S. foreign policy forcefully while grounding consequential factual claims and avoiding collective attribution.
+Remaining review item:
+
+- The series label “Zionism is Terrorism” remains queued for a separate editorial decision about analytical precision. The correction system does not silently rename historical series metadata.
+
+**Target outcome:** preserve the author’s ability to criticize lobbying, military aid, Zionism, Israeli government policy, occupation, or U.S. foreign policy forcefully while grounding consequential factual claims and avoiding collective attribution.
 
 ## Priority B — freshness and evidence review
 
 ### 2025-12-26 — “A Shifting Landscape”
 
 **Location:** `columns/foreign_politics_index.html`  
-**Topic:** international recognition of Palestine
+**Topic:** international recognition of Palestine  
+**Status:** `QUEUED`
 
 Review:
 
@@ -50,7 +58,8 @@ Review:
 ### 2026-03-16 — “War From the World’s Balcony”
 
 **Location:** `columns/foreign_politics_index.html`  
-**Topic:** United States / Israel / Iran conflict
+**Topic:** United States / Israel / Iran conflict  
+**Status:** `QUEUED`
 
 Review:
 
@@ -60,7 +69,8 @@ Review:
 
 ### Middle East historical timeline entries
 
-**Location:** `columns/foreign_politics_index.html`
+**Location:** `columns/foreign_politics_index.html`  
+**Status:** `QUEUED`
 
 Review:
 
