@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-23T02:13:09.370499Z",
+  "generatedAt": "2026-08-23T02:13:51.790152Z",
   "sourceRegistryVersion": 1,
   "sourceRegistryUpdated": "2026-08-22",
   "method": "direct server-side RSS/Atom retrieval from configured canonical feeds; same-origin JSON publication",
@@ -6618,8 +6618,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:12:48.466122Z",
-      "elapsedMs": 145
+      "checkedAt": "2026-08-23T02:13:30.612624Z",
+      "elapsedMs": 455
     },
     {
       "id": "vox",
@@ -6628,8 +6628,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:12:48.611449Z",
-      "elapsedMs": 146
+      "checkedAt": "2026-08-23T02:13:31.067667Z",
+      "elapsedMs": 55
     },
     {
       "id": "cbc",
@@ -6638,8 +6638,8 @@
       "ok": false,
       "count": 0,
       "error": "The read operation timed out",
-      "checkedAt": "2026-08-23T02:12:48.757691Z",
-      "elapsedMs": 18081
+      "checkedAt": "2026-08-23T02:13:31.122291Z",
+      "elapsedMs": 18134
     },
     {
       "id": "global-news-ca",
@@ -6648,8 +6648,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:06.838327Z",
-      "elapsedMs": 53
+      "checkedAt": "2026-08-23T02:13:49.255959Z",
+      "elapsedMs": 56
     },
     {
       "id": "bbc",
@@ -6658,8 +6658,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:06.891284Z",
-      "elapsedMs": 148
+      "checkedAt": "2026-08-23T02:13:49.312451Z",
+      "elapsedMs": 82
     },
     {
       "id": "guardian",
@@ -6668,8 +6668,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:07.039089Z",
-      "elapsedMs": 62
+      "checkedAt": "2026-08-23T02:13:49.394431Z",
+      "elapsedMs": 123
     },
     {
       "id": "dw",
@@ -6678,8 +6678,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:07.101400Z",
-      "elapsedMs": 378
+      "checkedAt": "2026-08-23T02:13:49.517841Z",
+      "elapsedMs": 202
     },
     {
       "id": "france24",
@@ -6688,8 +6688,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:07.479555Z",
-      "elapsedMs": 208
+      "checkedAt": "2026-08-23T02:13:49.720187Z",
+      "elapsedMs": 96
     },
     {
       "id": "politico-eu",
@@ -6698,8 +6698,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:07.687614Z",
-      "elapsedMs": 236
+      "checkedAt": "2026-08-23T02:13:49.816473Z",
+      "elapsedMs": 112
     },
     {
       "id": "the-hindu",
@@ -6708,8 +6708,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:07.923407Z",
-      "elapsedMs": 65
+      "checkedAt": "2026-08-23T02:13:49.928577Z",
+      "elapsedMs": 487
     },
     {
       "id": "times-of-india",
@@ -6718,8 +6718,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:07.988435Z",
-      "elapsedMs": 90
+      "checkedAt": "2026-08-23T02:13:50.415804Z",
+      "elapsedMs": 106
     },
     {
       "id": "japan-times",
@@ -6728,8 +6728,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:08.078285Z",
-      "elapsedMs": 195
+      "checkedAt": "2026-08-23T02:13:50.521957Z",
+      "elapsedMs": 221
     },
     {
       "id": "fmt",
@@ -6738,8 +6738,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:08.273621Z",
-      "elapsedMs": 216
+      "checkedAt": "2026-08-23T02:13:50.743403Z",
+      "elapsedMs": 245
     },
     {
       "id": "mail-guardian",
@@ -6748,8 +6748,8 @@
       "ok": false,
       "count": 0,
       "error": "HTTP Error 404: Not Found",
-      "checkedAt": "2026-08-23T02:13:08.489286Z",
-      "elapsedMs": 61
+      "checkedAt": "2026-08-23T02:13:50.988105Z",
+      "elapsedMs": 151
     },
     {
       "id": "abc-au",
@@ -6758,8 +6758,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:08.550047Z",
-      "elapsedMs": 187
+      "checkedAt": "2026-08-23T02:13:51.139183Z",
+      "elapsedMs": 223
     },
     {
       "id": "rnz",
@@ -6768,8 +6768,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:08.736656Z",
-      "elapsedMs": 468
+      "checkedAt": "2026-08-23T02:13:51.361816Z",
+      "elapsedMs": 216
     },
     {
       "id": "aljazeera",
@@ -6778,8 +6778,8 @@
       "ok": true,
       "count": 20,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:09.204403Z",
-      "elapsedMs": 64
+      "checkedAt": "2026-08-23T02:13:51.577419Z",
+      "elapsedMs": 107
     },
     {
       "id": "npr",
@@ -6788,8 +6788,8 @@
       "ok": true,
       "count": 10,
       "error": "",
-      "checkedAt": "2026-08-23T02:13:09.268244Z",
-      "elapsedMs": 101
+      "checkedAt": "2026-08-23T02:13:51.684744Z",
+      "elapsedMs": 104
     }
   ]
 }
