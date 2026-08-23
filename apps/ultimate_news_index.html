@@ -1,2 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Verifier — Interactive News Portal</title>
+<meta name="description" content="The Verifier by Verve N Veda — a calm, visual portal for interactive news literacy, verification, civic resources, and public-interest media tools." />
+<meta name="robots" content="index,follow" />
+<style>
+:root{
+  --ink:#162236;
+  --muted:#637083;
+  --cream:#fffdf7;
+  --paper:#f7f1e7;
+  --soft:#efe5d3;
+  --navy:#111a2e;
+  --navy2:#1b2841;
+  --green:#304a3d;
+  --gold:#bd9857;
+  --gold2:#e4cb96;
+  --red:#9b2f35;
+  --blue:#244c7c;
+  --line:rgba(82,63,34,.17);
+  --shadow:0 22px 60px rgba(26,35,53,.15);
+  --radius:24px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--ink);
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 12% 5%, rgba(189,152,87,.16), transparent 34%),
+    radial-gradient(circle at 82% 8%, rgba(36,76,124,.12), transparent 30%),
+    linear-gradient(135deg,#fffdf8 0%,#f8f2e8 44%,#efe4d1 100%);
+  overflow-x:hidden;
+}
+a{color:inherit}
+.vnv-page{
+  min-height:100vh;
+  position:relative;
+  isolation:isolate;
+}
+.vnv-page:before,
+.vnv-page:after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.58;
+  background-repeat:no-repeat;
+  background-size:contain;
+}
+.vnv-page:before{
+  width:420px;height:420px;left:-120px;top:84px;
+  background-image:url("data:image/svg+xml,%3Csvg width='420' height='420' viewBox='0 0 420 420' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23bd9857' stroke-opacity='.22' stroke-width='1.2'%3E%3Cpath d='M83 277c90-4 148-48 173-132 9-31 33-56 71-75'/%3E%3Cpath d='M111 333c71-74 91-137 61-190-18-31-51-54-100-69'/%3E%3Cpath d='M44 190c85 21 151 14 197-21 25-19 42-47 51-84'/%3E%3Ccircle cx='257' cy='145' r='7'/%3E%3Ccircle cx='172' cy='143' r='5'/%3E%3Ccircle cx='242' cy='170' r='4'/%3E%3C/g%3E%3C/svg%3E");
+}
+.vnv-page:after{
+  width:520px;height:520px;right:-220px;bottom:-100px;
+  background-image:url("data:image/svg+xml,%3Csvg width='520' height='520' viewBox='0 0 520 520' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23304a3d' stroke-opacity='.14' stroke-width='1.4'%3E%3Cpath d='M68 348c112-16 183-77 211-182 11-42 43-78 98-108'/%3E%3Cpath d='M148 443c68-96 82-180 40-251-29-49-82-86-159-112'/%3E%3Cpath d='M28 232c99 36 187 36 263 1 54-25 94-69 121-133'/%3E%3Cpath d='M306 128c58 45 82 105 72 180'/%3E%3C/g%3E%3C/svg%3E");
+}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(255,253,248,.86);
+  border-bottom:1px solid var(--line);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.nav{
+  max-width:1180px;
+  margin:0 auto;
+  min-height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:0 20px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  text-decoration:none;
+}
+.brand-mark{
+  width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;
+  color:var(--green);
+  border:1px solid rgba(189,152,87,.4);
+  background:linear-gradient(145deg,#fffdf8,#efe4d1);
+  box-shadow:0 8px 22px rgba(189,152,87,.18);
+  flex:none;
+}
+.brand-title{font-family:Georgia,serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:14px;white-space:nowrap;color:var(--green)}
+.brand-sub{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.menu-wrap{position:relative;display:flex;align-items:center;gap:10px}
+.menu-btn{
+  width:46px;height:46px;border-radius:50%;border:1px solid var(--line);
+  background:#fffdf8;color:var(--ink);display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 12px 24px rgba(16,26,46,.08);
+}
+.menu-btn span,.menu-btn span:before,.menu-btn span:after{display:block;width:18px;height:2px;border-radius:999px;background:var(--green);content:"";transition:.2s}
+.menu-btn span:before{transform:translateY(-6px)}
+.menu-btn span:after{transform:translateY(4px)}
+.menu-btn[aria-expanded="true"] span{background:transparent}
+.menu-btn[aria-expanded="true"] span:before{transform:translateY(1px) rotate(45deg)}
+.menu-btn[aria-expanded="true"] span:after{transform:translateY(-1px) rotate(-45deg)}
+.menu-panel{
+  position:absolute;
+  top:58px;right:0;
+  width:min(330px,calc(100vw - 24px));
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:rgba(255,253,248,.98);
+  box-shadow:0 24px 70px rgba(16,26,46,.18);
+  padding:12px;
+  display:none;
+}
+.menu-panel.open{display:block}
+.menu-panel a{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 12px;border-radius:14px;text-decoration:none;color:var(--ink);
+}
+.menu-panel a:hover,.menu-panel a:focus-visible{background:#f4ead9;outline:none}
+.menu-panel small{color:var(--muted)}
+.hero{
+  max-width:1180px;
+  margin:0 auto;
+  padding:36px 20px 22px;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:24px;
+  align-items:stretch;
+}
+.hero-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:32px;
+  background:linear-gradient(150deg,rgba(255,253,248,.96),rgba(247,241,231,.86));
+  box-shadow:var(--shadow);
+  padding:34px;
+}
+.hero-card:before{
+  content:"";
+  position:absolute;inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 16%, rgba(189,152,87,.18), transparent 30%),
+    linear-gradient(120deg, transparent 0%, rgba(255,255,255,.54) 44%, transparent 62%);
+}
+.kicker{position:relative;color:var(--gold);font-weight:900;letter-spacing:.22em;text-transform:uppercase;font-size:12px;margin:0 0 12px}
+h1{position:relative;margin:0;color:var(--green);font-family:Georgia, 'Times New Roman', serif;font-size:clamp(42px,7vw,86px);line-height:.92;letter-spacing:-.045em}
+.lede{position:relative;max-width:680px;margin:20px 0 0;color:#4d5968;line-height:1.75;font-size:17px}
+.actions{position:relative;display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.btn{
+  min-height:46px;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  border:1px solid transparent;border-radius:999px;padding:12px 18px;
+  text-decoration:none;font-weight:850;cursor:pointer;font-size:14px;
+}
+.btn.primary{background:var(--navy);color:white;box-shadow:0 12px 24px rgba(17,26,46,.16)}
+.btn.gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#241704;box-shadow:0 12px 24px rgba(189,152,87,.22)}
+.btn.ghost{background:rgba(255,253,248,.76);color:var(--ink);border-color:var(--line)}
+.btn:hover,.btn:focus-visible{transform:translateY(-1px);outline:2px solid rgba(189,152,87,.55);outline-offset:3px}
+.news-visual{
+  min-height:100%;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:32px;
+  overflow:hidden;
+  color:white;
+  box-shadow:var(--shadow);
+  background:
+    radial-gradient(circle at 28% 18%, rgba(228,203,150,.28), transparent 28%),
+    radial-gradient(circle at 85% 20%, rgba(80,130,190,.25), transparent 34%),
+    linear-gradient(145deg,#0d1526,#1b2841 54%,#111a2e);
+  position:relative;
+  padding:26px;
+}
+.news-visual:before{
+  content:"";position:absolute;inset:0;opacity:.52;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:42px 42px;
+}
+.orbit{position:relative;height:330px;display:grid;place-items:center}
+.orbit svg{width:min(100%,440px);height:auto;display:block;filter:drop-shadow(0 18px 28px rgba(0,0,0,.23))}
+.pulse-dot{animation:pulse 2.9s ease-in-out infinite}
+.pulse-dot:nth-child(2){animation-delay:.4s}.pulse-dot:nth-child(3){animation-delay:.8s}.pulse-dot:nth-child(4){animation-delay:1.2s}
+@keyframes pulse{0%,100%{opacity:.48;transform:scale(1)}50%{opacity:1;transform:scale(1.24)}}
+.visual-caption{position:relative;border:1px solid rgba(228,203,150,.26);border-radius:20px;background:rgba(255,255,255,.06);padding:14px;line-height:1.55;color:#f6ead0}
+.ticker-wrap{max-width:1180px;margin:0 auto;padding:0 20px 18px}
+.ticker{
+  border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fffdf8;box-shadow:0 12px 32px rgba(16,26,46,.08);
+  display:flex;align-items:center;min-height:48px;
+}
+.ticker-label{align-self:stretch;display:flex;align-items:center;padding:0 14px;background:var(--red);color:#fff;font-weight:900;letter-spacing:.12em;text-transform:uppercase;font-size:12px;white-space:nowrap}
+.ticker-track{flex:1;overflow:hidden;white-space:nowrap;color:#3f4b59;font-weight:650}
+.ticker-text{display:inline-block;padding-left:100%;animation:scroll 28s linear infinite}
+@keyframes scroll{to{transform:translateX(-100%)}}
+.main{max-width:1180px;margin:0 auto;padding:10px 20px 54px}
+.section-title{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:28px 0 14px}
+.section-title h2{font-family:Georgia,serif;font-size:clamp(28px,4vw,44px);line-height:1;margin:0;color:var(--green)}
+.section-title p{margin:0;color:var(--muted);line-height:1.5;max-width:640px}
+.card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.feature-card{
+  border:1px solid var(--line);border-radius:24px;background:rgba(255,253,248,.82);box-shadow:0 16px 42px rgba(16,26,46,.08);padding:18px;
+  min-width:0;
+}
+.feature-icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#f1e6d4;color:var(--green);border:1px solid rgba(189,152,87,.27);font-size:22px;margin-bottom:12px}
+.feature-card h3{margin:0 0 8px;color:var(--ink);font-family:Georgia,serif;font-size:22px}
+.feature-card p{margin:0;color:#5c6878;line-height:1.65}
+.bridge-panel{
+  margin-top:16px;
+  border:1px solid rgba(17,26,46,.16);
+  border-radius:28px;
+  background:linear-gradient(135deg,#fffdf8,#f1e6d4);
+  box-shadow:0 18px 46px rgba(16,26,46,.11);
+  padding:22px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:18px;
+  align-items:center;
+}
+.bridge-panel h3{font-family:Georgia,serif;color:var(--green);font-size:28px;margin:0 0 8px}.bridge-panel p{margin:0;color:#536173;line-height:1.6}.status-pill{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;border-radius:999px;background:#fffdf8;border:1px solid var(--line);font-size:13px;color:#4f5d6d}.status-dot{width:10px;height:10px;background:#75a867;border-radius:50%;box-shadow:0 0 0 6px rgba(117,168,103,.16)}
+.launch-box{display:grid;gap:10px;min-width:230px}.launch-box .btn{width:100%}
+.resource-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.resource-link{display:flex;align-items:center;gap:12px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:18px;background:rgba(255,253,248,.72);text-decoration:none}.resource-link:hover,.resource-link:focus-visible{background:#fffdf8;outline:2px solid rgba(189,152,87,.45);outline-offset:2px}.resource-link b{display:block;color:var(--ink)}.resource-link small{display:block;color:var(--muted);line-height:1.35}.resource-link span:first-child{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:var(--navy);color:#fff;flex:none}
+.editor-note{margin-top:18px;padding:16px;border:1px dashed rgba(189,152,87,.55);border-radius:20px;background:rgba(255,253,248,.52);color:#586474;line-height:1.6;font-size:14px}
+.footer{border-top:1px solid var(--line);padding:22px 20px;text-align:center;color:var(--muted);background:rgba(255,253,248,.62);font-size:13px}
+.footer a{color:var(--green);font-weight:800;text-decoration:none}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.ticker-text,.pulse-dot{animation:none}.btn:hover{transform:none}}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}.orbit{height:280px}.card-grid{grid-template-columns:1fr}.bridge-panel{grid-template-columns:1fr}.launch-box{min-width:0}.resource-list{grid-template-columns:1fr}.section-title{display:block}.section-title p{margin-top:8px}}
+@media (max-width:560px){.nav{padding:0 12px;min-height:64px}.brand-sub{display:none}.hero{padding:22px 12px 14px}.main{padding:8px 12px 38px}.ticker-wrap{padding:0 12px 12px}.hero-card,.news-visual{border-radius:24px;padding:22px}.actions .btn{width:100%}.ticker{display:block}.ticker-label{min-height:40px;justify-content:center}.ticker-track{padding:12px}.ticker-text{padding-left:0;animation:none;white-space:normal}.orbit{height:auto;min-height:240px}.brand-title{font-size:12px}.menu-panel{right:-2px}.bridge-panel{padding:16px;border-radius:22px}}
+</style>
+</head>
+<body>
+<div class="vnv-page" id="verifierApp">
+  <header class="topbar">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="https://vervenveda.com/" aria-label="Verve N Veda home">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span><span class="brand-title">Verve N Veda</span><br><span class="brand-sub">The Verifier · Interactive News</span></span>
+      </a>
+      <div class="menu-wrap">
+        <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-controls="menuPanel" aria-expanded="false"><span></span></button>
+        <div class="menu-panel" id="menuPanel">
+          <!-- Add or edit menu links here. -->
+          <a href="interactive_news_index.html"><b>Interactive Edition Explorer</b><small>Launch →</small></a>
+          <a href="https://vervenveda.com/"><b>Verve N Veda</b><small>Home →</small></a>
+          <a href="https://khaemenesacademy.org/"><b>Khaemenes Academy</b><small>Learning →</small></a>
+          <a href="#resources"><b>Resource Doors</b><small>On page →</small></a>
+          <a href="#maintainer"><b>GitHub Notes</b><small>Edit help →</small></a>
+        </div>
+      </div>
+    </nav>
+  </header>
 
-<script src="/assets/vnv-beta-link.js" defer></script>
+  <section class="hero" aria-labelledby="pageTitle">
+    <div class="hero-grid">
+      <div class="hero-card">
+        <p class="kicker">The Verifier · Visual News Bridge</p>
+        <h1 id="pageTitle">Interactive News, Rebuilt With Clarity.</h1>
+        <p class="lede">This legacy doorway now opens into a calm, visual news-literacy portal: a place to explore context, compare sources, slow down before sharing, and enter the maintained Interactive Edition Explorer.</p>
+        <div class="actions">
+          <a class="btn primary" id="launchBtn" href="interactive_news_index.html">Open Interactive Explorer</a>
+          <a class="btn gold" href="https://vervenveda.com/">Visit VervenVeda.com</a>
+          <a class="btn ghost" href="https://khaemenesacademy.org/">Khaemenes Academy</a>
+        </div>
+      </div>
+
+      <aside class="news-visual" aria-label="Verifier visual overview">
+        <div class="orbit" aria-hidden="true">
+          <svg viewBox="0 0 520 430" role="img" aria-label="A shielded news network with source, context, verify, and learn nodes">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f4d99b"/><stop offset="1" stop-color="#b98f46"/></linearGradient>
+              <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f4d99b" stop-opacity=".72"/><stop offset="1" stop-color="#f4d99b" stop-opacity="0"/></radialGradient>
+            </defs>
+            <circle cx="260" cy="210" r="150" fill="none" stroke="#f4d99b" stroke-opacity=".25" stroke-width="2" stroke-dasharray="8 10"/>
+            <circle cx="260" cy="210" r="105" fill="none" stroke="#9ec5ff" stroke-opacity=".22" stroke-width="2"/>
+            <circle cx="260" cy="210" r="70" fill="url(#glow)" opacity=".42"/>
+            <path d="M260 100l92 38v70c0 84-54 132-92 151-38-19-92-67-92-151v-70z" fill="rgba(255,255,255,.07)" stroke="url(#g1)" stroke-width="4"/>
+            <path d="M220 213l27 28 57-68" fill="none" stroke="url(#g1)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="260" y1="210" x2="98" y2="96" stroke="#f4d99b" stroke-opacity=".35"/>
+            <line x1="260" y1="210" x2="432" y2="108" stroke="#f4d99b" stroke-opacity=".35"/>
+            <line x1="260" y1="210" x2="90" y2="328" stroke="#f4d99b" stroke-opacity=".35"/>
+            <line x1="260" y1="210" x2="430" y2="322" stroke="#f4d99b" stroke-opacity=".35"/>
+            <g class="pulse-dot"><circle cx="98" cy="96" r="31" fill="#162236" stroke="#f4d99b" stroke-width="2"/><text x="98" y="102" text-anchor="middle" fill="#fff6df" font-size="16" font-family="system-ui" font-weight="800">SOURCE</text></g>
+            <g class="pulse-dot"><circle cx="432" cy="108" r="35" fill="#162236" stroke="#9ec5ff" stroke-width="2"/><text x="432" y="113" text-anchor="middle" fill="#fff6df" font-size="15" font-family="system-ui" font-weight="800">CONTEXT</text></g>
+            <g class="pulse-dot"><circle cx="90" cy="328" r="34" fill="#162236" stroke="#f4d99b" stroke-width="2"/><text x="90" y="334" text-anchor="middle" fill="#fff6df" font-size="16" font-family="system-ui" font-weight="800">VERIFY</text></g>
+            <g class="pulse-dot"><circle cx="430" cy="322" r="31" fill="#162236" stroke="#9ec5ff" stroke-width="2"/><text x="430" y="328" text-anchor="middle" fill="#fff6df" font-size="16" font-family="system-ui" font-weight="800">LEARN</text></g>
+          </svg>
+        </div>
+        <div class="visual-caption"><b>Legacy link preserved.</b> This page can sit at an older filename while guiding people into the current maintained experience. No one gets lost; the doorway becomes beautiful.</div>
+      </aside>
+    </div>
+  </section>
+
+  <div class="ticker-wrap" aria-label="Verifier ticker">
+    <div class="ticker">
+      <div class="ticker-label">Verifier</div>
+      <div class="ticker-track"><span class="ticker-text">Pause before sharing · Check the source · Compare the context · Look for primary documents · Separate facts from commentary · Protect vulnerable readers · Build public trust through calm verification</span></div>
+    </div>
+  </div>
+
+  <main class="main">
+    <section aria-labelledby="pillarsTitle">
+      <div class="section-title">
+        <h2 id="pillarsTitle">Three Doors Into Better News</h2>
+        <p>A visual landing page should do more than redirect. It should make the purpose obvious, calm the reader, and give them a trustworthy next step.</p>
+      </div>
+      <div class="card-grid">
+        <article class="feature-card"><div class="feature-icon" aria-hidden="true">◇</div><h3>Read With Context</h3><p>Invite visitors to slow down and look for timelines, original sources, location, authorship, and what is known versus what is still developing.</p></article>
+        <article class="feature-card"><div class="feature-icon" aria-hidden="true">✓</div><h3>Verify Before Sharing</h3><p>Encourage source comparison and careful language. The goal is not outrage; the goal is public clarity and responsible sharing.</p></article>
+        <article class="feature-card"><div class="feature-icon" aria-hidden="true">✦</div><h3>Learn the Pattern</h3><p>Connect the news doorway to learning tools, academy resources, civic literacy, and safe research habits for students and families.</p></article>
+      </div>
+    </section>
+
+    <section class="bridge-panel" aria-labelledby="bridgeTitle">
+      <div>
+        <h3 id="bridgeTitle">Interactive News has moved — but the path is protected.</h3>
+        <p>This upgraded bridge keeps old URLs useful while presenting a clear, polished visual entrance to the maintained Interactive Edition Explorer.</p>
+        <span class="status-pill"><span class="status-dot" aria-hidden="true"></span><span id="statusText">Ready to launch manually. Auto-redirect is off for visual preview.</span></span>
+      </div>
+      <div class="launch-box">
+        <a class="btn primary" href="interactive_news_index.html">Launch Explorer</a>
+        <button class="btn ghost" type="button" id="copyPathBtn">Show file path note</button>
+      </div>
+    </section>
+
+    <section id="resources" aria-labelledby="resourcesTitle">
+      <div class="section-title">
+        <h2 id="resourcesTitle">Resource Doors</h2>
+        <p>Edit these links in the HTML when you are ready to add more Verve N Veda tools, Academy resources, and news-literacy portals.</p>
+      </div>
+      <div class="resource-list">
+        <!-- Add or edit resource buttons here. -->
+        <a class="resource-link" href="interactive_news_index.html"><span>📰</span><span><b>Interactive Edition Explorer</b><small>The maintained news experience.</small></span></a>
+        <a class="resource-link" href="https://vervenveda.com/"><span>✦</span><span><b>VervenVeda.com</b><small>Main resource and community home.</small></span></a>
+        <a class="resource-link" href="https://khaemenesacademy.org/"><span>🏛</span><span><b>Khaemenes Academy</b><small>Learning portals and educational resources.</small></span></a>
+        <a class="resource-link" href="#maintainer"><span>⚙</span><span><b>Maintainer Notes</b><small>Where to edit links and paths.</small></span></a>
+      </div>
+    </section>
+
+    <section id="maintainer" class="editor-note" aria-label="GitHub maintainer notes">
+      <b>GitHub note:</b> save this file under the same legacy filename you want to preserve. Keep <code>interactive_news_index.html</code> in the same folder, or edit the launch links in three places: the hero button, menu link, and resource card. For instant redirect later, add <code>?go=1</code> to the URL or turn on the redirect setting in the script.
+    </section>
+  </main>
+
+  <footer class="footer">
+    The Verifier · Verve N Veda · Built as a local, static, GitHub-ready page · <a href="https://vervenveda.com/">VervenVeda.com</a> · <a href="https://khaemenesacademy.org/">KhaemenesAcademy.org</a>
+  </footer>
+</div>
+<script>
+(function(){
+  'use strict';
+  const root=document.getElementById('verifierApp');
+  if(!root) return;
+  const menuBtn=root.querySelector('#menuBtn');
+  const menuPanel=root.querySelector('#menuPanel');
+  const statusText=root.querySelector('#statusText');
+  const copyPathBtn=root.querySelector('#copyPathBtn');
+  const TARGET_URL='interactive_news_index.html';
+  const AUTO_REDIRECT_SECONDS=0; // Set to 5 or 8 later if you want an automatic bridge after visual preview.
+  function closeMenu(){menuPanel.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');menuBtn.setAttribute('aria-label','Open menu');}
+  function openMenu(){menuPanel.classList.add('open');menuBtn.setAttribute('aria-expanded','true');menuBtn.setAttribute('aria-label','Close menu');}
+  menuBtn.addEventListener('click',function(){menuPanel.classList.contains('open')?closeMenu():openMenu();});
+  document.addEventListener('click',function(event){if(!root.contains(event.target)) return; if(!event.target.closest('.menu-wrap')) closeMenu();});
+  root.addEventListener('keydown',function(event){if(event.key==='Escape') closeMenu();});
+  root.querySelectorAll('.menu-panel a').forEach(function(link){link.addEventListener('click',closeMenu);});
+  copyPathBtn.addEventListener('click',function(){statusText.textContent='File path note: put this bridge and interactive_news_index.html in the same GitHub folder, or edit TARGET_URL and the visible links.';});
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('go')==='1'){
+    window.location.replace(TARGET_URL + window.location.hash);
+    return;
+  }
+  if(AUTO_REDIRECT_SECONDS>0 && window.location.hash !== '#stay'){
+    let left=AUTO_REDIRECT_SECONDS;
+    statusText.textContent='Auto-opening the Interactive Explorer in '+left+' seconds. Add #stay to preview this page.';
+    const timer=window.setInterval(function(){
+      left-=1;
+      if(left<=0){window.clearInterval(timer);window.location.replace(TARGET_URL);}else{statusText.textContent='Auto-opening the Interactive Explorer in '+left+' seconds. Add #stay to preview this page.';}
+    },1000);
+  }
+})();
+</script>
+</body>
+</html>
