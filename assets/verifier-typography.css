@@ -1,0 +1,16 @@
+/* The Verifier — page-level typography standard, 2026-10-12.
+ * These selectors deliberately exclude card/article H2 and internal UI labels.
+ * STOS files and runtime artifacts are outside this styling layer.
+ */
+:root{--verifier-eyebrow-size:55px;--verifier-heading-size:33px;--verifier-descriptor-size:24px}
+:is(header,.hero,.hero-copy,.masthead,.page-header) :is(.eyebrow,.kicker),
+body > :is(.eyebrow,.kicker){font-size:var(--verifier-eyebrow-size);line-height:1.16;overflow-wrap:anywhere}
+:is(header,.hero,.hero-copy,.masthead,.page-header) h1,
+main > h1,body > h1,.wrap > h1{font-size:var(--verifier-heading-size);line-height:1.24;overflow-wrap:anywhere}
+:is(header,.hero,.hero-copy,.masthead,.page-header) > h2,
+:is(header,.hero,.hero-copy,.masthead,.page-header) .subtitle,
+h1 + h2,h1 + .subtitle{font-size:var(--verifier-descriptor-size);line-height:1.36;overflow-wrap:anywhere}
+@media(max-width:640px){
+  :is(header,.hero,.hero-copy,.masthead,.page-header) :is(.eyebrow,.kicker),
+  body > :is(.eyebrow,.kicker){letter-spacing:normal}
+}
