@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import email.utils
 import html
+import ipaddress
 import json
 import re
 import socket
@@ -56,6 +57,43 @@ def safe_https_url(value: object) -> str:
     if parsed.username or parsed.password:
         return ""
     return urllib.parse.urlunsplit(parsed)
+
+
+def validate_feed_destination(value: str) -> str:
+    """Reject non-public destinations before every feed request/redirect.
+
+    The runner's networking layer must also prevent DNS rebinding; this is
+    application-level defense in depth, not a replacement for network egress policy.
+    """
+    url = safe_https_url(value)
+    if not url:
+        raise ValueError("Feed URL must use HTTPS")
+    parsed = urllib.parse.urlsplit(url)
+    host = (parsed.hostname or "").strip().lower().rstrip(".")
+    if not host or host in {"localhost", "localhost.localdomain"} or host.endswith((".localhost", ".local", ".internal")):
+        raise ValueError("Private or malformed feed hostname")
+    if parsed.port not in (None, 443):
+        raise ValueError("Non-standard HTTPS feed port")
+    try:
+        addresses = socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM)
+        if not addresses:
+            raise ValueError("Feed hostname could not be resolved")
+        for info in addresses:
+            ip = ipaddress.ip_address(info[4][0].split("%")[0])
+            if not ip.is_global:
+                raise ValueError("Feed resolved to non-public network address")
+    except (socket.gaierror, UnicodeError) as exc:
+        raise ValueError("Feed hostname could not be safely resolved") from exc
+    return url
+
+
+class ValidatingRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, msg, headers, newurl):
+        validate_feed_destination(newurl)
+        return super().redirect_request(request, fp, code, msg, headers, newurl)
+
+
+FEED_OPENER = urllib.request.build_opener(ValidatingRedirectHandler())
 
 
 def parse_date(value: str) -> tuple[str, int]:
@@ -172,10 +210,10 @@ def fetch_feed(source: dict) -> tuple[list[dict], dict]:
         },
     )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
+        validate_feed_destination(feed)
+        with FEED_OPENER.open(request, timeout=TIMEOUT) as response:
             final_url = safe_https_url(response.geturl())
-            if not final_url:
-                raise ValueError("Feed redirect did not remain on an explicit HTTPS URL")
+            validate_feed_destination(final_url)
             raw = response.read(4_000_000)
         root = ET.fromstring(raw)
         nodes = [n for n in root.iter() if local_name(n.tag) in {"item", "entry"}]
