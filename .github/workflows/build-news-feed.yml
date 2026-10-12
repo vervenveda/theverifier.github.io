@@ -38,7 +38,14 @@ jobs:
           assert data.get('schemaVersion') == 1
           assert data.get('storyCount') == len(data.get('stories', []))
           assert data.get('storyCount', 0) > 0, 'No stories were generated'
-          assert data.get('feedSourcesSuccessful', 0) > 0, 'No configured publisher feeds succeeded'
+          configured = data.get('feedSourcesConfigured', 0)
+          successful = data.get('feedSourcesSuccessful', 0)
+          assert configured > 0, 'No feeds configured'
+          assert successful >= max(1, (configured + 1) // 2), 'More than half the configured publisher feeds failed; preserve last known edition'
+          assert len(data.get('sourceHealth', [])) == configured, 'Missing source-health entries'
+          from datetime import datetime, timezone
+          generated = datetime.fromisoformat(data['generatedAt'].replace('Z', '+00:00'))
+          assert abs((datetime.now(timezone.utc) - generated).total_seconds()) < 3600, 'Generated timestamp outside expected publishing window'
           for story in data['stories']:
               assert story.get('title')
               assert str(story.get('link', '')).startswith('https://')
