@@ -16,7 +16,7 @@
 
   function safeURL(value) {
     const helper = window.VerifierSafety;
-    if (helper?.safeExternalURL) return helper.safeExternalURL(value) || "";
+    if (helper?.safeURL) return helper.safeURL(value) || "";
     try {
       const url = new URL(String(value || ""));
       return url.protocol === "https:" && !url.username && !url.password ? url.href : "";
