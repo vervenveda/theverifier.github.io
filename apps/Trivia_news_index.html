@@ -66,13 +66,15 @@
   }
 
   // --- Core Quiz & News Logic ---
-  const FEEDS = [
-    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/environment.xml', category: 'Environment' },
-    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/health.xml', category: 'Health' },
-    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/science.xml', category: 'Science' },
-    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/science_and_environment/rss.xml', category: 'Global' },
-    { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.npr.org/rss/rss.php?id=1007', category: 'Environment' }
-  ];
+  const FEEDS = ["Environment", "Health", "Science", "Global"].map(category=>({url:category,category}));
+  let editionPromise = null;
+  function triviaCategory(item) {
+    const text = [...(item.topics || []), item.title || ""].join(" ").toLowerCase();
+    if (/environment|climate|ecolog|conservation|wildlife/.test(text)) return "Environment";
+    if (/health|medical|medicine|disease|wellness/.test(text)) return "Health";
+    if (/science|technology|research|space|biology|physics/.test(text)) return "Science";
+    return "Global";
+  }
   const questionsPerQuiz = 10;
   const timePerQuestion = 20; // seconds
 
@@ -92,13 +94,24 @@
   // Fetch RSS feed and return items
   async function fetchFeed(url, category) {
     try {
-      const res = await fetch(url);
-      const data = await res.json();
-      if (Array.isArray(data.items)) {
-        return data.items.map(it => ({ ...it, category }));
-      }
-    } catch (err) { console.error('Feed error', err); }
-    return [];
+      if(!editionPromise) editionPromise = fetch("../data/generated/latest.json", {cache:"no-store"}).then(response=>{
+        if(!response.ok) throw Error("Edition unavailable");
+        return response.json();
+      });
+      const data = await editionPromise;
+      if(!Array.isArray(data.stories)) return [];
+      return data.stories.filter(item=>triviaCategory(item)===category).map(item=>({
+        title: String(item.title || ""),
+        description: String(item.description || ""),
+        pubDate: item.pubDate || "",
+        link: item.link || "",
+        category
+      }));
+    } catch(err) {
+      editionPromise = null;
+      console.warn("News edition unavailable", err);
+      return [];
+    }
   }
 
   // Load and cache news
