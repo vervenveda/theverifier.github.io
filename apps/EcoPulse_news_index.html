@@ -95,26 +95,35 @@
 const newsFeed = document.getElementById('newsFeed');
 const searchBox = document.getElementById('searchBox');
 
-// RSS feeds mapped to categories
-const feeds = [
-  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/environment.xml', category: 'Environment' },
-  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/health.xml', category: 'Health' },
-  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/science.xml', category: 'Science' },
-  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/science_and_environment/rss.xml', category: 'Global' },
-  { url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.npr.org/rss/rss.php?id=1007', category: 'Environment' }
-];
-
-let allArticles = [];
-let filteredArticles = [];
-
-// Fetch RSS feed and return items
-async function fetchFeed(url) {
+// First-party edition, grouped by subject; no remote RSS proxy.
+const feeds = ["Environment", "Health", "Science", "Global"].map(category=>({url:category,category}));
+let allArticles = [], filteredArticles = [];
+let editionRequest = null;
+function subjectFor(story) {
+  const text = [...(story.topics || []), story.title || ""].join(" ").toLowerCase();
+  if (/environment|climate|ecolog|conservation|wildlife/.test(text)) return "Environment";
+  if (/health|medical|medicine|disease|wellness/.test(text)) return "Health";
+  if (/science|technology|research|space|biology|physics/.test(text)) return "Science";
+  return "Global";
+}
+async function fetchFeed(category) {
   try {
-    const response = await fetch(url);
-    const data = await response.json();
-    return data.items.map(item => ({ ...item, category: feeds.find(f => f.url === url).category }));
-  } catch (err) {
-    console.error('Feed fetch error:', err);
+    if (!editionRequest) editionRequest = fetch("../data/generated/latest.json", {cache:"no-store"}).then(response=>{
+      if (!response.ok) throw Error("Edition unavailable");
+      return response.json();
+    });
+    const data = await editionRequest;
+    if(!Array.isArray(data.stories)) return [];
+    return data.stories.filter(item=>subjectFor(item) === category).map(item=>({
+      title: String(item.title || ""),
+      description: String(item.description || ""),
+      pubDate: item.pubDate || "",
+      link: item.link || "",
+      category
+    }));
+  } catch(err) {
+    editionRequest = null;
+    console.warn("Published edition unavailable", err);
     return [];
   }
 }
@@ -172,11 +181,19 @@ function displayNews(articles) {
     const card = document.createElement('div');
     card.className = 'news-card';
     card.style.backgroundColor = getCategoryColor(article.category);
-    card.innerHTML = `
-      <h3>${article.title}</h3>
-      <p>${article.description || ''}</p>
-      <a href="${article.link}" target="_blank">Read more</a>
-    `;
+    const heading = document.createElement("h3");
+    heading.textContent = article.title;
+    const summary = document.createElement("p");
+    summary.textContent = article.description || "";
+    const link = document.createElement("a");
+    link.textContent = "Read more";
+    try {
+      const url = new URL(article.link);
+      if(url.protocol === "https:" && !url.username && !url.password) {
+        link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer";
+      }
+    } catch (_) {}
+    card.append(heading, summary, link);
     newsFeed.appendChild(card);
   });
 }
