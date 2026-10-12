@@ -441,33 +441,37 @@ function buildTrends(list){
 }
 
 /* =========================
-   FETCH RSS (via AllOrigins)
+   FIRST-PARTY PUBLISHED SCIENCE EDITION
+   This app displays published Verifier stories instead of routing
+   user-specified RSS URLs through a third-party proxy.
    ========================= */
+let sharedEditionRequest = null;
 async function fetchRSS(source){
-  const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(source.url);
-  const res = await fetch(proxy, {cache:"no-store"});
-  if(!res.ok) throw new Error("Network error");
-  const data = await res.json();
-  const xml = new DOMParser().parseFromString(data.contents, "text/xml");
-  const items = [...xml.querySelectorAll("item")];
-
-  return items.slice(0, settings.maxItemsPerFeed).map(item=>{
-    const title = item.querySelector("title")?.textContent?.trim() || "(no title)";
-    const descRaw = item.querySelector("description")?.textContent || "";
-    const link = item.querySelector("link")?.textContent?.trim() || "";
-    const pubDate = item.querySelector("pubDate")?.textContent || "";
-    const descText = stripHtml(descRaw).slice(0, 520);
-    const combined = title + " " + descText;
-    const topic = source.topicHint || inferTopic(combined);
+  if(!sharedEditionRequest) {
+    sharedEditionRequest = fetch("../data/generated/latest.json", {cache:"no-store"}).then(response=>{
+      if(!response.ok) throw new Error("Published edition unavailable");
+      return response.json();
+    });
+  }
+  let data;
+  try { data = await sharedEditionRequest; }
+  catch(error) { sharedEditionRequest = null; throw error; }
+  if(!Array.isArray(data.stories)) throw new Error("Invalid published edition");
+  return data.stories.filter(item=>{
+    const label = String(item.source || "").toLowerCase();
+    const configured = String(source.outlet || "").split("(")[0].trim().toLowerCase();
+    const topic = inferTopic([item.title || "", ...(item.topics || [])].join(" "));
+    return (configured && label.includes(configured)) || topic === source.topicHint;
+  }).slice(0, settings.maxItemsPerFeed).map(item=>{
+    const title = String(item.title || "Untitled report");
+    const descText = String(item.description || "").slice(0,520);
+    const pubDate = item.pubDate || "";
     return {
-      title,
-      descRaw,
-      descText,
-      link,
-      pubDate,
-      ts: Date.parse(pubDate || "") || Date.now(),
-      outlet: source.outlet || "Source",
-      topic
+      title, descRaw: descText, descText,
+      link: item.link || "", pubDate,
+      ts: Number(item.pubMs) || Date.parse(pubDate) || Date.now(),
+      outlet: item.source || source.outlet || "Published edition",
+      topic: inferTopic(title + " " + descText)
     };
   });
 }
