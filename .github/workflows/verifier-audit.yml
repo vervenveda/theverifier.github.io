@@ -172,6 +172,9 @@ jobs:
           print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, first-party news architecture, article-level editorial correction infrastructure, and self-loading evidence deployment.')
           PY
 
+      - name: Verify local navigation and asset paths
+        run: python scripts/test_local_links.py
+
       - name: Feed URL security regression tests
         run: python -m unittest discover -s scripts -p 'test_feed_security.py' -v
 
