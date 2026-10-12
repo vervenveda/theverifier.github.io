@@ -138,14 +138,15 @@ footer{border-top:1px solid var(--line);color:var(--muted);text-align:center;pad
   - BBC News: Science & Environment, World, US & Canada
 */
 
-const FEEDS = [
-  {url:"https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/environment.xml", category:"Environment", source:"ScienceDaily"},
-  {url:"https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/health.xml", category:"Health", source:"ScienceDaily"},
-  {url:"https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/science.xml", category:"Science", source:"ScienceDaily"},
-  {url:"https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/science_and_environment/rss.xml", category:"Science", source:"BBC News"},
-  {url:"https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml", category:"Global", source:"BBC News"},
-  {url:"https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml", category:"Global", source:"BBC News"}
-];
+const FEEDS = ["Environment", "Health", "Science", "Global"].map(category=>({url:category,category,source:"Verifier Edition"}));
+let editionRequest = null;
+function newsCategory(item) {
+  const text = [...(item.topics || []), item.title || ""].join(" ").toLowerCase();
+  if (/environment|climate|ecolog|conservation|wildlife/.test(text)) return "Environment";
+  if (/health|medical|medicine|disease|wellness/.test(text)) return "Health";
+  if (/science|technology|research|space|biology|physics/.test(text)) return "Science";
+  return "Global";
+}
 
 const CACHE_KEY = "verifierNews.v2";
 const CACHE_TIME_KEY = "verifierNewsTime.v2";
@@ -219,23 +220,26 @@ function showSkeletons(){
 }
 
 async function fetchFeed(feed){
-  try{
-    const response = await fetch(feed.url,{cache:"no-store"});
-    if(!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if(data.status && data.status !== "ok") throw new Error(data.message || "Feed error");
-    return (Array.isArray(data.items) ? data.items : []).map(item=>({
+  try {
+    if(!editionRequest) editionRequest = fetch("../data/generated/latest.json", {cache:"no-store"}).then(response=>{
+      if(!response.ok) throw Error("Published edition unavailable");
+      return response.json();
+    });
+    const data = await editionRequest;
+    if(!Array.isArray(data.stories)) return [];
+    return data.stories.filter(item=>newsCategory(item)===feed.category).map(item=>({
       title: stripHTML(item.title || "Untitled story"),
-      description: stripHTML(item.description || item.content || ""),
+      description: stripHTML(item.description || ""),
       link: safeURL(item.link || ""),
-      pubDate: item.pubDate || item.isoDate || "",
+      pubDate: item.pubDate || "",
       category: feed.category,
-      source: item.author || feed.source,
-      feedSource: feed.source,
-      guid: item.guid || item.link || `${feed.url}-${item.title}`
+      source: item.source || "",
+      feedSource: item.source || "Published Edition",
+      guid: item.id || item.link || ""
     }));
-  }catch(error){
-    console.warn("Feed unavailable:", feed.source, error);
+  } catch(error) {
+    editionRequest = null;
+    console.warn("Published edition unavailable", error);
     return [];
   }
 }
