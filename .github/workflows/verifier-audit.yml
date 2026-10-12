@@ -208,6 +208,7 @@ jobs:
               'apps/Interactive_Live_ News_ Dashboard_index.html',
               'editorial_standard_index.html',
           ]
+          pages = sorted(set(pages) | {str(p) for p in pathlib.Path('apps').glob('*.html')} | {'index.html'})
           for page in pages:
               text = pathlib.Path(page).read_text(encoding='utf-8')
               scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', text, flags=re.S | re.I)
