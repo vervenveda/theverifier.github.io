@@ -178,6 +178,9 @@ jobs:
       - name: Feed URL security regression tests
         run: python -m unittest discover -s scripts -p 'test_feed_security.py' -v
 
+      - name: Published edition client regression tests
+        run: node --test scripts/test_news_client.cjs
+
       - name: Syntax-check Python feed builder
         run: python -m py_compile scripts/build_news_feed.py
 

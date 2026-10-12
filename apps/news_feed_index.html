@@ -10,6 +10,7 @@
 </style>
 <script src="../assets/verifier-safety.js"></script>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
+<script src="../assets/verifier-news-data.js"></script>
 </head>
 <body>
 <header><h1>Research & Primary Source Feed</h1><p>Daily updates from research institutions, public-interest organizations, and official records. Publication is not endorsement; open the source and inspect the underlying evidence.</p></header>
@@ -22,6 +23,8 @@
 <script>
 (() => {
 "use strict";
+const editionReader=window.VerifierNewsData.createSourceReader();
+let editionStamp="";let editionMode="";
 const S=window.VerifierSafety;if(!S)return;
 const $=id=>document.getElementById(id);const storage=S.safeStorage("verifier-research-feed-v2");
 const REFERENCES=[
@@ -29,24 +32,22 @@ const REFERENCES=[
 ];
 const SOURCES=[
  {name:"Economic Policy Institute",category:"Labor & Economy",url:"https://www.epi.org/feed/"},
- {name:"American Library Association",category:"Education & Culture",url:"https://www.ala.org/news/rss.xml"},
+ {name:"American Library Association",category:"Education & Culture",url:"https://www.ala.org/news/view-all-news/rss"},
  {name:"Pew Research Center",category:"Media & Society",url:"https://www.pewresearch.org/feed/"},
  {name:"Electronic Frontier Foundation",category:"Rights & Technology",url:"https://www.eff.org/rss.xml"},
  {name:"NASA",category:"Science & Space",url:"https://www.nasa.gov/rss/dyn/breaking_news.rss"},
- {name:"Nature — Artificial Intelligence",category:"Science & Technology",url:"https://www.nature.com/subjects/artificial-intelligence.rss"}
+ {name:"Nature Research",category:"Science & Technology",url:"https://www.nature.com/nature.rss"}
 ];
 const cacheKey="items";let items=[];
 function link(label,url){const a=document.createElement("a");a.textContent=label;return S.externalLink(a,url)?a:null}
 function renderReferences(){const box=$("references");REFERENCES.forEach(([name,url])=>{const d=document.createElement("div");d.className="ref";const b=document.createElement("b");b.textContent=name;const a=link("Open official resource ↗",url);d.append(b);if(a)d.append(a);box.append(d)})}
 [...new Set(SOURCES.map(s=>s.category))].sort().forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;$("category").append(o)});
-async function fetchText(url,timeout=12000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{signal:c.signal,cache:"no-store"});if(!r.ok)throw new Error(`HTTP ${r.status}`);return await r.text()}finally{clearTimeout(t)}}
-function parseXML(raw,src){const doc=new DOMParser().parseFromString(raw,"text/xml");if(doc.querySelector("parsererror"))throw new Error("Invalid XML");let nodes=[...doc.querySelectorAll("item")],atom=false;if(!nodes.length){nodes=[...doc.querySelectorAll("entry")];atom=true}return nodes.slice(0,8).map(n=>{let href="";if(atom){const l=n.querySelector("link[rel='alternate']")||n.querySelector("link");href=l?.getAttribute("href")||""}else href=n.querySelector("link")?.textContent||"";return S.normalizeArticle({title:n.querySelector("title")?.textContent,link:href,description:n.querySelector("description")?.textContent||n.querySelector("summary")?.textContent,pubDate:n.querySelector("pubDate")?.textContent||n.querySelector("updated")?.textContent||n.querySelector("published")?.textContent},{name:src.name,category:src.category})})}
-async function fetchSource(src){try{return parseXML(await fetchText("https://api.allorigins.win/raw?url="+encodeURIComponent(src.url)),src)}catch(e){try{const data=JSON.parse(await fetchText("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(src.url)));return Array.isArray(data.items)?data.items.slice(0,8).map(x=>S.normalizeArticle(x,{name:src.name,category:src.category})):[]}catch(e2){console.warn("Source unavailable",src.name,e,e2);return[]}}}
+async function fetchSource(src){try{const edition=await editionReader.read(src);editionStamp=edition.generatedAt;editionMode=edition.mode;return edition.stories.slice(0,8).map(item=>S.normalizeArticle(item,{name:item.source,category:src.issue||src.category}))}catch(error){console.warn("Publisher unavailable",src.name,error.message);return[]}}
 function dateMs(a){const n=Date.parse(a.pubDate||"");return Number.isFinite(n)?n:0}
 function filtered(){const q=$("search").value.trim().toLowerCase(),cat=$("category").value;return items.filter(a=>(cat==="all"||a.category===cat)&&(!q||`${a.title} ${a.description} ${a.source}`.toLowerCase().includes(q))).sort((a,b)=>dateMs(b)-dateMs(a))}
 function itemNode(a){const d=document.createElement("article");d.className="item";const h=document.createElement("h3");h.textContent=a.title;const m=document.createElement("div");m.className="meta";m.textContent=[a.source,a.pubDate?new Date(a.pubDate).toLocaleString():"Undated"].join(" · ");const p=document.createElement("p");p.textContent=(a.description||"No summary supplied by the source.").slice(0,500);const actions=document.createElement("div");actions.className="actions";const open=link("Open source ↗",a.link);if(open)actions.append(open);const archive=link("Search web archive ↗",`https://web.archive.org/web/*/${encodeURIComponent(a.link)}`);if(archive)actions.append(archive);d.append(h,m,p,actions);return d}
 function render(){const root=$("news");root.replaceChildren();const list=filtered();const groups=new Map();list.forEach(a=>{if(!groups.has(a.category))groups.set(a.category,[]);groups.get(a.category).push(a)});if(!groups.size){const p=document.createElement("p");p.className="status";p.textContent="No research updates match the current filters.";root.append(p);return}for(const [cat,arr] of groups){const section=document.createElement("section");section.className="category";const h=document.createElement("h2");h.textContent=cat;const feed=document.createElement("div");feed.className="feed";arr.forEach(a=>feed.append(itemNode(a)));section.append(h,feed);root.append(section)}}
-async function load(force=false){const cache=storage.get(cacheKey,null);if(!force&&cache?.items?.length){items=cache.items.map(x=>S.normalizeArticle(x,{name:x.source,category:x.category}));$("status").textContent="Showing saved cache while checking sources…";render()}$("status").textContent="Refreshing sources…";const res=await Promise.allSettled(SOURCES.map(fetchSource));const fresh=res.flatMap(r=>r.status==="fulfilled"?r.value:[]);if(fresh.length){const seen=new Set();items=fresh.filter(a=>{const k=`${a.link}::${a.title}`;if(seen.has(k))return false;seen.add(k);return true});storage.set(cacheKey,{savedAt:Date.now(),items});$("status").textContent=`Live refresh · ${items.length} items`;render()}else if(cache?.items?.length){$("status").textContent="Sources unavailable · showing saved cache"}else{$("status").textContent="Sources unavailable";items=[];render()}}
+async function load(force=false){const cache=storage.get(cacheKey,null);if(!force&&cache?.items?.length){items=cache.items.map(x=>S.normalizeArticle(x,{name:x.source,category:x.category}));$("status").textContent="Showing saved cache while checking sources…";render()}$("status").textContent="Refreshing sources…";editionReader.reset(); const res=await Promise.allSettled(SOURCES.map(fetchSource));const fresh=res.flatMap(r=>r.status==="fulfilled"?r.value:[]);if(fresh.length){const seen=new Set();items=fresh.filter(a=>{const k=`${a.link}::${a.title}`;if(seen.has(k))return false;seen.add(k);return true});storage.set(cacheKey,{savedAt:Date.now(),items});$("status").textContent=`${editionMode==="first-party-stale"?"Older":"Published"} edition · ${new Date(editionStamp).toLocaleString()} · ${items.length} items · ${res.filter(r=>r.status==="fulfilled"&&r.value.length).length}/${SOURCES.length} sources`;render()}else if(cache?.items?.length){$("status").textContent="Sources unavailable · showing saved cache"}else{$("status").textContent="Sources unavailable";items=[];render()}}
 $("search").addEventListener("input",render);$("category").addEventListener("change",render);$("refresh").addEventListener("click",()=>load(true));renderReferences();load(false);
 })();
 </script>

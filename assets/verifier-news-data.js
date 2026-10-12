@@ -4,7 +4,7 @@
 (() => {
   "use strict";
 
-  const MAX_AGE_MS = 3 * 60 * 60 * 1000;
+  const MAX_AGE_MS = 30 * 60 * 60 * 1000;
   const LATEST_URL = "../data/generated/latest.json";
   const REGISTRY_URL = "../data/sources.json";
 
@@ -97,6 +97,38 @@
     })).filter(source => source.id && source.name);
   }
 
+  function createSourceReader() {
+    let request;
+    return {
+      reset() { request = null; },
+      async read(source) {
+        if (!request) request = Promise.all([loadLatest(), loadRegistry()]);
+        const [edition, registry] = await request;
+        const publisher = registry.find(item => item.feed === source.url);
+        if (!publisher) throw new Error("Publisher is not configured in the published edition");
+        const stories = edition.stories.filter(item => item.sourceId === publisher.id);
+        if (!stories.length) throw new Error("No stories from this publisher in the published edition");
+        return { stories, generatedAt: edition.generatedAt, mode: edition.mode };
+      }
+    };
+  }
+
+  async function vintageArticles(outlets, limit=60) {
+    const edition = await loadLatest();
+    const ids = new Set(outlets.map(outlet => outlet.id));
+    const host = value => { try { return new URL(value).hostname.replace(/^www\./, ""); } catch { return ""; } };
+    const hosts = new Set(outlets.map(outlet => host(outlet.url)).filter(Boolean));
+    return edition.stories.filter(story => ids.has(story.sourceId) || hosts.has(host(story.sourceHomepage)))
+      .slice(0,limit).map(story => ({
+        id:story.id, outletId:story.sourceId, outletName:story.source,
+        outletRegion:story.region, region:story.region,
+        outletLanguage:story.languages.join(", "), language:({English:"en",Spanish:"es",French:"fr",Arabic:"ar"})[story.languages[0]] || "other",
+        outletTopic:story.topics.join(", "), topic:story.topics.join(", "),
+        url:story.link, title:story.title, snippet:story.description,
+        published:story.pubDate, channel:"news", verificationStatus:"discovered"
+      }));
+  }
+
   window.VerifierNewsData = Object.freeze({
     version: "1.0.0",
     MAX_AGE_MS,
@@ -104,6 +136,8 @@
     REGISTRY_URL,
     loadLatest,
     loadRegistry,
-    normalizeStory
+    normalizeStory,
+    createSourceReader,
+    vintageArticles
   });
 })();

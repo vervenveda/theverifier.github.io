@@ -2,11 +2,13 @@
    Caches same-origin application code and stable directory data.
    Generated news JSON is deliberately network-first and is NOT cache-first here;
    user editions/history live in IndexedDB through the Local Browser Cloud. */
-const CACHE_NAME = "the-verifier-shell-v3";
+const CACHE_NAME = "the-verifier-shell-v4";
 const SHELL = [
   "./",
   "./index.html",
   "./assets/verifier-safety.js",
+  "./assets/verifier-typography.css",
+  "./assets/verifier-home-extension.js",
   "./assets/verifier-local-cloud.js",
   "./assets/verifier-news-data.js",
   "./data/sources.json",

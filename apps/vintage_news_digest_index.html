@@ -94,8 +94,10 @@
   }
 </style>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
+<script src="../assets/verifier-news-data.js"></script>
 </head>
 <body>
+<p style="padding:12px;text-align:center">Headlines come from the published Verifier edition. Older saved editions may contain legacy demo entries. <a href="daily_digest_index.html">Open Daily Top 30</a></p>
   <div class="sheet" role="main" aria-label="The Verifier Vintage Digest">
     <header>
       <div class="masthead" role="banner">
@@ -122,8 +124,8 @@
 
     <div class="toolbar small" role="toolbar" aria-label="Controls">
       <form id="uploadForm" style="display:flex;gap:10px;align-items:center">
-        <input id="fileInput" type="file" aria-label="Upload file (local)"/>
-        <button id="uploadBtn" type="button">Upload (Local)</button>
+        <input id="fileInput" type="file" aria-label="Select a file to record its details locally"/>
+        <button id="uploadBtn" type="button">Save file details</button>
       </form>
 
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
@@ -389,34 +391,17 @@ function languageLabelFromCode(code){
 }
 
 /* ========== Minimal simulateArticlesFromOutlets (reuses your function, cleaned) ========== */
-function simulateArticlesFromOutlets(selectedOutlets, maxArticles=30){
-  const articles=[];
-  const timestamp=new Date().toLocaleTimeString();
-  const baseTitles=['Key developments','In-depth analysis','Voices from the ground','What this means','Policy watch','Data snapshot','Explainer','Fact check','Timeline update','Global reaction'];
-  const channels=['news','gov','investigative','markets','local','social'];
-  let idx=0;
-  if(!selectedOutlets || !selectedOutlets.length) return articles;
-  while(articles.length<maxArticles){
-    const outlet = selectedOutlets[idx % selectedOutlets.length];
-    const base = baseTitles[idx % baseTitles.length];
-    const channel = channels[idx % channels.length];
-    articles.push({
-      id: `${outlet.id}_${idx+1}`,
-      outletName: outlet.name,
-      outletRegion: outlet.region,
-      outletTopic: outlet.topic,
-      outletLanguage: outlet.language || '',
-      url: outlet.url,
-      title: `${outlet.name}: ${base} (${articles.length+1})`,
-      snippet: `Placeholder from ${outlet.name} on ${channel.toUpperCase()} channel. Replace with unified feed.`,
-      published: todayISO() + ' ' + timestamp,
-      channel
-    });
-    idx++;
-    if(idx > 500) break; // safety
+async function publishedArticlesFromOutlets(selectedOutlets, max=60) {
+    try {
+      const articles=await window.VerifierNewsData.vintageArticles(selectedOutlets,max);
+      if(!articles.length) throw new Error("No published stories match the selected outlets.");
+      return articles;
+    } catch(error) {
+      const status=document.getElementById("digestStatus");
+      if(status) status.textContent="Edition unavailable: "+error.message+" Saved editions are retained.";
+      return null;
+    }
   }
-  return articles.slice(0, maxArticles);
-}
 
 /* ========================= UI wiring & state ========================= */
 let currentDigestArticles = [];
@@ -564,12 +549,13 @@ function renderDigest(dateStr, articles){
 }
 
 /* Generate or load */
-function generateFromSelections(){
+async function generateFromSelections(){
   const dateStr = todayISO();
   const selections = LocalCloud.getOutletSelections();
   const selectedIDs = Object.keys(selections);
   const selectedOutlets = selectedIDs.length ? OUTLETS.filter(o => selections[o.id]) : OUTLETS.slice();
-  const articles = simulateArticlesFromOutlets(selectedOutlets, 30);
+  const articles = await publishedArticlesFromOutlets(selectedOutlets, 30);
+  if(!articles)return;
   LocalCloud.saveDigest(dateStr, articles);
   renderDigest(dateStr, articles);
   updateCounters();
@@ -577,13 +563,14 @@ function generateFromSelections(){
 }
 generateDigestBtn?.addEventListener('click', ()=> generateFromSelections());
 
-/* Unified fetch button (uses simulate / stub) */
+/* Read the published edition. */
 $('#unifiedFetchBtn')?.addEventListener('click', async ()=>{
   const dateStr = todayISO();
   const selections = LocalCloud.getOutletSelections();
   const selectedIDs = Object.keys(selections);
   const selectedOutlets = selectedIDs.length ? OUTLETS.filter(o => selections[o.id]) : OUTLETS.slice(0, 10);
-  const articles = simulateArticlesFromOutlets(selectedOutlets, 40);
+  const articles = await publishedArticlesFromOutlets(selectedOutlets, 40);
+  if(!articles)return;
   LocalCloud.saveDigest(dateStr, articles);
   renderDigest(dateStr, articles);
   updateCounters();
@@ -770,36 +757,24 @@ function exportDigestPDF(dateStr){
   document.body.removeChild(wrapper);
 }
 
-/* Local news demo */
+/* Local news source search */
 const localNewsBtn = $('#localNewsBtn'), localNewsModal = $('#localNewsModal'), closeLocalNewsBtn = $('#closeLocalNews'), localInput = $('#localInput'), localSearchBtn = $('#localSearchBtn'), localList = $('#localList');
 localNewsBtn?.addEventListener('click', ()=> { openModal(localNewsModal); localList.innerHTML=''; localInput.value=''; });
 closeLocalNewsBtn?.addEventListener('click', ()=> closeModal(localNewsModal));
 localSearchBtn?.addEventListener('click', handleLocalSearch);
 localInput?.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLocalSearch(); });
 
-function simulateLocalNews(query){
-  const safe = query || 'Your Area';
-  const now = (new Date()).toLocaleString();
-  return [
-    { title: `[Demo] ${safe} city council debates zoning`, source:'Local Gazette (demo)', published:now, snippet:'Sample local story.' },
-    { title: `[Demo] ${safe} school district launches STEM program`, source:'Community Education (demo)', published:now, snippet:'Placeholder education story.' },
-    { title: `[Demo] ${safe} river levels rising`, source:'Local Weather Service (demo)', published:now, snippet:'Sample hazards summary.' }
-  ];
-}
-function renderLocalNews(items){
-  if(!localList) return;
-  localList.innerHTML = '';
-  if(!items || !items.length){ localList.innerHTML = '<div class="tiny">No local items found (demo).</div>'; return; }
-  items.forEach(it=>{
-    const row = document.createElement('div'); row.style.padding='8px 0';
-    row.innerHTML = `<div style="font-weight:700">${escapeHTML(it.title)}</div><div class="tiny">${escapeHTML(it.source)} • ${escapeHTML(it.published)}</div><div style="margin-top:6px">${escapeHTML(it.snippet)}</div><hr>`;
-    localList.appendChild(row);
-  });
-}
 function handleLocalSearch(){
   const q = (localInput.value || '').trim();
   if(!q) return alert('Please enter a ZIP or city.');
-  renderLocalNews(simulateLocalNews(q));
+  localList.replaceChildren();
+  const note=document.createElement('p');
+  note.textContent='Search publisher coverage for '+q+'. Results open on the selected service; check publication dates and original sources.';
+  localList.append(note);
+  for(const [label,base] of [['Google News','https://news.google.com/search?q='],['Bing News','https://www.bing.com/news/search?q=']]){
+    const link=document.createElement('a');link.textContent='Search '+label+' ↗';
+    link.href=base+encodeURIComponent(q);link.target='_blank';link.rel='noopener noreferrer';link.style.marginRight='16px';localList.append(link);
+  }
 }
 
 /* Modal helpers */
@@ -822,20 +797,20 @@ function initUI(){
   $('#selectAllBtn')?.addEventListener('click', ()=>{ const s = {}; OUTLETS.forEach(o=> s[o.id]=true); LocalCloud.saveOutletSelections(s); renderOutletList(); updateCounters(); });
 
   $('#purgeBtn')?.addEventListener('click', ()=>{ if(confirm('Purge all saved digests?')){ LocalCloud.listDigestDates().forEach(d=>LocalCloud.deleteDigest(d)); updateCounters(); renderArticlesPanel(); } });
-  $('#refreshFeedsBtn')?.addEventListener('click', ()=>{ // simulated
-    $('#status').textContent = 'Simulated refresh complete.';
-    $('#lastRefreshed').textContent = 'Last refresh: ' + (new Date()).toLocaleString();
+  $('#refreshFeedsBtn')?.addEventListener('click', async ()=>{
+    await generateFromSelections();
+    $('#status').textContent = 'Published edition checked; see digest status for results.';
   });
 
-  // Upload button (local demo)
+  // Store a local file-details record; file contents are not uploaded.
   $('#uploadBtn')?.addEventListener('click', async ()=>{
     const f = $('#fileInput').files && $('#fileInput').files[0];
-    if(!f) return alert('Choose a file to upload (local demo).');
+    if(!f) return alert('Choose a file to save its details.');
     const key = 'verifier:uploads:' + todayISO();
     const arr = JSON.parse(localStorage.getItem(key) || '[]');
     arr.unshift({ name: f.name, size: f.size, type: f.type, uploadedAt: nowISO() });
     localStorage.setItem(key, JSON.stringify(arr));
-    alert('Stored file metadata locally (demo).');
+    alert('File details saved in this browser. File contents were not uploaded.');
   });
 
   // initial dateline
@@ -866,15 +841,9 @@ function renderArticlesPanel(){
 initUI();
 renderArticlesPanel();
 
-/* demo seed if empty */
-if(!LocalCloud.listDigestDates().length){
-  const demoDate = todayISO();
-  const demoArticles = simulateArticlesFromOutlets(OUTLETS.slice(0,10), 24);
-  LocalCloud.saveDigest(demoDate, demoArticles);
-  renderDigest(demoDate, demoArticles);
-  updateCounters();
-  renderArticlesPanel();
-}
+/* Load real publisher headlines on first use; preserve existing local archives. */
+if(!LocalCloud.listDigestDates().length) generateFromSelections();
+$('#status').textContent='Published edition reader · headlines are discoveries, not verified findings.';
 </script>
 <script src="/assets/vnv-beta-link.js" defer></script>
 </body>

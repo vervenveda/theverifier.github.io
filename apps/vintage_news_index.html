@@ -62,8 +62,10 @@
 
   </style>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
+<script src="../assets/verifier-news-data.js"></script>
 </head>
 <body>
+<p style="padding:12px;text-align:center">Headlines come from the published Verifier edition. Older saved editions may contain legacy demo entries. <a href="daily_digest_index.html">Open Daily Top 30</a></p>
   <div class="container">
     <header>
       <div class="logo">V</div>
@@ -280,36 +282,16 @@ const OUTLETS = [
   }
 
   /*************** SIMULATION ***************/
-  function simulateArticlesFromOutlets(selectedOutlets, max = 50) {
-    const articles = [];
-    const timestamp = new Date().toLocaleTimeString();
-    const baseTitles = [
-      'Key developments', 'In-depth analysis', 'Voices from the ground', 'What this means', 
-      'Policy watch', 'Data snapshot', 'Explainer', 'Fact check', 'Timeline update', 'Global reaction'
-    ];
-    let idx = 0;
-    if (!selectedOutlets || selectedOutlets.length === 0) return articles;
-    while (articles.length < max) {
-      const outlet = selectedOutlets[idx % selectedOutlets.length];
-      const base = baseTitles[idx % baseTitles.length];
-      const channel = CHANNELS[idx % CHANNELS.length];
-      articles.push({
-        id: outlet.id + '_' + (idx + 1),
-        outletId: outlet.id,
-        outletName: outlet.name,
-        region: outlet.region,
-        language: outlet.language,
-        topic: outlet.topic,
-        url: outlet.url,
-        title: `${outlet.name}: ${base} (${articles.length + 1})`,
-        snippet: `Simulated ${channel.toUpperCase()} article from ${outlet.name}.`,
-        published: todayISO() + ' ' + timestamp,
-        channel
-      });
-      idx++;
-      if (idx > 1000) break; // safety
+  async function publishedArticlesFromOutlets(selectedOutlets, max=60) {
+    try {
+      const articles=await window.VerifierNewsData.vintageArticles(selectedOutlets,max);
+      if(!articles.length) throw new Error("No published stories match the selected outlets.");
+      return articles;
+    } catch(error) {
+      const status=document.getElementById("digestStatus");
+      if(status) status.textContent="Edition unavailable: "+error.message+" Saved editions are retained.";
+      return null;
     }
-    return articles.slice(0, max);
   }
 
   /*************** SUMMARIZATION & CONTRADICTION ***************/
@@ -436,11 +418,12 @@ const OUTLETS = [
   });
 
   /*************** DIGEST PANEL ***************/
-  $('#generateDigestBtn').addEventListener('click', () => {
+  $('#generateDigestBtn').addEventListener('click', async () => {
     const sel = LocalCloud.getSelections();
     const selected = OUTLETS.filter(o => sel[o.id]);
     const outletsToUse = selected.length ? selected : OUTLETS;
-    const articles = simulateArticlesFromOutlets(outletsToUse, 80);
+    const articles = await publishedArticlesFromOutlets(outletsToUse, 80);
+    if(!articles)return;
     const date = todayISO();
     LocalCloud.saveDigest(date, articles);
     currentDigest = articles;
@@ -598,13 +581,11 @@ const OUTLETS = [
   renderOutletsList();
   renderHistory();
 
-  // Initial generate to seed
-  const initialDate = todayISO();
-  const initialArticles = simulateArticlesFromOutlets(OUTLETS, 60);
-  LocalCloud.saveDigest(initialDate, initialArticles);
-  currentDigest = initialArticles;
-  renderDigest();
-  renderHistory();
+  // Read the published edition without overwriting a saved daily archive on startup.
+  (async()=>{
+    const articles=await publishedArticlesFromOutlets(OUTLETS,60);
+    if(articles){currentDigest=articles;renderDigest();}
+  })();
   </script>
 <script src="/assets/vnv-beta-link.js" defer></script>
 </body>

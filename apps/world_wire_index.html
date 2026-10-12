@@ -78,6 +78,7 @@ a{color:inherit}
 @media(prefers-color-scheme:dark){:root{--paper:#151617;--paper2:#1d1d1c;--ink:#f3eadc;--soft:#c5b8a7;--muted:#9f9181;--line:#4e4438;--card:#211f1c;--nav:#090b10;--nav2:#1d2a3f;--shadow:0 14px 34px rgba(0,0,0,.28)}body{background:radial-gradient(circle at 50% 0,rgba(68,88,130,.20),transparent 52%),var(--paper)}.pill,.toolbar,.health{background:rgba(33,31,28,.88)}.controls input,.controls select,.health-card{background:#211f1c;color:var(--ink)}.notice{background:#312a16;border-color:#665525;color:#ead8a6}.article{background:linear-gradient(#211f1c,#27231d)}.actions a,.actions button,.utility button{background:#29251f;color:#eadfce;border-color:#5c4e3d}.actions a:hover,.actions button:hover{background:#352e25}.empty{background:#1d1c1a}.img{background:linear-gradient(135deg,#40372d,#2d2923);color:#bba889}}
 </style>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
+<script src="../assets/verifier-news-data.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -89,7 +90,7 @@ a{color:inherit}
     <div class="meta-strip" aria-label="Wire summary">
       <span class="pill"><span class="dot" id="networkDot"></span><span id="networkState">Starting</span></span>
       <span class="pill" id="articleCount">0 stories</span>
-      <span class="pill" id="sourceCount">0 sources responding</span>
+      <span class="pill" id="sourceCount">0 sources in edition</span>
       <span class="pill" id="cacheAge">No cache yet</span>
     </div>
   </header>
@@ -130,13 +131,15 @@ a{color:inherit}
 
   <footer class="footer">
     <strong>Privacy:</strong> searches, saved stories, and cached headlines stay in this browser. Opening an original, archive, or comparison link leaves this page and follows that destination's policies.
-    <details><summary>How the wire works</summary><p>The page attempts each publisher feed directly when browser CORS permits it, then optionally uses a self-hosted gateway, then public compatibility fallbacks. The health panel tells you which path succeeded. For stronger sovereignty, point <code>CONFIG.gatewayURL</code> at your own raw CORS gateway and disable the public fallbacks.</p></details>
+    <details><summary>How the wire works</summary><p>Headlines come from the published Verifier edition. The health panel identifies publishers with stories in that edition. Open the original source to check current coverage; inclusion is not factual verification.</p></details>
   </footer>
 </div>
 <noscript><div class="wrap"><div class="notice">JavaScript is required to load and filter the wire.</div></div></noscript>
 <script>
 (() => {
 "use strict";
+const editionReader=window.VerifierNewsData.createSourceReader();
+let editionStamp="";let editionMode="";
 
 const CONFIG = Object.freeze({
   cacheKey: "verifier-world-wire-v4",
@@ -144,9 +147,7 @@ const CONFIG = Object.freeze({
   fetchTimeoutMs: 11000,
   refreshEveryMs: 1000 * 60 * 60,
   maxItemsPerSource: 12,
-  gatewayURL: "", // Optional self-hosted raw proxy, e.g. https://your-gateway.example/raw?url=
-  useAllOriginsFallback: true,
-  useRss2JsonFallback: true
+
 });
 
 const SOURCES = Object.freeze([
@@ -268,62 +269,17 @@ function xmlItems(raw, src) {
     }, src);
   }).filter(a => a.title && a.link);
 }
-async function fetchText(url, timeout = CONFIG.fetchTimeoutMs) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-  try {
-    const response = await fetch(url,{signal:controller.signal,cache:"no-store",headers:{Accept:"application/rss+xml, application/atom+xml, application/xml, text/xml, text/plain, */*"}});
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.text();
-  } finally { clearTimeout(timer); }
-}
-async function viaDirect(src) { return xmlItems(await fetchText(src.url), src); }
-async function viaGateway(src) {
-  if (!CONFIG.gatewayURL) throw new Error("Gateway not configured");
-  return xmlItems(await fetchText(CONFIG.gatewayURL + encodeURIComponent(src.url)), src);
-}
-async function viaAllOrigins(src) {
-  if (!CONFIG.useAllOriginsFallback) throw new Error("AllOrigins disabled");
-  return xmlItems(await fetchText("https://api.allorigins.win/raw?url=" + encodeURIComponent(src.url)), src);
-}
-async function viaRss2Json(src) {
-  if (!CONFIG.useRss2JsonFallback) throw new Error("rss2json disabled");
-  const raw = await fetchText("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(src.url));
-  const data = JSON.parse(raw);
-  if (data.status && data.status !== "ok") throw new Error(data.message || "rss2json rejected feed");
-  if (!Array.isArray(data.items)) throw new Error("rss2json returned no items");
-  return data.items.slice(0,CONFIG.maxItemsPerSource).map(item => normalizeArticle({
-    title:item.title, link:item.link, description:item.description || item.content,
-    pubDate:item.pubDate, image:item.thumbnail || item.enclosure?.link || ""
-  },src)).filter(a => a.title && a.link);
-}
 async function fetchSource(src) {
-  const started = performance.now();
-  state.health.set(src.name,{status:"loading",items:0,ms:0,via:"—",error:""});
-  renderHealth();
-  const transports = [
-    ["direct",viaDirect],
-    ...(CONFIG.gatewayURL ? [["self gateway",viaGateway]] : []),
-    ...(CONFIG.useAllOriginsFallback ? [["AllOrigins",viaAllOrigins]] : []),
-    ...(CONFIG.useRss2JsonFallback ? [["rss2json",viaRss2Json]] : [])
-  ];
-  const errors = [];
-  for (const [via, fn] of transports) {
-    try {
-      const items = await fn(src);
-      if (!items.length) throw new Error("Zero usable items");
-      const ms = Math.round(performance.now()-started);
-      state.health.set(src.name,{status:"ok",items:items.length,ms,via,error:""});
-      renderHealth();
-      return items;
-    } catch (error) {
-      errors.push(`${via}: ${error?.name === "AbortError" ? "timeout" : (error?.message || "failed")}`);
-    }
+  try {
+    const edition = await editionReader.read(src);
+    editionStamp=edition.generatedAt; editionMode=edition.mode;
+    const items=edition.stories.slice(0,CONFIG.maxItemsPerSource).map(item=>normalizeArticle(item,{name:item.source,category:src.category}));
+    state.health.set(src.name,{status:"ok",items:items.length,ms:0,via:"Published edition",error:""});
+    return items;
+  } catch(error) {
+    state.health.set(src.name,{status:"error",items:0,ms:0,via:"Published edition",error:error.message});
+    return [];
   }
-  const ms = Math.round(performance.now()-started);
-  state.health.set(src.name,{status:"error",items:0,ms,via:"none",error:errors.slice(-2).join(" · ")});
-  renderHealth();
-  return [];
 }
 function ms(article) {
   const n = Date.parse(article.pubDate || "");
@@ -427,7 +383,7 @@ function setMessage(message) { state.message=message; renderStatus(); }
 function renderStatus() {
   const shown=visibleArticles().length;
   const live=[...state.health.values()].filter(h=>h.status==="ok").length;
-  const parts=[`<strong>${shown}</strong> shown`,`<strong>${state.articles.length}</strong> loaded`,`<strong>${live}/${SOURCES.length}</strong> sources responding`];
+  const parts=[`<strong>${shown}</strong> shown`,`<strong>${state.articles.length}</strong> loaded`,`<strong>${live}/${SOURCES.length}</strong> sources in edition`];
   if(state.usingCache && state.cacheSavedAt) parts.push(`cache ${ageLabel(state.cacheSavedAt)}`);
   $("status").replaceChildren();
   const prefix=document.createElement("span"); prefix.textContent=(state.message?state.message+" · ":""); $("status").append(prefix);
@@ -442,7 +398,7 @@ function renderSummary() {
   const ok=[...state.health.values()].filter(h=>h.status==="ok").length;
   const errors=[...state.health.values()].filter(h=>h.status==="error").length;
   $("articleCount").textContent=`${state.articles.length} stories`;
-  $("sourceCount").textContent=`${ok}/${SOURCES.length} sources responding`;
+  $("sourceCount").textContent=`${ok}/${SOURCES.length} sources in edition`;
   $("cacheAge").textContent=state.cacheSavedAt?`Cache ${ageLabel(state.cacheSavedAt)}`:"No cache yet";
   const dot=$("networkDot"), label=$("networkState"); dot.className="dot";
   if(state.refreshing){dot.classList.add("warn");label.textContent="Refreshing";}
@@ -500,8 +456,8 @@ function loadCache() {
 }
 async function load(force=false) {
   if(state.refreshing) return; state.refreshing=true; $("refresh").disabled=true; $("refresh").setAttribute("aria-busy","true"); state.message=force?"Refreshing wire":"Checking feeds"; renderSummary(); renderStatus();
-  const results=await Promise.all(SOURCES.map(fetchSource)); const fresh=dedupe(results.flat());
-  if(fresh.length){state.articles=fresh;state.usingCache=false;state.lastRefreshAt=Date.now();state.cacheSavedAt=state.lastRefreshAt;storageSet("cache",{savedAt:state.cacheSavedAt,items:state.articles});state.message=`Wire refreshed ${new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`;}
+  editionReader.reset(); const results=await Promise.all(SOURCES.map(fetchSource)); const fresh=dedupe(results.flat());
+  if(fresh.length){state.articles=fresh;state.usingCache=false;state.lastRefreshAt=Date.now();state.cacheSavedAt=state.lastRefreshAt;storageSet("cache",{savedAt:state.cacheSavedAt,items:state.articles});state.message=`${editionMode==="first-party-stale"?"Older":"Published"} edition · ${new Date(editionStamp).toLocaleString()}`;}
   else if(state.articles.length){state.usingCache=true;state.message="Feeds unavailable; retained local cache";}
   else{state.message="No feeds responded and no local cache is available";}
   state.refreshing=false;$("refresh").disabled=false;$("refresh").removeAttribute("aria-busy");renderHealth();render();

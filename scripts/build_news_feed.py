@@ -31,7 +31,7 @@ REGISTRY = ROOT / "data" / "sources.json"
 OUT_DIR = ROOT / "data" / "generated"
 DAILY_DIR = OUT_DIR / "daily"
 MAX_ITEMS_PER_FEED = 20
-MAX_TOTAL_STORIES = 400
+MAX_TOTAL_STORIES = 800  # Retain specialist feeds alongside the expanded publisher registry.
 TIMEOUT = 18
 USER_AGENT = "TheVerifierFeedBuilder/1.0 (+https://vervenveda.com/theverifier.github.io/)"
 

@@ -1,6 +1,9 @@
 name: Build Verifier News Feed
 
 on:
+  push:
+    branches: [main]
+    paths: ['data/sources.json', 'scripts/build_news_feed.py']
   workflow_dispatch:
   schedule:
     - cron: "17 12 * * *"

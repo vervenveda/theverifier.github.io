@@ -144,6 +144,7 @@ function deduplicateArticles(articles) {
 
 // Load news with caching
 async function loadNews(forceRefresh=false) {
+  if(forceRefresh) editionRequest=null;
   newsFeed.innerHTML = '<p>Loading news...</p>';
 
   const cached = localStorage.getItem('ecoNews');

@@ -29,7 +29,7 @@
           return;
         }
         const when = new Date(stamp).toLocaleString();
-        const freshness = age > 3 * 60 * 60 * 1000 ? "Archived edition — updates may be delayed" : "Latest published edition";
+        const freshness = age > 30 * 60 * 60 * 1000 ? "Archived edition — updates may be delayed" : "Latest published edition";
         const coverage = total ? ` · Sources available: ${healthy}/${total}` : "";
         status.textContent = `${freshness} · Updated ${when}${coverage}. Headlines are discoveries, not verified findings.`;
       })
@@ -58,6 +58,13 @@
         };
         if (globalDigestIndex >= 0) APPS.splice(globalDigestIndex, 0, item);
         else APPS.unshift(item);
+      }
+
+      const ultimate = find("ultimate-news");
+      if (ultimate) {
+        ultimate.health = "shared-build";
+        ultimate.badge = "Newsroom Gateway";
+        ultimate.description = "Open the Interactive Edition Explorer and connected news, research, and learning resources.";
       }
 
       const directory = find("global-digest");

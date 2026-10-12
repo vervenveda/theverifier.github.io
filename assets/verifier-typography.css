@@ -14,3 +14,9 @@ h1 + h2,h1 + .subtitle{font-size:var(--verifier-descriptor-size);line-height:1.3
   :is(header,.hero,.hero-copy,.masthead,.page-header) :is(.eyebrow,.kicker),
   body > :is(.eyebrow,.kicker){letter-spacing:normal}
 }
+
+/* Homepage masthead hierarchy: page name leads, eyebrow remains a small label. */
+.verifier-home .hero .eyebrow{font-size:14px;line-height:1.5;letter-spacing:.16em}
+.verifier-home .hero h1{font-size:clamp(48px,8vw,96px);line-height:1.08}
+.verifier-home :is(.category-grid,.principles,.hero-stats){grid-auto-rows:1fr}
+.verifier-home [data-verifier-feed-health]{margin-left:auto!important;margin-right:auto!important}
