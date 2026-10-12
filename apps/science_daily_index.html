@@ -106,42 +106,68 @@ toggle.addEventListener("click", () => {
     }
 });
 
-/* ---------------------------------------
-   FETCH SCIENCE NEWS (RSS → JSON proxy)
------------------------------------------*/
-const FEED_URL = "https://api.rss2json.com/v1/api.json?rss_url=https://www.sciencedaily.com/rss/top/science.xml";
-
-async function loadNews() {
-    try {
-        const res = await fetch(FEED_URL);
-        const data = await res.json();
-        renderNews(data.items.slice(0, 12)); // show 12 headlines
-    } catch (e) {
-        document.getElementById("news").innerHTML =
-            "<div class='card'><p>Error loading news.</p></div>";
+/* Same-origin published news. No third-party proxy or HTML injection. */
+const EDITION_URL = "../data/generated/latest.json";
+const newsContainer = document.getElementById("news");
+let lastWorkingItems = [];
+function newsMessage(message){
+    newsContainer.replaceChildren();
+    const card = document.createElement("div");
+    card.className = "card";
+    const p = document.createElement("p");
+    p.textContent = message;
+    card.appendChild(p);
+    newsContainer.appendChild(card);
+}
+function isScience(item){
+    const fields = [...(item.topics || []), item.source || "", item.title || ""].join(" ").toLowerCase();
+    return /science|research|space|biology|physics|medicine|health|climate|environment|technology/.test(fields);
+}
+function renderNews(items){
+    newsContainer.replaceChildren();
+    for(const item of items){
+        const card = document.createElement("article");
+        card.className = "card";
+        const title = document.createElement("h2");
+        const link = document.createElement("a");
+        link.textContent = String(item.title || "Untitled report");
+        link.style.color = "inherit";
+        try {
+            const url = new URL(item.link);
+            if(url.protocol === "https:" && !url.username && !url.password){
+                link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer";
+            }
+        } catch (_) {}
+        title.append(link);
+        const stamp = document.createElement("p");
+        stamp.className = "headline";
+        stamp.textContent = [item.source, item.pubDate].filter(Boolean).join(" · ");
+        const description = document.createElement("p");
+        description.textContent = String(item.description || "").slice(0, 420);
+        card.append(title, stamp, description);
+        newsContainer.appendChild(card);
     }
 }
-
-function renderNews(items) {
-    const container = document.getElementById("news");
-    container.innerHTML = "";
-
-    items.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.innerHTML = `
-            <h2>${item.title}</h2>
-            <p class="headline">${item.pubDate}</p>
-            <p>${item.description}</p>
-        `;
-
-        container.appendChild(card);
-    });
+async function loadNews(){
+    try {
+        const response = await fetch(EDITION_URL, {cache:"no-store"});
+        if(!response.ok) throw new Error("Published edition unavailable");
+        const data = await response.json();
+        if(!Array.isArray(data.stories)) throw new Error("Invalid news edition");
+        const items = data.stories.filter(isScience).slice(0, 12);
+        if(!items.length) {
+            newsMessage("No science stories in this edition. Try the World Wire for more headlines.");
+            return;
+        }
+        lastWorkingItems = items;
+        renderNews(items);
+    } catch(err) {
+        if(lastWorkingItems.length) renderNews(lastWorkingItems);
+        else newsMessage("Science news is temporarily unavailable. Please try again later.");
+    }
 }
-
 loadNews();
-setInterval(loadNews, 1000 * 60 * 10); // refresh every 10 min
+setInterval(loadNews, 1000 * 60 * 10);
 </script>
 <script src="/assets/vnv-beta-link.js" defer></script>
 </body>
