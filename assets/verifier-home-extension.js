@@ -4,6 +4,40 @@
 (() => {
   "use strict";
 
+  function showFeedHealth() {
+    const actions = document.querySelector(".hero .actions");
+    if (!actions || document.querySelector("[data-verifier-feed-health]")) return;
+    const status = document.createElement("p");
+    status.dataset.verifierFeedHealth = "true";
+    status.setAttribute("role", "status");
+    status.style.cssText = "font-size:.82rem;line-height:1.5;margin:12px 0;color:inherit;max-width:60ch";
+    status.textContent = "Checking the latest published news edition…";
+    actions.insertAdjacentElement("afterend", status);
+    fetch("./data/generated/latest.json", {cache:"no-store"})
+      .then(response => {
+        if (!response.ok) throw new Error("Edition temporarily unavailable");
+        return response.json();
+      })
+      .then(data => {
+        const stamp = Date.parse(data.generatedAt || "");
+        const age = Date.now() - stamp;
+        const valid = Number.isFinite(stamp) && age >= -300000;
+        const healthy = Number(data.feedSourcesSuccessful || 0);
+        const total = Number(data.feedSourcesConfigured || 0);
+        if (!valid) {
+          status.textContent = "Edition timestamp unavailable. Please check original publisher dates.";
+          return;
+        }
+        const when = new Date(stamp).toLocaleString();
+        const freshness = age > 3 * 60 * 60 * 1000 ? "Archived edition — updates may be delayed" : "Latest published edition";
+        const coverage = total ? ` · Sources available: ${healthy}/${total}` : "";
+        status.textContent = `${freshness} · Updated ${when}${coverage}. Headlines are discoveries, not verified findings.`;
+      })
+      .catch(() => {
+        status.textContent = "Live edition status unavailable. News links and research tools remain accessible.";
+      });
+  }
+
   function apply() {
     try {
       if (typeof APPS === "undefined" || !Array.isArray(APPS)) return;
@@ -62,6 +96,7 @@
         legacyInteractive.badge = "Compatibility";
       }
 
+      showFeedHealth();
       if (typeof renderApps === "function") renderApps();
       if (typeof syncCounts === "function") syncCounts();
       if (typeof filterApps === "function") filterApps();
