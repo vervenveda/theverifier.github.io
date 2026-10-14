@@ -35,6 +35,6 @@ function render(){const list=visible();const grid=$("grid");grid.replaceChildren
 $("search").addEventListener("input",render);$("region").addEventListener("change",render);$("language").addEventListener("change",render);$("selectFeeds").addEventListener("click",async()=>{sources.filter(s=>s.feed&&s.enabled!==false).forEach(s=>selected.add(s.id));await saveSelection();render()});load();
 })();
 </script>
-<script src="/assets/vnv-beta-link.js" defer></script>
+<script src="../assets/vnv-beta-link.js" defer></script>
 </body>
 </html>
