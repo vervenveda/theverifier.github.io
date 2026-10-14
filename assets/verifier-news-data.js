@@ -27,7 +27,11 @@
     const link = safeURL(raw?.link);
     const title = safeText(raw?.title, 500);
     if (!title || !link) return null;
-    const pubMs = Number(raw?.pubMs || Date.parse(raw?.pubDate || "") || 0);
+    const parsed = Date.parse(raw?.pubDate || "");
+    const supplied = Number(raw?.pubMs);
+    const candidate = Number.isFinite(parsed) ? parsed : (Number.isFinite(supplied) && supplied > 0 ? supplied : 0);
+    // Future event dates and unknown dates must not obtain freshness credit.
+    const pubMs = candidate > Date.now() + 60 * 60 * 1000 ? 0 : candidate;
     return {
       id: safeText(raw?.id || `${raw?.sourceId || "source"}:${link}`, 900),
       title,
@@ -35,7 +39,8 @@
       link,
       image: safeURL(raw?.image),
       pubDate: safeText(raw?.pubDate, 100),
-      pubMs: Number.isFinite(pubMs) ? pubMs : 0,
+      pubMs: Number.isFinite(pubMs) && pubMs > 0 ? pubMs : 0,
+      publicationDateStatus: !candidate ? "unknown" : candidate > Date.now() + 60 * 60 * 1000 ? "future-or-event-date" : "dated",
       sourceId: safeText(raw?.sourceId, 120),
       source: safeText(raw?.source, 220),
       region: safeText(raw?.region, 140),
