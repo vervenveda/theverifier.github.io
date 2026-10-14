@@ -31,7 +31,7 @@
         const when = new Date(stamp).toLocaleString();
         const freshness = age > 30 * 60 * 60 * 1000 ? "Archived edition — updates may be delayed" : "Latest published edition";
         const coverage = total ? ` · Sources available: ${healthy}/${total}` : "";
-        status.textContent = `${freshness} · Updated ${when}${coverage}. Headlines are discoveries, not verified findings.`;
+        status.textContent = `${freshness} · Updated ${when}${coverage}. News headlines are publisher discoveries, not independently verified findings. Future event dates may differ from publication dates.`;
       })
       .catch(() => {
         status.textContent = "Live edition status unavailable. News links and research tools remain accessible.";
