@@ -98,7 +98,7 @@
     box.className = "verifier-editorial-integrity";
     box.setAttribute("role", "note");
     box.innerHTML = `<strong>Editorial / Opinion</strong><br>
-      This page contains commentary and argument, not neutral wire reporting. Consequential factual claims should be checked against original records and independent reporting.
+      This page contains commentary and argument, not neutral wire reporting. A general editorial notice does not mean individual claims have been verified. Check the article-specific evidence record and dated corrections when supplied; where none is supplied, consequential factual claims remain for independent checking.
       <a href="../editorial_standard_index.html">Read The Verifier Editorial & Verification Standard.</a>
       <small>Corrections should remain visible when they materially change a claim. Criticism may be forceful; collective dehumanization is outside The Verifier standard.</small>`;
     return box;
