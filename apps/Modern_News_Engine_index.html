@@ -36,7 +36,7 @@ const RESOURCES=[
 ["Primary Records","UN News","Official United Nations reporting and statements.","https://news.un.org/"],["Primary Records","Congress.gov","U.S. legislative records.","https://www.congress.gov/"],["Primary Records","Federal Register","U.S. agency rules and notices.","https://www.federalregister.gov/"],["Primary Records","CourtListener","Court opinions and legal records.","https://www.courtlistener.com/"],["Science","WHO","Global public-health information.","https://www.who.int/"],["Science","IPCC","Climate assessment reports.","https://www.ipcc.ch/reports/"],["Fact Check","AP Fact Check","Associated Press fact-check reporting.","https://apnews.com/hub/fact-checking"],["Fact Check","Reuters Fact Check","Reuters fact-check reporting.","https://www.reuters.com/fact-check/"],["Fact Check","FactCheck.org","Public-policy claim checks.","https://www.factcheck.org/"],["Fact Check","Full Fact","UK fact-checking organization.","https://fullfact.org/"],["Archive","Internet Archive","Historical web and media archive.","https://archive.org/"],["Media Literacy","News Literacy Project","News-literacy education resources.","https://newslit.org/"]];
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
 function safeAnchor(label,url,cls="btn small"){const a=document.createElement("a");a.textContent=label;a.className=cls;return S.externalLink(a,url)?a:null}
-function dateMs(a){const n=Number(a.pubMs||Date.parse(a.pubDate||"")||0);return Number.isFinite(n)?n:0}
+function dateMs(a){const n=Number(a.pubMs ?? 0);return Number.isFinite(n)?n:0}
 function fmtDate(a){const ms=dateMs(a);return ms?new Date(ms).toLocaleString([], {year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"Undated"}
 function watchTerms(){return $("watchlistInput").value.split(/[;,\n]/).map(x=>x.trim().toLowerCase()).filter(Boolean)}
 function watchScore(a){const text=`${a.title} ${a.description} ${a.source} ${(a.topics||[]).join(" ")}`.toLowerCase();return watchTerms().filter(k=>text.includes(k)).length}
@@ -75,6 +75,6 @@ async function boot(){await loadSettings();bind();renderResources();await loadFe
 boot();
 })();
 </script>
-<script src="/assets/vnv-beta-link.js" defer></script>
+<script src="../assets/vnv-beta-link.js" defer></script>
 </body>
 </html>
