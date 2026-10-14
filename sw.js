@@ -2,10 +2,11 @@
    Caches same-origin application code and stable directory data.
    Generated news JSON is deliberately network-first and is NOT cache-first here;
    user editions/history live in IndexedDB through the Local Browser Cloud. */
-const CACHE_NAME = "the-verifier-shell-v4";
+const CACHE_NAME = "the-verifier-shell-v5";
 const SHELL = [
   "./",
   "./index.html",
+  "./offline.html",
   "./assets/verifier-safety.js",
   "./assets/verifier-typography.css",
   "./assets/verifier-home-extension.js",
@@ -59,11 +60,18 @@ self.addEventListener("fetch", event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+          if (response.ok && response.type === "basic") {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+          }
           return response;
         })
-        .catch(() => caches.match(request).then(hit => hit || caches.match("./index.html")))
+        .catch(async () => {
+          const hit = await caches.match(request);
+          if (hit) return hit;
+          return (await caches.match("./offline.html")) ||
+            new Response("This page is not available offline.", {status:503, headers:{"Content-Type":"text/plain; charset=utf-8"}});
+        })
     );
     return;
   }
