@@ -78,6 +78,6 @@ async function loadPrefs(){level=await C.getPreference("youngReadersLevel","youn
 $("level").addEventListener("change",async e=>{level=e.target.value;await C.setPreference("youngReadersLevel",level);renderSources();renderFact()});$("newFact").addEventListener("click",renderFact);$("fontDown").addEventListener("click",async()=>{font=Math.max(14,font-1);await C.setPreference("youngReadersFont",font);document.documentElement.style.setProperty("--fs",`${font}px`)});$("fontUp").addEventListener("click",async()=>{font=Math.min(23,font+1);await C.setPreference("youngReadersFont",font);document.documentElement.style.setProperty("--fs",`${font}px`)});(async()=>{await loadPrefs();renderSources();renderFact();loadAPOD()})();
 })();
 </script>
-<script src="/assets/vnv-beta-link.js" defer></script>
+<script src="../assets/vnv-beta-link.js" defer></script>
 </body>
 </html>
