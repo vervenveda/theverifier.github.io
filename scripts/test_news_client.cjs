@@ -34,3 +34,26 @@ test('vintage adapter preserves real headline and article URL, respects outlet s
 test('offline failure is exposed for application cache fallback',async()=>{
  await assert.rejects(client({fail:true}).api.createSourceReader().read({url:'https://publisher.example/feed'}),/Offline/);
 });
+
+test('future event dates never receive publication freshness credit',()=>{
+ const {api}=client();
+ const future=new Date(Date.now()+12*86400000).toISOString();
+ const entry=api.normalizeStory({title:'Scheduled event',link:'https://publisher.example/event',pubDate:future,pubMs:Date.parse(future)});
+ assert.equal(entry.publicationDateStatus,'future-or-event-date');
+ assert.equal(entry.pubMs,0);
+ assert.equal(entry.pubDate,future);
+});
+test('missing dates remain unranked rather than being treated as today',()=>{
+ const {api}=client();
+ const entry=api.normalizeStory({title:'Undated',link:'https://publisher.example/undated'});
+ assert.equal(entry.publicationDateStatus,'unknown');
+ assert.equal(entry.pubMs,0);
+ assert.equal(entry.verificationStatus,'discovered');
+});
+test('valid past publication dates remain sortable and unverified',()=>{
+ const {api}=client(),pubDate='2026-10-01T12:00:00Z';
+ const entry=api.normalizeStory({title:'Dated story',link:'https://publisher.example/dated',pubDate});
+ assert.equal(entry.publicationDateStatus,'dated');
+ assert.equal(entry.pubMs,Date.parse(pubDate));
+ assert.equal(entry.verificationStatus,'discovered');
+});
