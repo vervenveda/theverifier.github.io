@@ -33,7 +33,7 @@
   const MAX_STORIES=30,MAX_PER_SOURCE=2;
   let edition=null,latest=null,health=[];
 
-  function dateMs(a){const n=Number(a.pubMs||Date.parse(a.pubDate||"")||0);return Number.isFinite(n)?n:0}
+  function dateMs(a){const n=Number(a.pubMs ?? 0);return Number.isFinite(n)?n:0}
   function ageHours(a){const ms=dateMs(a);return ms?Math.max(0,(Date.now()-ms)/36e5):9999}
   function qualityScore(a){const age=ageHours(a);const freshness=Math.max(0,96-Math.min(age,96))/96*10;const dated=age<9999?1:0;const summary=(a.description||"").length>=80?1:0;return freshness+dated+summary}
   function dedupe(items){const links=new Set(),titles=new Set();return items.filter(a=>{const l=(a.link||"").replace(/[?#].*$/,"").toLowerCase(),t=(a.title||"").toLowerCase().replace(/\s+/g," ").trim();if((l&&links.has(l))||(t&&titles.has(t)))return false;if(l)links.add(l);if(t)titles.add(t);return true})}
@@ -59,6 +59,6 @@
   $("generate").addEventListener("click",buildToday);$("search").addEventListener("input",render);$("region").addEventListener("change",render);$("export").addEventListener("click",exportCloud);$("importFile").addEventListener("change",e=>{const f=e.target.files?.[0];if(f)importCloud(f);e.target.value=""});boot();
 })();
 </script>
-<script src="/assets/vnv-beta-link.js" defer></script>
+<script src="../assets/vnv-beta-link.js" defer></script>
 </body>
 </html>
