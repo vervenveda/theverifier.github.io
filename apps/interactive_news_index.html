@@ -44,6 +44,7 @@ function applySettings(){document.body.dataset.theme=settings.theme;document.doc
 $("search").addEventListener("input",render);$("region").addEventListener("change",render);$("source").addEventListener("change",render);$("editionSelect").addEventListener("change",e=>loadEdition(e.target.value));$("sensitive").addEventListener("change",async e=>{settings.sensitive=e.target.checked;await C.setPreference("explorerSensitive",settings.sensitive);render()});$("themeBtn").addEventListener("click",async()=>{settings.theme=settings.theme==="dark"?"light":"dark";await C.setPreference("explorerTheme",settings.theme);applySettings()});$("fontDown").addEventListener("click",async()=>{settings.font=Math.max(14,settings.font-1);await C.setPreference("explorerFont",settings.font);applySettings()});$("fontUp").addEventListener("click",async()=>{settings.font=Math.min(24,settings.font+1);await C.setPreference("explorerFont",settings.font);applySettings()});(async()=>{await loadSettings();await load()})();
 })();
 </script>
-<script src="../assets/vnv-beta-link.js" defer></script>
+
+<script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>

@@ -66,6 +66,7 @@ async function load(force=false){$("feedState").textContent="Feeds: loading";con
 search.addEventListener("input",render);issueFilter.addEventListener("change",render);$("refresh").addEventListener("click",()=>load(true));$("closeDrawer").addEventListener("click",closeDrawer);$("backdrop").addEventListener("click",closeDrawer);document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer()});load(false);setInterval(()=>load(true),60*60*1000);
 })();
 </script>
-<script src="/assets/vnv-beta-link.js" defer></script>
+
+<script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>

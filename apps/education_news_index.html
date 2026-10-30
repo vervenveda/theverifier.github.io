@@ -55,6 +55,7 @@ function applyAppearance(){document.body.dataset.theme=settings.theme||"light";d
 $("prev").addEventListener("click",()=>{if(filtered.length){index=(index-1+filtered.length)%filtered.length;renderReader()}});$("next").addEventListener("click",()=>{if(filtered.length){index=(index+1)%filtered.length;renderReader()}});$("read").addEventListener("click",()=>{const a=current();if(!a||!("speechSynthesis"in window))return;speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(`${a.title}. ${a.description||""}`))});$("save").addEventListener("click",saveCurrent);$("refresh").addEventListener("click",()=>refresh(true));$("search").addEventListener("input",applyFilters);$("category").addEventListener("change",applyFilters);$("keywordMode").addEventListener("change",()=>{settings.keywordMode=$("keywordMode").value;applyFilters()});$("saveKeywords").addEventListener("click",saveSettings);$("theme").addEventListener("click",async()=>{settings.theme=settings.theme==="dark"?"light":"dark";await C.setPreference("educationSettings",settings);applyAppearance()});$("fontDown").addEventListener("click",async()=>{settings.font=Math.max(14,(Number(settings.font)||17)-1);await C.setPreference("educationSettings",settings);applyAppearance()});$("fontUp").addEventListener("click",async()=>{settings.font=Math.min(24,(Number(settings.font)||17)+1);await C.setPreference("educationSettings",settings);applyAppearance()});(async()=>{await loadSettings();await renderFavorites();await refresh(false)})();
 })();
 </script>
-<script src="../assets/vnv-beta-link.js" defer></script>
+
+<script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>
