@@ -1708,7 +1708,7 @@ html,body{max-width:100%}
   </a>
   <nav class="vnv-global-links" aria-label="Verve N Veda network links">
     <a href="https://vervenveda.com/theverifier.github.io/">This Hub</a>
-    <a href="https://vervenveda.com/#directory">Ecosystem Directory</a>
+    <a href="https://vervenveda.com/#directory" data-ticker data-ticker-label="Ecosystem Directory">Ecosystem Directory</a>
     <a href="https://vervenveda.com/core/directory-agi/">Directory AGI</a>
     <a href="https://vervenveda.com/cloud/">Public Cloud</a>
   </nav>
@@ -1719,44 +1719,16 @@ html,body{max-width:100%}
       <a href="https://vervenveda.com/">Verve N Veda Gateway</a>
       <a href="https://vervenveda.com/#directory">Complete Ecosystem Directory</a>
       <a href="https://vervenveda.com/Khaemenes_Academy.github.io/">Khaemenes Academy</a>
-      <a href="https://vervenveda.com/PLERASearch.github.io/">PLERA Search</a>
+      <a href="https://vervenveda.com/PLERASearch.github.io/" data-ticker data-ticker-label="PLERA Search">PLERA Search</a>
       <a href="https://vervenveda.com/theverifier.github.io/">The Verifier</a>
-      <a href="https://vervenveda.com/proresource_hub.github.io/">Professional Resources</a>
-      <a href="https://vervenveda.com/Arshif.github.io/">ARSHIF</a>
+      <a href="https://vervenveda.com/proresource_hub.github.io/" data-ticker data-ticker-label="ProReSources">Professional Resources</a>
+      <a href="https://vervenveda.com/Arshif.github.io/" data-ticker data-ticker-label="ARSHIF">ARSHIF</a>
     </div>
   </details>
 </div>
 <a class="skip" href="#main">
    Skip to main content
   </a>
-<div aria-label="Global and regional news-source ticker. Source names open their official websites in a new tab." class="ticker-component">
-<div class="verifier-bar">
-<div class="vb-tickers">
-<div class="ticker-row">
-<div class="ticker-label">
-<span class="ticker-dot">
-</span>
-       Global · Wire · Public Service
-      </div>
-<div class="marquee-wrap">
-<div class="marquee" id="tickerGlobal">
-</div>
-</div>
-</div>
-<div class="ticker-row">
-<div class="ticker-label">
-<span class="ticker-dot">
-</span>
-       Regional · Investigative · Specialized
-      </div>
-<div class="marquee-wrap">
-<div class="marquee" id="tickerRegional">
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
 <header class="site-header">
 <div class="shell nav">
 <a class="brand" href="./">
@@ -2146,41 +2118,6 @@ function toast(message){
   toast.timer=setTimeout(()=>element.classList.remove("show"),1800);
 }
 
-function tickerItem(outlet){
-  const item=document.createElement("a");
-  item.className="ticker-link";
-  item.href=outlet.url;
-  item.target="_blank";
-  item.rel="noopener noreferrer";
-  item.setAttribute("aria-label",`${outlet.name}: ${outlet.topic}. Opens in a new tab.`);
-  item.innerHTML=`<span class="label">${escapeHTML(outlet.name)}</span><span class="preview">${escapeHTML(outlet.topic)}</span><span class="meta">${escapeHTML(outlet.region)} · ${escapeHTML(outlet.country)}</span>`;
-
-  const separator=document.createElement("span");
-  separator.className="ticker-sep";
-  separator.setAttribute("aria-hidden","true");
-  separator.textContent=" • ";
-  return [item,separator];
-}
-
-function buildTicker(id,outletList){
-  const track=$(id);
-  if(!track)return;
-  const sequence=document.createElement("span");
-  sequence.className="ticker-sequence";
-  outletList.forEach(outlet=>sequence.append(...tickerItem(outlet)));
-
-  const duplicate=sequence.cloneNode(true);
-  duplicate.setAttribute("aria-hidden","true");
-  duplicate.querySelectorAll("a").forEach(link=>link.tabIndex=-1);
-  if("inert" in duplicate)duplicate.inert=true;
-  track.replaceChildren(sequence,duplicate);
-}
-
-function renderSourceStrip(){
-  buildTicker("tickerGlobal",OUTLETS.filter(outlet=>GLOBAL_REGIONS.has(outlet.region)));
-  buildTicker("tickerRegional",OUTLETS.filter(outlet=>!GLOBAL_REGIONS.has(outlet.region)));
-}
-
 function updateClock(){
   const clock=$("localClock");
   if(clock)clock.textContent=new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"medium"}).format(new Date());
@@ -2397,7 +2334,7 @@ function auditManifest(){
 }
 
 function initialize(){
-  renderSourceStrip();
+  
   updateClock();
   setInterval(updateClock,1000);
   syncCounts();
@@ -2456,6 +2393,10 @@ initialize();
 <script src="./assets/verifier-home-extension.js" defer></script>
 <script src="https://vervenveda.com/assets/vnv-support.js" defer></script>
 <script defer src="https://vervenveda.com/assets/vnv-external-landing.js"></script>
+
+<script src="https://vervenveda.com/assets/vnv-333-ticker.js"></script>
+<script src="https://vervenveda.com/assets/vnv-ticker-autopopulate.js" data-vnv-ticker-autopopulate></script>
+<script>VNV_TICKER.autoPopulate({label:"Verifier Quick Links",max:12});</script>
 <script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>
