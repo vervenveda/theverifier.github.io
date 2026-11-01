@@ -1729,21 +1729,6 @@ html,body{max-width:100%}
 <a class="skip" href="#main">
    Skip to main content
   </a>
-<header class="site-header">
-<div class="shell nav">
-<a class="brand" href="./">
-<span aria-hidden="true" class="brand-mark">
-      V
-     </span>
-<span class="brand-copy">
-<strong>
-       The Verifier
-      </strong>
-<small>
-       Truth · Facts · Accountability
-      </small>
-</span>
-</a>
 <div aria-label="Local browser date and time" class="header-time">
 <span class="header-time-label">
       Local browser date and time
@@ -1752,26 +1737,6 @@ html,body{max-width:100%}
       --:--:--
      </time>
 </div>
-<nav aria-label="Primary navigation" class="nav-links header-anchor-links">
-<a href="#columns">
-      Editorial Columns
-     </a>
-<a href="#apps">
-      Applications
-     </a>
-<a href="#standards">
-      Standards
-     </a>
-<a href="#network">
-      Public Network
-     </a>
-</nav>
-<button aria-controls="drawer" aria-expanded="false" aria-label="Open complete directory" class="menu" id="menuButton" type="button">
-<span>
-</span>
-</button>
-</div>
-</header>
 <div class="breadcrumb-shell">
 <div class="shell breadcrumb">
 <nav aria-label="Breadcrumb" class="crumbs">
@@ -2268,7 +2233,7 @@ function setDrawerState(open){
   const overlay=$("drawer");
   overlay.classList.toggle("open",open);
   overlay.setAttribute("aria-hidden",String(!open));
-  $("menuButton").setAttribute("aria-expanded",String(open));
+  $("menuButton")?.setAttribute("aria-expanded",String(open));
   document.body.classList.toggle("drawer-open",open);
   if("inert" in overlay)overlay.inert=!open;
 }
@@ -2357,7 +2322,13 @@ function initialize(){
     filterApps();
   });
   $("randomButton").addEventListener("click",randomApp);
-  $("menuButton").addEventListener("click",openDrawer);
+  $("menuButton")?.addEventListener("click",openDrawer);
+document.addEventListener("click",event=>{
+  const link=event.target.closest?.('a[href="#verifier-directory"]');
+  if(!link)return;
+  event.preventDefault();
+  openDrawer();
+});
   $("drawerClose").addEventListener("click",()=>closeDrawer());
   $("drawer").addEventListener("click",event=>{
     if(event.target===$("drawer"))closeDrawer();
@@ -2394,12 +2365,12 @@ initialize();
 <script src="https://vervenveda.com/assets/vnv-support.js" defer></script>
 <script defer src="https://vervenveda.com/assets/vnv-external-landing.js"></script>
 
+<script src="https://vervenveda.com/assets/vnv-header-autopopulate.js"></script>
+<script>VNV_HEADER.mount({"title":"The Verifier","subtitle":"Truth · Facts · Accountability","icon":"V","home":"./","actions":[{"label":"Editorial","href":"#columns"},{"label":"Applications","href":"#apps"},{"label":"Standards","href":"#standards"},{"label":"Directory","href":"#verifier-directory"},{"label":"Public Network","href":"#network"}]});</script>
 <script src="https://vervenveda.com/assets/vnv-333-ticker.js"></script>
 <script src="https://vervenveda.com/assets/vnv-ticker-autopopulate.js" data-vnv-ticker-autopopulate></script>
 <script>VNV_TICKER.autoPopulate({label:"Verifier Quick Links",max:12});</script>
-
-<script src="https://vervenveda.com/assets/vnv-header-autopopulate.js"></script>
-<script>VNV_HEADER.mount({replaceLegacy:true});</script>
+<script>VNV_HEADER.mount({"title":"The Verifier","subtitle":"Truth · Facts · Accountability","icon":"V","home":"./","actions":[{"label":"Editorial","href":"#columns"},{"label":"Applications","href":"#apps"},{"label":"Standards","href":"#standards"},{"label":"Directory","href":"#verifier-directory"},{"label":"Public Network","href":"#network"}]});</script>
 <script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>
