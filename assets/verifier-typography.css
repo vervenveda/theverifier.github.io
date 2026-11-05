@@ -1,22 +1,81 @@
-/* The Verifier — page-level typography standard, 2026-10-12.
- * These selectors deliberately exclude card/article H2 and internal UI labels.
- * STOS files and runtime artifacts are outside this styling layer.
+/* The Verifier — canonical page typography standard.
+ * Page-owned text follows the Verve N Veda blueprint.
+ * Shared canonical header/ticker/toolbar components retain their own typography.
  */
-:root{--verifier-eyebrow-size:55px;--verifier-heading-size:33px;--verifier-descriptor-size:24px}
-:is(header,.hero,.hero-copy,.masthead,.page-header) :is(.eyebrow,.kicker),
-body > :is(.eyebrow,.kicker){font-size:var(--verifier-eyebrow-size);line-height:1.16;overflow-wrap:anywhere}
-:is(header,.hero,.hero-copy,.masthead,.page-header) h1,
-main > h1,body > h1,.wrap > h1{font-size:var(--verifier-heading-size);line-height:1.24;overflow-wrap:anywhere}
-:is(header,.hero,.hero-copy,.masthead,.page-header) > h2,
-:is(header,.hero,.hero-copy,.masthead,.page-header) .subtitle,
-h1 + h2,h1 + .subtitle{font-size:var(--verifier-descriptor-size);line-height:1.36;overflow-wrap:anywhere}
-@media(max-width:640px){
-  :is(header,.hero,.hero-copy,.masthead,.page-header) :is(.eyebrow,.kicker),
-  body > :is(.eyebrow,.kicker){letter-spacing:normal}
+:root{
+  --verifier-eyebrow-size:33px;
+  --verifier-title-size:66px;
+  --verifier-section-size:44px;
+  --verifier-card-title-size:24px;
+  --verifier-body-size:18px;
+  --verifier-ui-size:16px;
 }
 
-/* Homepage masthead hierarchy: page name leads, eyebrow remains a small label. */
-.verifier-home .hero .eyebrow{font-size:14px;line-height:1.5;letter-spacing:.16em}
-.verifier-home .hero h1{font-size:clamp(48px,8vw,96px);line-height:1.08}
-.verifier-home :is(.category-grid,.principles,.hero-stats){grid-auto-rows:1fr}
-.verifier-home [data-verifier-feed-health]{margin-left:auto!important;margin-right:auto!important}
+.verifier-home{
+  font-size:var(--verifier-body-size);
+}
+
+.verifier-home .hero .eyebrow{
+  font-family:Cinzel,Georgia,serif;
+  font-size:var(--verifier-eyebrow-size);
+  line-height:1.16;
+  letter-spacing:.08em;
+  overflow-wrap:anywhere;
+}
+
+.verifier-home .hero h1{
+  font-family:Cinzel,Georgia,serif;
+  font-size:clamp(55px,7vw,var(--verifier-title-size));
+  line-height:1.05;
+  overflow-wrap:anywhere;
+}
+
+.verifier-home .heading h2{
+  font-family:Cinzel,Georgia,serif;
+  font-size:clamp(33px,4vw,var(--verifier-section-size));
+  line-height:1.12;
+}
+
+.verifier-home :is(.lead,.heading p,.app-card p,.site-card p,.principles p,.connection-summary){
+  font-size:var(--verifier-body-size);
+}
+
+.verifier-home :is(.btn,.tool-button,.open,.copy,.category,.footer-links a,.top-button,.results,.trail-link,.crumbs){
+  font-size:var(--verifier-ui-size);
+}
+
+.verifier-home :is(.field,.drawer-search){
+  font-size:18px;
+}
+
+.verifier-home :is(.app-card h3,.site-card h3,.principles strong,.group-heading){
+  font-size:var(--verifier-card-title-size);
+}
+
+.verifier-home :is(.card-badge,.app-health,.site-status,.site-card small,.drawer p,.menu-link strong,.menu-link small,.menu-group,.statement cite,.stat span,.header-time-label,.header-time .vb-clock){
+  font-size:var(--verifier-ui-size);
+}
+
+.verifier-home :is(.category-grid,.principles,.hero-stats){
+  grid-auto-rows:1fr;
+}
+
+.verifier-home [data-verifier-feed-health]{
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+@media(max-width:640px){
+  .verifier-home .hero .eyebrow{
+    font-size:24px;
+    letter-spacing:.06em;
+  }
+
+  .verifier-home .hero h1{
+    font-size:55px;
+  }
+
+  .verifier-home .heading h2{
+    font-size:33px;
+  }
+}
