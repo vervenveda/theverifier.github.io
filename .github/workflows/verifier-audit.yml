@@ -39,10 +39,36 @@ jobs:
           assert len(feeds) >= 15, f'Expected at least 15 feed-capable sources, found {len(feeds)}'
           assert all(url.startswith('https://') for url in feeds), 'All configured feeds must use HTTPS'
 
+          newsroom = json.loads((root / 'data' / 'verifier-newsroom-directory.json').read_text(encoding='utf-8'))
+          assert newsroom.get('schemaVersion') == 1
+          newsroom_entries = newsroom.get('entries', [])
+          assert len(newsroom_entries) == 22, f'Expected 22 canonical newsroom entries, found {len(newsroom_entries)}'
+          newsroom_ids = [entry.get('id') for entry in newsroom_entries]
+          newsroom_files = [entry.get('file') for entry in newsroom_entries]
+          assert all(newsroom_ids) and len(newsroom_ids) == len(set(newsroom_ids)), 'Newsroom IDs must be present and unique'
+          assert all(newsroom_files) and len(newsroom_files) == len(set(newsroom_files)), 'Newsroom files must be present and unique'
+          actual_app_files = {p.name for p in (root / 'apps').glob('*.html')}
+          assert set(newsroom_files) == actual_app_files, (
+              f'Canonical newsroom directory drift: missing={sorted(actual_app_files-set(newsroom_files))}, '
+              f'extra={sorted(set(newsroom_files)-actual_app_files)}'
+          )
+          for entry in newsroom_entries:
+              assert (root / 'apps' / entry['file']).exists(), f"Missing newsroom file: {entry['file']}"
+              assert entry.get('category'), f"Newsroom entry missing category: {entry.get('id')}"
+              assert entry.get('type'), f"Newsroom entry missing type: {entry.get('id')}"
+              assert entry.get('maturity'), f"Newsroom entry missing maturity: {entry.get('id')}"
+
           manifest = json.loads((root / 'mentor-manifest.json').read_text(encoding='utf-8'))
           resource_ids = {r.get('id') for r in manifest.get('resources', [])}
           for required_id in ['daily-top-30','global-source-directory','young-readers-newsroom']:
               assert required_id in resource_ids, f'Mentor manifest missing {required_id}'
+          newsroom_by_file = {entry['file']: entry for entry in newsroom_entries}
+          for resource in manifest.get('resources', []):
+              url = str(resource.get('url') or '')
+              if '/apps/' not in url:
+                  continue
+              file_name = url.split('/apps/', 1)[1].split('#', 1)[0].split('?', 1)[0]
+              assert file_name in newsroom_by_file, f"Mentor manifest references newsroom file outside canonical directory: {file_name}"
 
           required = [
               root / 'assets' / 'verifier-safety.js',
@@ -51,17 +77,9 @@ jobs:
               root / 'assets' / 'verifier-home-extension.js',
               root / 'assets' / 'editorial-integrity.js',
               root / 'assets' / 'editorial-evidence-registry.js',
+              root / 'data' / 'verifier-newsroom-directory.json',
               root / 'scripts' / 'build_news_feed.py',
               root / '.github' / 'workflows' / 'build-news-feed.yml',
-              root / 'apps' / 'daily_digest_index.html',
-              root / 'apps' / 'Modern_News_Engine_index.html',
-              root / 'apps' / 'global_news_digest_index.html',
-              root / 'apps' / 'interactive_news_index.html',
-              root / 'apps' / 'education_news_index.html',
-              root / 'apps' / 'kids_news_network_index.html',
-              root / 'apps' / 'live_news_index.html',
-              root / 'apps' / 'news_feed_index.html',
-              root / 'apps' / 'world_wire_index.html',
               root / 'editorial_standard_index.html',
               root / 'EDITORIAL_STANDARD.md',
               root / 'EDITORIAL_AUDIT_QUEUE.md',
@@ -71,15 +89,11 @@ jobs:
               assert path.exists(), f'Missing required file: {path}'
 
           hardened_pages = [
-              root / 'apps' / 'live_news_index.html',
-              root / 'apps' / 'news_feed_index.html',
-              root / 'apps' / 'world_wire_index.html',
-              root / 'apps' / 'daily_digest_index.html',
-              root / 'apps' / 'Modern_News_Engine_index.html',
-              root / 'apps' / 'interactive_news_index.html',
-              root / 'apps' / 'education_news_index.html',
-              root / 'apps' / 'kids_news_network_index.html',
+              root / 'apps' / entry['file']
+              for entry in newsroom_entries
+              if entry.get('hardened') is True
           ]
+          assert hardened_pages, 'No hardened newsroom surfaces declared in canonical newsroom directory'
           for path in hardened_pages:
               text = path.read_text(encoding='utf-8')
               assert 'verifier-safety.js' in text, f'{path} must load shared safety layer'
@@ -120,13 +134,19 @@ jobs:
           shell = (root / 'sw.js').read_text(encoding='utf-8')
           assert '/data/generated/' in shell, 'Service worker must explicitly bypass generated current-news data'
           assert 'verifier-news-data.js' in shell, 'Offline shell must cache same-origin news client code'
-          for path in ['Modern_News_Engine_index.html','interactive_news_index.html','education_news_index.html','kids_news_network_index.html']:
-              assert path in shell, f'Offline shell missing {path}'
+          assert 'verifier-newsroom-directory.json' in shell, 'Offline shell must consume canonical newsroom directory'
+          assert 'offlineEligible === true' in shell, 'Offline shell must derive eligible newsroom pages from manifest metadata'
+          offline_entries = [entry for entry in newsroom_entries if entry.get('offlineEligible') is True]
+          assert offline_entries, 'Canonical newsroom directory must declare offline-eligible pages'
+
+          home = (root / 'index.html').read_text(encoding='utf-8')
+          assert 'verifier-newsroom-directory.json' in home, 'Homepage must consume canonical newsroom directory'
+          assert 'const APPS=[' not in home, 'Homepage must not embed a second newsroom catalog'
 
           home_extension = (root / 'assets' / 'verifier-home-extension.js').read_text(encoding='utf-8')
-          assert 'daily-top-30' in home_extension and 'Daily Top 30' in home_extension
-          assert 'Global Source Directory' in home_extension
-          assert 'Young Readers Newsroom' in home_extension
+          assert 'APPS' not in home_extension, 'Homepage extension must not mutate canonical newsroom inventory'
+          assert 'data-verifier-daily-top30' in home_extension
+          assert 'data-verifier-feed-health' in home_extension
 
           editorial_layer = (root / 'assets' / 'editorial-integrity.js').read_text(encoding='utf-8')
           assert 'Editorial / Opinion' in editorial_layer
@@ -175,7 +195,7 @@ jobs:
           assert 'The Quiet Consensus No One Voted For' in queue
           assert 'Do not mark an item complete solely because it carries the global Editorial / Opinion banner.' in queue
 
-          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, first-party news architecture, article-level editorial correction infrastructure, and self-loading evidence deployment.')
+          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, {len(newsroom_entries)} canonical newsroom entries, first-party news architecture, editorial correction infrastructure, and single-owner newsroom topology.')
           PY
 
       - name: Verify local navigation and asset paths
