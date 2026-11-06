@@ -68,9 +68,6 @@ jobs:
           failures = []
           coverage = []
           legacy_strip_allowance = {
-              'apps/global_news_digest_index.html',
-              'apps/kids_news_network_index.html',
-              'apps/science_news_index.html',
           }
           observed_legacy_strips = set()
           for rel, text in pages:
@@ -109,7 +106,7 @@ jobs:
               })
 
           # Pages already promoted to the canonical shell must never regress.
-          promoted = {'index.html', 'apps/world_wire_index.html', 'apps/Live_Research_News_index.html', 'apps/ultimate_news_index.html', 'apps/Modern_News_Engine_index.html'}
+          promoted = {'index.html', 'apps/world_wire_index.html', 'apps/Live_Research_News_index.html', 'apps/ultimate_news_index.html', 'apps/Modern_News_Engine_index.html', 'apps/global_news_digest_index.html', 'apps/kids_news_network_index.html', 'apps/science_news_index.html'}
           by_page = {item['page']: item for item in coverage}
           for rel in promoted:
               item = by_page.get(rel)
