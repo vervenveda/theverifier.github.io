@@ -537,6 +537,27 @@ h2{
 @media(max-width:900px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.category-grid{grid-template-columns:1fr}}
 
+/* Today’s briefing */
+.briefing-front{background:#fff8e9}
+.briefing-heading{max-width:860px}
+.briefing-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.briefing-card,.briefing-placeholder{
+  min-height:250px;padding:20px;display:flex;flex-direction:column;
+  border:1px solid #cfc4b2;border-radius:7px;background:#fffdf6;box-shadow:var(--soft)
+}
+.briefing-source{color:#8b6b35;font-size:16px;letter-spacing:.06em}
+.briefing-card h3{margin:11px 0 9px;font:400 24px/1.25 var(--serif);color:#202724}
+.briefing-card p{margin:0;color:#5f665f;font-size:16px;line-height:1.6}
+.briefing-meta{margin-top:10px;color:#6c746f;font-size:16px}
+.briefing-card a{
+  margin-top:auto;display:inline-flex;align-items:center;justify-content:center;min-height:44px;
+  padding:9px 12px;border-radius:7px;background:#202724;color:#fff8e9;text-decoration:none;font-size:16px
+}
+.briefing-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:20px}
+.briefing-button{background:#202724!important;color:#fff8e9!important;border-color:#202724!important}
+@media(max-width:1080px){.briefing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.briefing-grid{grid-template-columns:1fr}}
+
 /* Standards */
 .principles{
   gap:12px;
@@ -1492,6 +1513,23 @@ body.verifier-home{
         Reader-led research
        </span>
 </div>
+</div>
+</div>
+</section>
+<section class="section briefing-front" id="briefing" aria-labelledby="briefingTitle">
+<div class="shell">
+<div class="heading briefing-heading">
+<p class="kicker">Today’s briefing</p>
+<h2 id="briefingTitle">A few stories to begin with.</h2>
+<p>Current publisher discoveries from the latest Verifier edition. Open the original source, compare coverage, and treat feed appearance as discovery rather than independent verification.</p>
+</div>
+<div class="briefing-grid" id="briefingGrid" aria-live="polite">
+<article class="briefing-placeholder">Loading the latest briefing…</article>
+</div>
+<div class="briefing-actions">
+<a class="btn briefing-button" href="./apps/Live_Research_News_index.html">Daily News Briefing</a>
+<a class="btn briefing-button" href="./apps/daily_digest_index.html">Daily Top 30</a>
+<a class="btn briefing-button" href="./apps/Modern_News_Engine_index.html">Modern News Engine</a>
 </div>
 </div>
 </section>
