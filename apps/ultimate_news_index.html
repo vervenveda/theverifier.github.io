@@ -244,6 +244,7 @@ footer a{color:var(--cream)}
   <div class="filters" id="directoryFilters" aria-label="Directory filters">
     <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">All</button>
     <button class="filter-btn" type="button" data-filter="live" aria-pressed="false">Today’s News</button>
+    <button class="filter-btn" type="button" data-filter="interactive" aria-pressed="false">Interactive &amp; Feed Tools</button>
     <button class="filter-btn" type="button" data-filter="research" aria-pressed="false">Research &amp; Sources</button>
     <button class="filter-btn" type="button" data-filter="science" aria-pressed="false">Science &amp; Environment</button>
     <button class="filter-btn" type="button" data-filter="learning" aria-pressed="false">Learning &amp; News Literacy</button>
@@ -271,7 +272,8 @@ footer a{color:var(--cream)}
   "use strict";
   const DIRECTORY_URL="../data/verifier-newsroom-directory.json";
   const GROUPS={
-    live:{title:"Today’s News",description:"Daily briefings, world coverage, live feeds, and interactive reading."},
+    live:{title:"Today’s News",description:"Daily briefings, world coverage, and current reporting."},
+    interactive:{title:"Interactive & Feed Tools",description:"Interactive explorers, feeds, tickers, and compatibility doorways."},
     research:{title:"Research & Sources",description:"Source directories, research engines, search gates, and comparison tools."},
     science:{title:"Science & Environment",description:"Science, climate, ecology, technology, and public-interest data."},
     learning:{title:"Learning & News Literacy",description:"Education, young-reader resources, and current-events practice."},
