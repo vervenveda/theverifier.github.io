@@ -164,14 +164,14 @@ footer{padding:38px 0;color:rgba(255,255,255,.72);background:#040f1b}.footer-gri
 .menu-link{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.09);border-radius:13px;color:#fff;background:rgba(255,255,255,.035);text-decoration:none}.menu-link:hover{background:rgba(255,255,255,.09)}.menu-link i{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(234,211,161,.14);font-style:normal}.menu-link strong{display:block;font-size:16px}.menu-link small{display:block;color:rgba(255,255,255,.55);font-size:16px}
 .toast{position:fixed;left:50%;bottom:20px;z-index:4000;transform:translate(-50%,120px);padding:.75rem 1rem;border-radius:999px;color:#fff;background:var(--navy);box-shadow:var(--shadow);font-size:16px;font-weight:700;transition:.2s}.toast.show{transform:translate(-50%,0)}
 
-@media(max-width:1080px){.app-grid,.network-grid{grid-template-columns:repeat(3,1fr)}.category-grid{grid-template-columns:repeat(2,1fr)}.breadcrumb{grid-template-columns:1fr;align-items:flex-start;padding:8px 0}.crumbs{flex-wrap:wrap;white-space:normal}.network-trail{width:100%}}
+@media(max-width:1080px){.app-grid,.app-grid-2,.app-grid-3,.app-grid-4,.network-grid{grid-template-columns:repeat(3,1fr)}.category-grid{grid-template-columns:repeat(2,1fr)}.breadcrumb{grid-template-columns:1fr;align-items:flex-start;padding:8px 0}.crumbs{flex-wrap:wrap;white-space:normal}.network-trail{width:100%}}
 @media(max-width:900px){
   .toolbar{grid-template-columns:1fr 1fr}
   .toolbar .field:first-child{grid-column:1/-1}
-  .app-grid,.network-grid{grid-template-columns:repeat(2,1fr)}
+  .app-grid,.app-grid-2,.app-grid-3,.app-grid-4,.network-grid{grid-template-columns:repeat(2,1fr)}
   .footer-grid{grid-template-columns:1fr 1fr}
 }
-@media(max-width:620px){.hero-stats,.app-grid,.network-grid,.category-grid,.principles,.footer-grid{grid-template-columns:1fr}.actions .btn{width:100%}.toolbar{grid-template-columns:1fr}.toolbar .field:first-child{grid-column:auto}.card-actions{grid-template-columns:1fr}}
+@media(max-width:620px){.hero-stats,.app-grid,.app-grid-2,.app-grid-3,.app-grid-4,.network-grid,.category-grid,.principles,.footer-grid{grid-template-columns:1fr}.actions .btn{width:100%}.toolbar{grid-template-columns:1fr}.toolbar .field:first-child{grid-column:auto}.card-actions{grid-template-columns:1fr}}
 @media print{.breadcrumb-shell,.drawer-overlay,.actions,.toolbar,.favorite,.card-actions,#network,footer,.toast{display:none!important}.hero{color:#111;background:#fff}.hero h1{color:#111}.lead,.hero-stats{color:#333}.hero-copy{padding:2rem 0}.section{padding:1.5rem 0}.app-grid{grid-template-columns:repeat(2,1fr)}.card{box-shadow:none;break-inside:avoid}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
   </style>
@@ -424,6 +424,10 @@ h2{
 .network-grid{
   gap:12px;
 }
+.app-grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.app-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.app-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+
 
 .card{
   padding:20px;
@@ -1530,7 +1534,7 @@ body.verifier-home{
 <aside class="directory-feature" aria-labelledby="directoryFeatureTitle"><div><p class="directory-feature-kicker">Start here</p><h3 id="directoryFeatureTitle">The Verifier Directory</h3><p>Use the visual directory to choose a newsroom desk, research pathway, source tool, learning resource, or archive.</p></div><a class="directory-feature-link" href="./apps/ultimate_news_index.html">Open The Verifier Directory →</a></aside>
 <div class="catalog">
 <div class="toolbar">
-<input autocomplete="off" class="field" id="appSearch" placeholder="Search newsrooms, directories, research, science, education, archives…" type="search"/>
+<input autocomplete="off" class="field" id="appSearch" placeholder="Search today’s news, interactive tools, research, science, education, archives…" type="search"/>
 <select aria-label="Filter newsroom desk" class="field" id="categoryFilter">
 </select>
 <button aria-pressed="false" class="tool-button" id="favoritesButton" type="button">
@@ -1827,7 +1831,7 @@ body.verifier-home{
 
 const NEWSROOM_DIRECTORY_URL="./data/verifier-newsroom-directory.json";
 let APPS=[];
-const CATEGORIES={"all":{"label":"All Desks","icon":"▦","description":"Every current Verifier newsroom desk."},"live":{"label":"Live & Interactive","icon":"●","description":"Current coverage, feeds, dashboards, and wire rooms."},"research":{"label":"Research & Discovery","icon":"⌕","description":"Evidence trails, search engines, portfolios, and global digests."},"science":{"label":"Science, Environment & Data","icon":"⚗","description":"Science reporting, ecological news, and public-interest data."},"learning":{"label":"Education, Kids & News Literacy","icon":"▣","description":"Education coverage, child-aware news, and current-events quizzes."},"archive":{"label":"Archives & Vintage Editions","icon":"N","description":"Historical and newspaper-inspired reading rooms."}};
+const CATEGORIES={"all":{"label":"All Resources","icon":"▦","description":"Every current Verifier resource."},"live":{"label":"Today’s News","icon":"●","description":"Daily briefings, world coverage, and current reporting."},"interactive":{"label":"Interactive & Feed Tools","icon":"⌘","description":"Interactive explorers, feeds, tickers, and compatibility doorways."},"research":{"label":"Research & Discovery","icon":"⌕","description":"Evidence trails, search engines, portfolios, and source directories."},"science":{"label":"Science, Environment & Data","icon":"⚗","description":"Science reporting, ecological news, and public-interest data."},"learning":{"label":"Education, Kids & News Literacy","icon":"▣","description":"Education coverage, child-aware news, and current-events quizzes."},"archive":{"label":"Archives & Vintage Editions","icon":"N","description":"Historical and newspaper-inspired reading rooms."}};
 const COLUMNS=[["Editor’s Choice","editors_choice_index.html"],["The Universe","universe_index.html"],["Corruption","corruption_index.html"],["Debunked","debunked_index.html"],["U.S. Politics","us_politics_index.html"],["Finance","finance_index.html"],["Religion & Culture","culture_religion_index.html"],["Environment","environment_index.html"],["Foreign Politics","foreign_politics_index.html"],["Arts & Humanities","arts_humanities_index.html"],["Immigration","immigration_index.html"],["Health & Lifestyle","health_lifestyle_index.html"],["Animals & Biodiversity","animals_biodiversity_index.html"],["Science & Technology","science_tech_index.html"],["World Conflict","world_conflict_index.html"],["Sports","sports_index.html"],["Education","education_index.html"],["Presidents","presidents_index.html"]];
 const COLUMN_META=Object.freeze({
   "Editor’s Choice":{beat:"Editor’s desk",description:"Selected essays and commentary across public life, institutions, culture, and current affairs."},
@@ -2064,7 +2068,7 @@ function renderApps(){
   const ordered=Object.keys(CATEGORIES).filter(key=>key!=="all");
   $("appGroups").innerHTML=ordered.map(category=>{
     const items=APPS.filter(app=>app.category===category);
-    return `<section class="app-group" data-group="${escapeHTML(category)}"><h3 class="group-heading">${escapeHTML(CATEGORIES[category].icon)} ${escapeHTML(CATEGORIES[category].label)}</h3><div class="app-grid">${items.map(app=>{
+    const columns=items.length===6?3:items.length===4?4:items.length===3?3:items.length===2?2:Math.min(items.length,4);return `<section class="app-group" data-group="${escapeHTML(category)}"><h3 class="group-heading">${escapeHTML(CATEGORIES[category].icon)} ${escapeHTML(CATEGORIES[category].label)}</h3><div class="app-grid app-grid-${columns}">${items.map(app=>{
       const health=app.health||"ready";
       return `<article class="card app-card ${escapeHTML(health)}" data-id="${escapeHTML(app.id)}" data-category="${escapeHTML(app.category)}" data-search="${escapeHTML((app.title+" "+app.description+" "+app.tags+" "+app.file+" "+categoryLabel(app.category)).toLowerCase())}">
         <div class="card-top"><span class="app-icon" aria-hidden="true">${escapeHTML(app.icon)}</span><button class="favorite" type="button" data-favorite="${escapeHTML(app.id)}" aria-label="${favorites.has(app.id)?"Remove":"Save"} ${escapeHTML(app.title)} ${favorites.has(app.id)?"from":"to"} saved resources" aria-pressed="${favorites.has(app.id)}">${favorites.has(app.id)?"♥":"♡"}</button></div>
