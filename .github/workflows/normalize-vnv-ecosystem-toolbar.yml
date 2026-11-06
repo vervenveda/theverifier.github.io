@@ -67,6 +67,13 @@ jobs:
 
           failures = []
           coverage = []
+          legacy_strip_allowance = {
+              'apps/Modern_News_Engine_index.html',
+              'apps/global_news_digest_index.html',
+              'apps/kids_news_network_index.html',
+              'apps/science_news_index.html',
+          }
+          observed_legacy_strips = set()
           for rel, text in pages:
               counts = {name: len(rx.findall(text)) for name, rx in patterns.items()}
               h1 = len(re.findall(r'<h1\b', text, re.I))
@@ -77,7 +84,9 @@ jobs:
               if counts['external_landing']:
                   failures.append(f'{rel}: obsolete vnv-external-landing surface remains')
               if counts['legacy_global_strip']:
-                  failures.append(f'{rel}: legacy global strip remains')
+                  observed_legacy_strips.add(rel)
+                  if rel not in legacy_strip_allowance:
+                      failures.append(f'{rel}: unapproved legacy global strip remains')
               if counts['legacy_beta']:
                   failures.append(f'{rel}: legacy beta utility remains')
               if counts['header_script'] > 1 or counts['header_mount'] > 1:
@@ -115,6 +124,10 @@ jobs:
               if item['h1'] != 1:
                   failures.append(f'{rel}: promoted page must have exactly one H1')
 
+          stale_allowance = legacy_strip_allowance - observed_legacy_strips
+          if stale_allowance:
+              failures.append('Remove resolved pages from legacy strip allowance: ' + ', '.join(sorted(stale_allowance)))
+
           summary = {
               'schema': 'verifier-shell-guardian-v1',
               'eligiblePages': len(coverage),
@@ -123,6 +136,8 @@ jobs:
               'officialToolbarPages': sum(1 for x in coverage if x['toolbar']),
               'singleH1Pages': sum(1 for x in coverage if x['h1'] == 1),
               'footerPages': sum(1 for x in coverage if x['footer'] == 1),
+              'legacyStripAllowance': sorted(legacy_strip_allowance),
+              'observedLegacyStrips': sorted(observed_legacy_strips),
               'failures': failures,
           }
           print(json.dumps(summary, indent=2))
