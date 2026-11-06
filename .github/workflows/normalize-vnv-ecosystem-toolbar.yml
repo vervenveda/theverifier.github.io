@@ -1,53 +1,134 @@
-name: Normalize Official Ecosystem Toolbar
+name: Verifier Canonical Shell Guardian
+
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/normalize-vnv-ecosystem-toolbar.yml']
+    paths:
+      - '**/*.html'
+      - '**/*.htm'
+      - 'assets/**'
+      - '.github/workflows/normalize-vnv-ecosystem-toolbar.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.html'
+      - '**/*.htm'
+      - 'assets/**'
+      - '.github/workflows/normalize-vnv-ecosystem-toolbar.yml'
   workflow_dispatch:
-permissions: {contents: write}
+
+permissions:
+  contents: read
+
 jobs:
-  normalize:
+  shell-guardian:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - name: Normalize eligible public HTML
+      - uses: actions/checkout@v7
+
+      - name: Audit public shell ownership
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re,json
-          U='https://vervenveda.com/assets/vnv-ecosystem-toolbar.js'; TAG=f'<script src="{U}"></script>'
-          SKIP={'.git','.github','node_modules','vendor','admin','internal','private','archive','archives','backup','backups','deprecated'}
-          P=re.compile(r'(^|/)(quiz|quizzes|exam|exams|assessment|assessments)(/|$)',re.I)
-          D=re.compile(r'<!doctype\s+html|<html\b|<body\b',re.I)
-          TB=re.compile(r'<script\b[^>]*\bsrc=["\'][^"\']*vnv-ecosystem-toolbar\.js[^"\']*["\'][^>]*>(?:\s*</script>)?',re.I)
-          LG=re.compile(r'<script\b[^>]*\bsrc=["\'][^"\']*vnv-beta-link\.js[^"\']*["\'][^>]*>(?:\s*</script>)?',re.I)
-          ND=re.compile(r'<(?P<t>a|button)[^>]*\bid=["\'](?:vnvBetaProgramLink|vnvBetaProgramFallback)["\'][^>]*>[\s\S]*?</(?P=t)>',re.I)
-          c={'html':0,'eligible':0,'already':0,'changed':0,'protected':0,'internal':0,'fragments':0,'legacyRemoved':0,'duplicatesCollapsed':0}; changed=[]
-          for p in sorted(set(Path('.').rglob('*.html'))|set(Path('.').rglob('*.htm'))):
-            rel=p.as_posix().lstrip('./'); c['html']+=1
-            if {x.lower() for x in p.parts}&SKIP:c['internal']+=1;continue
-            try:s=p.read_text(encoding='utf-8')
-            except UnicodeDecodeError:continue
-            if not D.search(s):c['fragments']+=1;continue
-            if P.search('/'+rel) or re.search(r'data-closed-book',s,re.I):c['protected']+=1;continue
-            c['eligible']+=1; before=s
-            n=len(LG.findall(s));c['legacyRemoved']+=n;s=LG.sub('',s);s=ND.sub('',s)
-            ms=list(TB.finditer(s))
-            if ms:
-              i=[0]
-              def repl(m):i[0]+=1;return TAG if i[0]==1 else ''
-              if len(ms)>1:c['duplicatesCollapsed']+=len(ms)-1
-              s=TB.sub(repl,s)
-            elif re.search(r'</body\s*>',s,re.I):s=re.sub(r'</body\s*>',TAG+'\n</body>',s,count=1,flags=re.I)
-            else:s+='\n'+TAG+'\n'
-            if s!=before:p.write_text(s,encoding='utf-8');c['changed']+=1;changed.append(rel)
-            else:c['already']+=1
-          Path('.vnv-toolbar-normalization.json').write_text(json.dumps({'schema':'vnv-toolbar-normalization-v1','counts':c,'changed':changed},indent=2)+'\n')
-          print(json.dumps(c,indent=2))
+          import json, re
+
+          root = Path('.')
+          SKIP = {'.git','.github','node_modules','vendor','admin','internal','private','archive','archives','backup','backups','deprecated'}
+          PROTECTED = re.compile(r'(^|/)(quiz|quizzes|exam|exams|assessment|assessments)(/|$)', re.I)
+          HTML_DOC = re.compile(r'<!doctype\s+html|<html\b|<body\b', re.I)
+
+          patterns = {
+              'toolbar': re.compile(r'vnv-ecosystem-toolbar\.js', re.I),
+              'header_script': re.compile(r'vnv-header-autopopulate\.js', re.I),
+              'header_mount': re.compile(r'VNV_HEADER\.mount\s*\(', re.I),
+              'ticker_333': re.compile(r'vnv-333-ticker\.js', re.I),
+              'ticker_auto': re.compile(r'vnv-ticker-autopopulate\.js', re.I),
+              'external_landing': re.compile(r'vnv-external-landing\.(?:js|css)', re.I),
+              'legacy_global_strip': re.compile(r'vnv-global-strip|data-vnv-global-strip', re.I),
+              'legacy_beta': re.compile(r'vnv-beta-link\.js|vnvBetaProgramLink|vnvBetaProgramFallback', re.I),
+          }
+
+          pages = []
+          for p in sorted(set(root.rglob('*.html')) | set(root.rglob('*.htm'))):
+              rel = p.as_posix().lstrip('./')
+              if {part.lower() for part in p.parts} & SKIP:
+                  continue
+              if PROTECTED.search('/' + rel):
+                  continue
+              try:
+                  text = p.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              if not HTML_DOC.search(text):
+                  continue
+              pages.append((rel, text))
+
+          assert pages, 'No eligible public HTML pages found.'
+
+          failures = []
+          coverage = []
+          for rel, text in pages:
+              counts = {name: len(rx.findall(text)) for name, rx in patterns.items()}
+              h1 = len(re.findall(r'<h1\b', text, re.I))
+              footer = len(re.findall(r'<footer\b', text, re.I))
+
+              if counts['toolbar'] != 1:
+                  failures.append(f'{rel}: expected exactly one official ecosystem toolbar, found {counts["toolbar"]}')
+              if counts['external_landing']:
+                  failures.append(f'{rel}: obsolete vnv-external-landing surface remains')
+              if counts['legacy_global_strip']:
+                  failures.append(f'{rel}: legacy global strip remains')
+              if counts['legacy_beta']:
+                  failures.append(f'{rel}: legacy beta utility remains')
+              if counts['header_script'] > 1 or counts['header_mount'] > 1:
+                  failures.append(f'{rel}: duplicate canonical header ownership')
+              if counts['ticker_333'] > 1 or counts['ticker_auto'] > 1:
+                  failures.append(f'{rel}: duplicate canonical ticker ownership')
+              if bool(counts['ticker_333']) != bool(counts['ticker_auto']):
+                  failures.append(f'{rel}: canonical ticker pair is incomplete')
+              if h1 > 1:
+                  failures.append(f'{rel}: multiple H1 elements ({h1})')
+              if footer > 1:
+                  failures.append(f'{rel}: multiple footer elements ({footer})')
+
+              coverage.append({
+                  'page': rel,
+                  'header': counts['header_script'] == 1 and counts['header_mount'] == 1,
+                  'tickerPair': counts['ticker_333'] == 1 and counts['ticker_auto'] == 1,
+                  'toolbar': counts['toolbar'] == 1,
+                  'h1': h1,
+                  'footer': footer,
+              })
+
+          # Pages already promoted to the canonical shell must never regress.
+          promoted = {'index.html', 'apps/world_wire_index.html'}
+          by_page = {item['page']: item for item in coverage}
+          for rel in promoted:
+              item = by_page.get(rel)
+              assert item, f'Promoted canonical page missing: {rel}'
+              if not item['header']:
+                  failures.append(f'{rel}: promoted page lost canonical header')
+              if not item['tickerPair']:
+                  failures.append(f'{rel}: promoted page lost canonical ticker pair')
+              if item['toolbar'] is not True:
+                  failures.append(f'{rel}: promoted page lost official toolbar')
+              if item['h1'] != 1:
+                  failures.append(f'{rel}: promoted page must have exactly one H1')
+
+          summary = {
+              'schema': 'verifier-shell-guardian-v1',
+              'eligiblePages': len(coverage),
+              'canonicalHeaderPages': sum(1 for x in coverage if x['header']),
+              'canonicalTickerPairPages': sum(1 for x in coverage if x['tickerPair']),
+              'officialToolbarPages': sum(1 for x in coverage if x['toolbar']),
+              'singleH1Pages': sum(1 for x in coverage if x['h1'] == 1),
+              'footerPages': sum(1 for x in coverage if x['footer'] == 1),
+              'failures': failures,
+          }
+          print(json.dumps(summary, indent=2))
+
+          if failures:
+              raise SystemExit('\n'.join(failures))
+
+          print('Canonical shell guardian PASS. Legacy pages may still be missing promoted shell pieces, but duplicates and regressions are blocked.')
           PY
-      - name: Commit normalized toolbar
-        run: |
-          git config user.name "Verve N Veda Ecosystem Guardian"
-          git config user.email "ecosystem@vervenveda.com"
-          git add -A
-          if git diff --cached --quiet; then echo "No toolbar changes required."; else git commit -m "Normalize official Verve N Veda ecosystem toolbar" && git push; fi
