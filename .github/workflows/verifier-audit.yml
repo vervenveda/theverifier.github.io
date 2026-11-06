@@ -93,6 +93,8 @@ jobs:
               root / 'assets' / 'verifier-local-cloud.js',
               root / 'assets' / 'verifier-news-data.js',
               root / 'assets' / 'verifier-home-extension.js',
+              root / 'assets' / 'verifier-home.css',
+              root / 'assets' / 'verifier-home.js',
               root / 'assets' / 'editorial-integrity.js',
               root / 'assets' / 'editorial-evidence-registry.js',
               root / 'data' / 'verifier-newsroom-directory.json',
@@ -160,7 +162,10 @@ jobs:
 
           home = (root / 'index.html').read_text(encoding='utf-8')
           assert 'verifier-newsroom-directory.json' in home, 'Homepage must consume canonical newsroom directory'
-          assert 'verifier-editorial-columns.json' in home, 'Homepage must consume canonical editorial columns directory'
+          assert 'verifier-editorial-columns.json' not in home, 'Homepage data loaders must live in the canonical homepage controller'
+          assert 'assets/verifier-home.css' in home, 'Homepage must load canonical external stylesheet'
+          assert 'assets/verifier-home.js' in home, 'Homepage must load canonical external controller'
+          assert '<style' not in home, 'Homepage must not reintroduce inline style ownership'
           assert 'const APPS=[' not in home, 'Homepage must not embed a second newsroom catalog'
           assert 'const COLUMNS=[' not in home, 'Homepage must not embed a second editorial column catalog'
           assert 'const COLUMN_META=Object.freeze' not in home, 'Homepage must not embed a second editorial metadata catalog'
@@ -169,6 +174,12 @@ jobs:
           assert 'APPS' not in home_extension, 'Homepage extension must not mutate canonical newsroom inventory'
           assert 'data-verifier-daily-top30' in home_extension
           assert 'data-verifier-feed-health' in home_extension
+
+          home_controller = (root / 'assets' / 'verifier-home.js').read_text(encoding='utf-8')
+          assert 'verifier-newsroom-directory.json' in home_controller, 'Homepage controller must own newsroom directory loading'
+          assert 'verifier-editorial-columns.json' in home_controller, 'Homepage controller must own editorial directory loading'
+          assert 'const OUTLETS=' not in home_controller, 'Dead OUTLETS catalog must not return'
+          assert 'const COLUMNS=[' not in home_controller, 'Homepage controller must not embed editorial columns'
 
           editorial_layer = (root / 'assets' / 'editorial-integrity.js').read_text(encoding='utf-8')
           assert 'Editorial / Opinion' in editorial_layer
