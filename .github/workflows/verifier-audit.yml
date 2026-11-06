@@ -58,7 +58,25 @@ jobs:
               assert entry.get('type'), f"Newsroom entry missing type: {entry.get('id')}"
               assert entry.get('maturity'), f"Newsroom entry missing maturity: {entry.get('id')}"
 
-          manifest = json.loads((root / 'mentor-manifest.json').read_text(encoding='utf-8'))
+          editorial = json.loads((root / 'data' / 'verifier-editorial-columns.json').read_text(encoding='utf-8'))
+          assert editorial.get('schemaVersion') == 1
+          editorial_entries = editorial.get('entries', [])
+          assert len(editorial_entries) == 18, f'Expected 18 editorial columns, found {len(editorial_entries)}'
+          editorial_titles = [entry.get('title') for entry in editorial_entries]
+          editorial_files = [entry.get('file') for entry in editorial_entries]
+          assert all(editorial_titles) and len(editorial_titles) == len(set(editorial_titles)), 'Editorial titles must be present and unique'
+          assert all(editorial_files) and len(editorial_files) == len(set(editorial_files)), 'Editorial files must be present and unique'
+          actual_column_files = {p.name for p in (root / 'columns').glob('*.html')}
+          assert set(editorial_files) == actual_column_files, (
+              f'Editorial columns directory drift: missing={sorted(actual_column_files-set(editorial_files))}, '
+              f'extra={sorted(set(editorial_files)-actual_column_files)}'
+          )
+          for entry in editorial_entries:
+              assert entry.get('status') == 'active', f"Editorial column must be active: {entry.get('title')}"
+              assert entry.get('beat'), f"Editorial column missing beat: {entry.get('title')}"
+              assert entry.get('description'), f"Editorial column missing description: {entry.get('title')}"
+
+                    manifest = json.loads((root / 'mentor-manifest.json').read_text(encoding='utf-8'))
           resource_ids = {r.get('id') for r in manifest.get('resources', [])}
           for required_id in ['daily-top-30','global-source-directory','young-readers-newsroom']:
               assert required_id in resource_ids, f'Mentor manifest missing {required_id}'
@@ -78,6 +96,7 @@ jobs:
               root / 'assets' / 'editorial-integrity.js',
               root / 'assets' / 'editorial-evidence-registry.js',
               root / 'data' / 'verifier-newsroom-directory.json',
+              root / 'data' / 'verifier-editorial-columns.json',
               root / 'scripts' / 'build_news_feed.py',
               root / '.github' / 'workflows' / 'build-news-feed.yml',
               root / 'editorial_standard_index.html',
@@ -141,7 +160,10 @@ jobs:
 
           home = (root / 'index.html').read_text(encoding='utf-8')
           assert 'verifier-newsroom-directory.json' in home, 'Homepage must consume canonical newsroom directory'
+          assert 'verifier-editorial-columns.json' in home, 'Homepage must consume canonical editorial columns directory'
           assert 'const APPS=[' not in home, 'Homepage must not embed a second newsroom catalog'
+          assert 'const COLUMNS=[' not in home, 'Homepage must not embed a second editorial column catalog'
+          assert 'const COLUMN_META=Object.freeze' not in home, 'Homepage must not embed a second editorial metadata catalog'
 
           home_extension = (root / 'assets' / 'verifier-home-extension.js').read_text(encoding='utf-8')
           assert 'APPS' not in home_extension, 'Homepage extension must not mutate canonical newsroom inventory'
@@ -195,7 +217,7 @@ jobs:
           assert 'The Quiet Consensus No One Voted For' in queue
           assert 'Do not mark an item complete solely because it carries the global Editorial / Opinion banner.' in queue
 
-          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, {len(newsroom_entries)} canonical newsroom entries, first-party news architecture, editorial correction infrastructure, and single-owner newsroom topology.')
+          print(f'Validated {len(sources)} canonical sources, {len(feeds)} feed-capable sources, {len(newsroom_entries)} canonical newsroom entries, first-party news architecture, editorial correction infrastructure, and single-owner newsroom and editorial-column topology.')
           PY
 
       - name: Verify local navigation and asset paths
