@@ -6,19 +6,19 @@
   "entries": [
     {
       "id": "ultimate-news",
-      "title": "Ultimate News",
+      "title": "The Verifier Directory",
       "file": "ultimate_news_index.html",
-      "category": "live",
+      "category": "research",
       "icon": "V",
-      "badge": "Newsroom Gateway",
-      "description": "Open the Interactive Edition Explorer and connected news, research, and learning resources.",
-      "tags": "ultimate comprehensive universal news search research flagship",
-      "health": "shared-build",
-      "type": "newsroom",
+      "badge": "Directory",
+      "description": "The visual front door to Verifier newsroom desks, research pathways, source tools, learning resources, and archives.",
+      "tags": "verifier directory newsroom research sources learning archives media literacy",
+      "health": "ready",
+      "type": "directory",
       "order": 1,
-      "maturity": "specialized",
+      "maturity": "open",
       "offlineEligible": false,
-      "hardened": false
+      "hardened": true
     },
     {
       "id": "world-wire",
