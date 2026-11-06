@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "title": "The Verifier Editorial Columns",
+  "purpose": "Canonical inventory and presentation metadata for The Verifier editorial columns.",
+  "updated": "2026-11-05",
+  "entries": [
+    {
+      "title": "Editor’s Choice",
+      "file": "editors_choice_index.html",
+      "beat": "Editor’s desk",
+      "description": "Selected essays and commentary across public life, institutions, culture, and current affairs.",
+      "order": 1,
+      "status": "active"
+    },
+    {
+      "title": "The Universe",
+      "file": "universe_index.html",
+      "beat": "Space & cosmology",
+      "description": "Editorial exploration of astronomy, cosmology, space science, discovery, and humanity’s place in the universe.",
+      "order": 2,
+      "status": "active"
+    },
+    {
+      "title": "Corruption",
+      "file": "corruption_index.html",
+      "beat": "Accountability",
+      "description": "Power, influence, misconduct, public trust, institutions, and the systems meant to hold them accountable.",
+      "order": 3,
+      "status": "active"
+    },
+    {
+      "title": "Debunked",
+      "file": "debunked_index.html",
+      "beat": "Claims & evidence",
+      "description": "A closer look at contested claims, misinformation, assumptions, evidence, and what the record actually supports.",
+      "order": 4,
+      "status": "active"
+    },
+    {
+      "title": "U.S. Politics",
+      "file": "us_politics_index.html",
+      "beat": "American public life",
+      "description": "Commentary on elections, institutions, political power, civic life, and the choices shaping the United States.",
+      "order": 5,
+      "status": "active"
+    },
+    {
+      "title": "Finance",
+      "file": "finance_index.html",
+      "beat": "Money & systems",
+      "description": "Markets, household economics, public finance, wealth, institutions, and the forces shaping economic life.",
+      "order": 6,
+      "status": "active"
+    },
+    {
+      "title": "Religion & Culture",
+      "file": "culture_religion_index.html",
+      "beat": "Belief & society",
+      "description": "Religion, culture, identity, ethics, tradition, and their influence on communities and public life.",
+      "order": 7,
+      "status": "active"
+    },
+    {
+      "title": "Environment",
+      "file": "environment_index.html",
+      "beat": "Earth & stewardship",
+      "description": "Climate, ecosystems, conservation, environmental policy, stewardship, and the long-term health of the planet.",
+      "order": 8,
+      "status": "active"
+    },
+    {
+      "title": "Foreign Politics",
+      "file": "foreign_politics_index.html",
+      "beat": "World affairs",
+      "description": "Diplomacy, alliances, conflict, international institutions, state power, and the politics connecting nations.",
+      "order": 9,
+      "status": "active"
+    },
+    {
+      "title": "Arts & Humanities",
+      "file": "arts_humanities_index.html",
+      "beat": "Culture & ideas",
+      "description": "Art, literature, history, philosophy, creativity, and the ideas through which people understand themselves.",
+      "order": 10,
+      "status": "active"
+    },
+    {
+      "title": "Immigration",
+      "file": "immigration_index.html",
+      "beat": "Borders & belonging",
+      "description": "Migration, citizenship, borders, law, labor, identity, and the human realities behind immigration policy.",
+      "order": 11,
+      "status": "active"
+    },
+    {
+      "title": "Health & Lifestyle",
+      "file": "health_lifestyle_index.html",
+      "beat": "Health & daily life",
+      "description": "Health systems, wellness, medicine, behavior, lifestyle, and the choices that shape everyday well-being.",
+      "order": 12,
+      "status": "active"
+    },
+    {
+      "title": "Animals & Biodiversity",
+      "file": "animals_biodiversity_index.html",
+      "beat": "Wildlife & ecosystems",
+      "description": "Animals, habitats, biodiversity, conservation, extinction risk, and the living systems people share.",
+      "order": 13,
+      "status": "active"
+    },
+    {
+      "title": "Science & Technology",
+      "file": "science_tech_index.html",
+      "beat": "Discovery & innovation",
+      "description": "Science, technology, research, AI, invention, and the consequences of new tools and discoveries.",
+      "order": 14,
+      "status": "active"
+    },
+    {
+      "title": "World Conflict",
+      "file": "world_conflict_index.html",
+      "beat": "War & security",
+      "description": "Conflict, military power, humanitarian consequences, diplomacy, security, and the costs of political violence.",
+      "order": 15,
+      "status": "active"
+    },
+    {
+      "title": "Sports",
+      "file": "sports_index.html",
+      "beat": "Sport & society",
+      "description": "Competition, athletes, institutions, culture, economics, and the wider social meaning of sport.",
+      "order": 16,
+      "status": "active"
+    },
+    {
+      "title": "Education",
+      "file": "education_index.html",
+      "beat": "Learning & schools",
+      "description": "Students, teachers, curriculum, institutions, policy, access, and the systems that shape education.",
+      "order": 17,
+      "status": "active"
+    },
+    {
+      "title": "Presidents",
+      "file": "presidents_index.html",
+      "beat": "Executive history",
+      "description": "Presidential leadership, power, history, policy, constitutional responsibility, and executive decision-making.",
+      "order": 18,
+      "status": "active"
+    }
+  ]
+}
