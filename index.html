@@ -660,6 +660,30 @@ h2{
 
 .site-card{
   min-height:225px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+}
+.site-card p{
+  flex:1;
+}
+.site-open{
+  margin-top:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:10px 14px;
+  border-radius:7px;
+  background:#202724;
+  color:#fff8e9;
+  font-size:16px;
+  text-decoration:none;
+}
+.site-card.current .site-open{
+  background:#202724;
+  color:#fff8e9;
 }
 
 .site-icon{
@@ -685,6 +709,11 @@ h2{
 
 .site-card.current{
   background:#16354e;
+}
+.site-card.current .site-open{
+  background:#202724!important;
+  color:#fff8e9!important;
+  opacity:1!important;
 }
 
 /* Footer */
@@ -1728,9 +1757,9 @@ body.verifier-home{
 <div class="shell">
 <div class="heading">
 <p class="kicker">Public network</p>
-<h2>A wider network<br/>of public-interest resources.</h2>
+<h2>Public Network</h2>
 <p>
-       The Verifier is one desk within the wider Verve N Veda network. Browse active public destinations for education, research, civic life, culture, health, creativity, and independent learning.
+       Browse active public destinations across the wider Verve N Veda network for education, research, civic life, culture, health, creativity, and independent learning.
       </p>
 </div>
 <div aria-label="Public network summary" class="connection-summary">
@@ -2114,6 +2143,7 @@ function renderNetwork(){
       <span class="site-status ${building?"building":"live"}">${escapeHTML(current?"Current site":statusLabel(site.status))}</span>
       <h3>${formatTitle(site.title)}</h3>
       <p>${escapeHTML(site.description)}</p>
+      <span class="site-open">${current?"You are here":"Open destination"} →</span>
     </a>`;
   }).join("");
 }
