@@ -6,51 +6,29 @@
 <title>The Verifier — Global Source Directory</title>
 <meta name="description" content="Browse and configure The Verifier's canonical global news source directory.">
 <style>
-:root{--bg:#f7f3eb;--card:#fffdf8;--ink:#172033;--muted:#697386;--nav:#101a2e;--gold:#c99a38;--line:#ddd3c3;--blue:#1d4ed8;--green:#0f766e;--radius:14px;--shadow:0 10px 28px rgba(16,26,46,.08)}*{box-sizing:border-box}body{margin:0;background:linear-gradient(#f6f1e8,#fffaf2);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}a{color:var(--blue)}button,input,select{font:inherit}.mast{background:var(--nav);color:white;padding:26px 16px}.mast-inner{max-width:1180px;margin:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}.mast h1{margin:0;font-size:clamp(1.8rem,4vw,3rem)}.mast p{margin:.35rem 0 0;color:#dbe5f2;max-width:760px}.btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:white;color:var(--ink);font-weight:750;text-decoration:none;cursor:pointer}.btn.primary{background:var(--gold);border-color:var(--gold)}.shell{max-width:1180px;margin:auto;padding:18px 16px 44px}.notice{background:#fff8df;border:1px solid #e8d195;border-radius:12px;padding:10px 12px;color:#614a13;font-size:.85rem}.tools{display:grid;grid-template-columns:minmax(220px,1fr) 190px 190px auto;gap:8px;margin:15px 0}.tools input,.tools select{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:white}.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.stat{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:.78rem}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.source{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;gap:10px}.source h2{font-size:1.05rem;margin:0 0 4px}.source p{margin:.25rem 0;color:var(--muted);font-size:.84rem}.meta{display:flex;gap:5px;flex-wrap:wrap}.chip{font-size:.7rem;padding:3px 6px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:white}.controls{display:flex;flex-direction:column;align-items:end;gap:7px}.controls label{font-size:.74rem;color:var(--muted);display:flex;gap:6px;align-items:center}.controls a{font-size:.75rem}.feed-yes{color:var(--green);font-weight:700}.feed-no{color:#8a5a17;font-weight:700}.empty{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;color:var(--muted)}.foot{margin-top:18px;color:var(--muted);font-size:.78rem}@media(max-width:760px){.tools{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.source{grid-template-columns:1fr}.controls{align-items:start}}
+:root{--bg:#f7f3eb;--card:#fffdf8;--ink:#172033;--muted:#697386;--nav:#101a2e;--gold:#c99a38;--line:#ddd3c3;--blue:#1d4ed8;--green:#0f766e;--radius:14px;--shadow:0 10px 28px rgba(16,26,46,.08)}*{box-sizing:border-box}body{margin:0;background:linear-gradient(#f6f1e8,#fffaf2);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}a{color:var(--blue)}button,input,select{font:inherit}.mast{background:var(--nav);color:white;padding:26px 16px}.mast-inner{max-width:1180px;margin:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}.mast h1{margin:0;font-size:clamp(1.8rem,4vw,3rem)}.mast p{margin:.35rem 0 0;color:#dbe5f2;max-width:760px}.btn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:white;color:var(--ink);font-weight:750;text-decoration:none;cursor:pointer}.btn.primary{background:var(--gold);border-color:var(--gold)}.shell{max-width:1180px;margin:auto;padding:18px 16px 44px}.notice{background:#fff8df;border:1px solid #e8d195;border-radius:12px;padding:10px 12px;color:#614a13;font-size:16px}.tools{display:grid;grid-template-columns:minmax(220px,1fr) 190px 190px auto;gap:8px;margin:15px 0}.tools input,.tools select{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:white}.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.stat{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:16px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.source{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;gap:10px}.source h2{font-size:1.05rem;margin:0 0 4px}.source p{margin:.25rem 0;color:var(--muted);font-size:16px}.meta{display:flex;gap:5px;flex-wrap:wrap}.chip{font-size:16px;padding:3px 6px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:white}.controls{display:flex;flex-direction:column;align-items:end;gap:7px}.controls label{font-size:16px;color:var(--muted);display:flex;gap:6px;align-items:center}.controls a{font-size:16px}.feed-yes{color:var(--green);font-weight:700}.feed-no{color:#8a5a17;font-weight:700}.empty{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;color:var(--muted)}.foot{margin-top:18px;color:var(--muted);font-size:16px}@media(max-width:760px){.tools{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.source{grid-template-columns:1fr}.controls{align-items:start}}
 </style>
 <script src="../assets/verifier-safety.js"></script>
 <script src="../assets/verifier-local-cloud.js"></script>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
-<style id="vnv-global-ecosystem-shell">
-.vnv-global-strip{position:relative;z-index:2147482000;min-height:38px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:5px 12px;border-bottom:1px solid rgba(160,140,100,.28);background:#121918;color:#eee8dc;font:400 12px/1.2 "Avenir Next",Avenir,"Segoe UI",Arial,sans-serif}
-.vnv-global-strip a{color:inherit;text-decoration:none}.vnv-global-brand{display:flex;align-items:center;gap:8px;white-space:nowrap}.vnv-global-mark{width:26px;height:26px;display:grid;place-items:center;border:1px solid rgba(238,232,220,.38);border-radius:7px;font:500 10px Georgia,serif}.vnv-global-copy{display:grid}.vnv-global-copy strong{font:500 11px Georgia,serif;letter-spacing:.08em;text-transform:uppercase}.vnv-global-copy small{margin-top:1px;color:#bdb5a6;font-size:9px;letter-spacing:.06em;text-transform:uppercase}
-.vnv-global-links{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;overflow:hidden;white-space:nowrap}.vnv-global-links a{color:#d8d1c5;font-size:10px;letter-spacing:.04em}.vnv-global-links a:hover,.vnv-global-links a:focus-visible{color:#fff}
-.vnv-global-menu{position:relative;justify-self:end}.vnv-global-menu summary{list-style:none;width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(238,232,220,.28);border-radius:7px;cursor:pointer}.vnv-global-menu summary::-webkit-details-marker{display:none}.vnv-global-lines,.vnv-global-lines:before,.vnv-global-lines:after{content:"";display:block;width:14px;height:1.5px;background:#eee8dc}.vnv-global-lines{position:relative}.vnv-global-lines:before,.vnv-global-lines:after{position:absolute;left:0}.vnv-global-lines:before{top:-5px}.vnv-global-lines:after{top:5px}
-.vnv-global-panel{position:absolute;right:0;top:36px;width:min(300px,calc(100vw - 20px));padding:10px;border:1px solid rgba(238,232,220,.22);border-radius:7px;background:#17201f;box-shadow:0 18px 40px rgba(0,0,0,.28)}.vnv-global-panel p{margin:3px 5px 8px;color:#aaa294;font-size:9px;letter-spacing:.1em;text-transform:uppercase}.vnv-global-panel a{display:block;padding:9px 10px;border-radius:5px;color:#eee8dc;font-size:11px}.vnv-global-panel a:hover,.vnv-global-panel a:focus-visible{background:#22302e}
-@media(max-width:760px){.vnv-global-strip{grid-template-columns:minmax(0,1fr) auto}.vnv-global-links{display:none}.vnv-global-copy small{display:none}}@media print{.vnv-global-strip{display:none!important}}
+<style id="global-source-directory-hardening">
+:root{--bg:#fff8e9;--card:#fffdf6;--ink:#202724;--muted:#606862;--nav:#202724;--gold:#b99352;--line:#cfc4b2;--blue:#2d5f73;--green:#46695c;--radius:7px}
+body{font-family:"Nunito","Brandon Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;font-size:18px;background:linear-gradient(#fff8e9,#f3ead9)}
+.skip-link{position:absolute;left:14px;top:-80px;z-index:2147483600;padding:10px 14px;border-radius:7px;background:#202724;color:#fffdf6;text-decoration:none;font-size:16px}.skip-link:focus{top:14px}
+.mast{background:linear-gradient(145deg,#202724,#151c19);padding:44px 16px}.eyebrow{margin:0 0 7px!important;color:#d8bf8d!important;font:400 24px/1.2 Cinzel,Georgia,serif!important;letter-spacing:.08em}.mast h1{font:400 clamp(55px,7vw,66px)/1.04 Cinzel,Georgia,serif!important;letter-spacing:-.02em}.mast p{font-size:18px;line-height:1.7}
+.btn,.tools input,.tools select,.stat,.source p,.chip,.controls label,.controls a,.foot,.notice{font-size:16px}.btn,.tools input,.tools select,.stat,.source,.chip,.empty{border-radius:7px}.btn.primary{background:#202724;color:#fff8e9;border-color:#202724}.source h2{font:400 24px/1.25 Cinzel,Georgia,serif}.controls a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 12px;border-radius:7px;background:#202724;color:#fff8e9;text-decoration:none}.foot{padding:22px 0;border-top:1px solid var(--line)}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="vnv-global-strip" data-vnv-global-strip>
-  <a class="vnv-global-brand" href="https://vervenveda.com/" aria-label="Verve N Veda home">
-    <span class="vnv-global-mark">VNV</span>
-    <span class="vnv-global-copy"><strong>Verve N Veda</strong><small>The Verifier · Global Sources</small></span>
-  </a>
-  <nav class="vnv-global-links" aria-label="Verve N Veda network links">
-    <a href="https://vervenveda.com/theverifier.github.io/apps/global_news_digest_index.html">This App</a>
-    <a href="https://vervenveda.com/#directory">Ecosystem Directory</a>
-    <a href="https://vervenveda.com/core/directory-agi/">Directory AGI</a>
-    <a href="https://vervenveda.com/cloud/">Public Cloud</a>
-  </nav>
-  <details class="vnv-global-menu">
-    <summary aria-label="Open Verve N Veda ecosystem menu"><span class="vnv-global-lines" aria-hidden="true"></span></summary>
-    <div class="vnv-global-panel"><p>Ecosystem</p>
-      <a href="https://vervenveda.com/">Verve N Veda Gateway</a>
-      <a href="https://vervenveda.com/#directory">Complete Ecosystem Directory</a>
-      <a href="https://vervenveda.com/333.github.io/">333 Network</a>
-      <a href="https://vervenveda.com/PLERASearch.github.io/">PLERA Search</a>
-      <a href="https://vervenveda.com/theverifier.github.io/">The Verifier</a>
-      <a href="https://vervenveda.com/solanar.github.io/">Solanar</a>
-    </div>
-  </details>
-</div>
-<header class="mast"><div class="mast-inner"><div><h1>Global Source Directory</h1><p>The canonical source list for The Verifier. Choose which feed-capable outlets may contribute to your device's Daily Top-30 edition.</p></div><a class="btn primary" href="daily_digest_index.html">Open Daily Top 30</a></div></header>
-<main class="shell">
+<a class="skip-link" href="#sourceDirectoryMain">Skip to source directory</a>
+<header class="mast"><div class="mast-inner"><div><p class="eyebrow">Verve N Veda</p><h1>Global Source Directory</h1><p>The canonical source list for The Verifier. Choose which feed-capable outlets may contribute to your device's Daily Top-30 edition.</p></div><a class="btn primary" href="daily_digest_index.html">Open Daily Top 30</a></div></header>
+<main class="shell" id="sourceDirectoryMain">
 <div class="notice"><strong>Inclusion policy:</strong> appearing in this directory is not an endorsement and does not confer a truth rating. The purpose is access, comparison, provenance, and geographic breadth. Feed endpoints are health-checked at use time.</div>
 <section class="tools"><input id="search" type="search" placeholder="Search outlet, country, topic…" aria-label="Search source directory"><select id="region"><option value="all">All regions</option></select><select id="language"><option value="all">All languages</option></select><button class="btn" id="selectFeeds" type="button">Select All Feed-Capable</button></section>
 <div class="stats"><span class="stat" id="shownStat">0 sources shown</span><span class="stat" id="selectedStat">0 selected for Daily Top 30</span><span class="stat" id="feedStat">0 feed-capable</span></div>
 <section class="grid" id="grid"></section>
-<p class="foot">Selections are saved to the Verifier Local Browser Cloud on this device. Sources without a configured feed remain available as direct research destinations but are not auto-ingested into the Daily Top-30 generator.</p>
+<footer class="foot">Selections are saved to the Verifier Local Browser Cloud on this device. Sources without a configured feed remain available as direct research destinations but are not auto-ingested into the Daily Top-30 generator.</footer>
 </main>
 <script>
 (() => {
@@ -69,7 +47,10 @@ $("search").addEventListener("input",render);$("region").addEventListener("chang
 <script src="https://vervenveda.com/assets/vnv-support.js" defer></script>
 
 <script src="https://vervenveda.com/assets/vnv-header-autopopulate.js"></script>
-<script>VNV_HEADER.mount({replaceLegacy:true});</script>
+<script>VNV_HEADER.mount({"title":"Global Source Directory","subtitle":"The Verifier · Sources & Provenance","icon":"V","home":"../","replaceLegacy":true,"actions":[{"label":"The Verifier","href":"../"},{"label":"Daily Top 30","href":"daily_digest_index.html"},{"label":"Sources","href":"#sourceDirectoryMain"}]});</script>
+<script src="https://vervenveda.com/assets/vnv-333-ticker.js"></script>
+<script src="https://vervenveda.com/assets/vnv-ticker-autopopulate.js" data-vnv-ticker-autopopulate></script>
+<script>VNV_TICKER.autoPopulate({label:"Global Source Directory Quick Links",max:12});</script>
 <script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>
