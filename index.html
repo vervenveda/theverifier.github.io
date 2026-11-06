@@ -98,6 +98,7 @@ h2{color:var(--navy);font-size:clamp(2.2rem,5vw,4rem);line-height:1.05;letter-sp
 .site-card.current{color:#fff;background:linear-gradient(145deg,var(--navy),#1a456d);border-color:#2e5578}.site-card.current h3,.site-card.current p,.site-card.current small{color:#fff}.site-card.current p,.site-card.current small{opacity:.75}.site-card.current .site-icon{color:#2c200b;background:var(--gold2)}
 
 
+.directory-feature{margin:0 auto 20px;padding:24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:center;border:1px solid #cfc4b2;border-radius:7px;background:#202724;color:#fffdf6}.directory-feature-kicker{margin:0 0 6px;color:#d8bf8d;font:400 16px var(--serif);letter-spacing:.08em}.directory-feature h3{margin:0;color:#fffdf6;font-size:33px;font-weight:400}.directory-feature p{max-width:760px;margin:8px 0 0;color:#e4dccf;font-size:16px;line-height:1.65}.directory-feature-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 15px;border:1px solid rgba(255,253,246,.34);border-radius:7px;color:#fffdf6;text-decoration:none;font-size:16px;white-space:nowrap}.app-type{display:inline-flex;width:max-content;margin:0 0 9px;padding:5px 8px;border:1px solid #d7c59f;border-radius:7px;color:#755824;background:#fff9eb;font-size:16px}
 .connection-summary{
   margin:0 auto 24px;
   padding:15px 18px;
@@ -699,6 +700,7 @@ footer h3{
 }
 
 @media(max-width:620px){
+  .directory-feature{grid-template-columns:1fr}.directory-feature-link{width:100%}
   .hero-copy{
     padding:68px 0 76px;
   }
@@ -1311,7 +1313,7 @@ body.verifier-home{
      </button>
 </div>
 <p>
-     Search Newsroom desks, editorial columns, and connected public landing pages.
+     Search Verifier resources, editorial columns, and connected public landing pages.
     </p>
 <input autocomplete="off" class="drawer-search" id="drawerSearch" placeholder="Search desks, columns, and the public network…" type="search"/>
 <div id="drawerContent">
@@ -1396,22 +1398,23 @@ body.verifier-home{
       </p>
 <h2>Read beyond<br/>the headline.</h2>
 <p>
-       Move among live news, source comparison, research, science, education, archives, and public-interest data from one newsroom.
+       Move among newsroom desks, directories, research tools, learning resources, archives, and public-interest data from one place.
       </p>
 </div>
-<div aria-label="Newsroom desk summary" class="connection-summary">
+<div aria-label="Verifier resource summary" class="connection-summary">
 <span aria-hidden="true" class="connection-dot">
 </span>
 <strong id="manifestStatus">
-       21 newsroom desks available
+       Verifier resources available
       </strong>
 <span>
-       Search by beat, save favorite desks locally, or open a newsroom desk directly.
+       Search by beat or resource type, save favorites locally, or enter The Verifier Directory for a guided overview.
       </span>
 </div>
+<aside class="directory-feature" aria-labelledby="directoryFeatureTitle"><div><p class="directory-feature-kicker">Start here</p><h3 id="directoryFeatureTitle">The Verifier Directory</h3><p>Use the visual directory to choose a newsroom desk, research pathway, source tool, learning resource, or archive.</p></div><a class="directory-feature-link" href="./apps/ultimate_news_index.html">Open The Verifier Directory →</a></aside>
 <div class="catalog">
 <div class="toolbar">
-<input autocomplete="off" class="field" id="appSearch" placeholder="Search live news, science, education, archives, research…" type="search"/>
+<input autocomplete="off" class="field" id="appSearch" placeholder="Search newsrooms, directories, research, science, education, archives…" type="search"/>
 <select aria-label="Filter newsroom desk" class="field" id="categoryFilter">
 </select>
 <button aria-pressed="false" class="tool-button" id="favoritesButton" type="button">
@@ -1602,7 +1605,9 @@ async function loadNewsroomDirectory(){
   if(!APPS.length)throw new Error("Canonical newsroom directory returned no entries");
 }
 const healthLabel=health=>health==="needs-content"?"In development":health==="shared-build"?"Specialized workspace":"Open";
-const actionLabel=health=>health==="needs-content"?"Open development desk":"Open newsroom desk";
+const TYPE_LABELS=Object.freeze({newsroom:"Newsroom",directory:"Directory",tool:"Research Tool",quiz:"Learning Tool",compatibility:"Compatibility"});
+const typeLabel=type=>TYPE_LABELS[type]||"Resource";
+const actionLabel=app=>{if(app.health==="needs-content")return "Open development resource";if(app.type==="directory")return "Open directory";if(app.type==="tool")return "Open research tool";if(app.type==="quiz")return "Open learning tool";if(app.type==="compatibility")return "Open compatibility doorway";return "Open newsroom";};
 const statusLabel=status=>status==="building"?"Still developing":"Public destination";
 
 const NETWORK_CATEGORY_COPY=Object.freeze({
@@ -1748,16 +1753,17 @@ function orderedSites(){
 }
 
 function syncCounts(){
-  const needsContent=APPS.filter(app=>app.health==="needs-content").length;
-  const sharedBuilds=APPS.filter(app=>app.health==="shared-build").length;
-  const ready=APPS.length-needsContent-sharedBuilds;
+  const open=APPS.filter(app=>app.health!=="needs-content").length;
+  const newsroom=APPS.filter(app=>app.type==="newsroom").length;
+  const tools=APPS.filter(app=>app.type==="tool"||app.type==="quiz").length;
+  const directories=APPS.filter(app=>app.type==="directory").length;
+  const compatibility=APPS.filter(app=>app.type==="compatibility").length;
   const buildingSites=SITES.filter(site=>site.status==="building").length;
-
   $("appStat").textContent=APPS.length;
   $("columnStat").textContent=COLUMNS.length;
   $("repositoryStat").textContent=SITES.length;
-  $("manifestStatus").textContent=`${APPS.length} newsroom desks · ${ready} open · ${sharedBuilds} specialized workspaces · ${needsContent} in development`;
-  $("repositoryManifestStatus").textContent=`${SITES.length} active public destinations${buildingSites?` · ${buildingSites} still developing`:""}`;
+  $("manifestStatus").textContent=APPS.length+" resources · "+newsroom+" newsrooms · "+directories+" directories · "+tools+" tools"+(compatibility?" · "+compatibility+" compatibility doorway":"")+" · "+open+" open";
+  $("repositoryManifestStatus").textContent=SITES.length+" active public destinations"+(buildingSites?" · "+buildingSites+" still developing":"");
 }
 
 function renderTrail(){
@@ -1779,12 +1785,13 @@ function renderApps(){
     return `<section class="app-group" data-group="${escapeHTML(category)}"><h3 class="group-heading">${escapeHTML(CATEGORIES[category].icon)} ${escapeHTML(CATEGORIES[category].label)}</h3><div class="app-grid">${items.map(app=>{
       const health=app.health||"ready";
       return `<article class="card app-card ${escapeHTML(health)}" data-id="${escapeHTML(app.id)}" data-category="${escapeHTML(app.category)}" data-search="${escapeHTML((app.title+" "+app.description+" "+app.tags+" "+app.file+" "+categoryLabel(app.category)).toLowerCase())}">
-        <div class="card-top"><span class="app-icon" aria-hidden="true">${escapeHTML(app.icon)}</span><button class="favorite" type="button" data-favorite="${escapeHTML(app.id)}" aria-label="${favorites.has(app.id)?"Remove":"Save"} ${escapeHTML(app.title)} ${favorites.has(app.id)?"from":"to"} saved applications" aria-pressed="${favorites.has(app.id)}">${favorites.has(app.id)?"♥":"♡"}</button></div>
+        <div class="card-top"><span class="app-icon" aria-hidden="true">${escapeHTML(app.icon)}</span><button class="favorite" type="button" data-favorite="${escapeHTML(app.id)}" aria-label="${favorites.has(app.id)?"Remove":"Save"} ${escapeHTML(app.title)} ${favorites.has(app.id)?"from":"to"} saved resources" aria-pressed="${favorites.has(app.id)}">${favorites.has(app.id)?"♥":"♡"}</button></div>
         <span class="card-badge">${escapeHTML(app.badge)}</span>
+        <span class="app-type">${escapeHTML(typeLabel(app.type))}</span>
         <span class="app-health ${escapeHTML(health)}">${escapeHTML(healthLabel(health))}</span>
         <h3>${formatTitle(app.title)}</h3>
         <p>${escapeHTML(app.description)}</p>
-        <div class="card-actions"><a class="open ${health==="needs-content"?"development":""}" href="${appUrl(app)}" aria-label="${escapeHTML(actionLabel(health))}: ${escapeHTML(app.title)}">${escapeHTML(actionLabel(health))}</a></div>
+        <div class="card-actions"><a class="open ${health==="needs-content"?"development":""}" href="${appUrl(app)}" aria-label="${escapeHTML(actionLabel(app))}: ${escapeHTML(app.title)}">${escapeHTML(actionLabel(app))}</a></div>
       </article>`;
     }).join("")}</div></section>`;
   }).join("");
@@ -1801,7 +1808,7 @@ function toggleFavorite(id,button){
   const isSaved=favorites.has(id);
   button.textContent=isSaved?"♥":"♡";
   button.setAttribute("aria-pressed",String(isSaved));
-  button.setAttribute("aria-label",`${isSaved?"Remove":"Save"} ${app?.title||"desk"} ${isSaved?"from":"to"} saved newsroom desks`);
+  button.setAttribute("aria-label",`${isSaved?"Remove":"Save"} ${app?.title||"desk"} ${isSaved?"from":"to"} saved resources`);
   updateFavoriteCount();
   filterApps();
 }
@@ -1809,7 +1816,7 @@ function toggleFavorite(id,button){
 function updateFavoriteCount(){
   $("favoriteCount").textContent=favorites.size;
   $("favoritesButton").setAttribute("aria-pressed",String(favoritesOnly));
-  $("favoritesButton").setAttribute("aria-label",favoritesOnly?"Show all newsroom desks":"Show saved newsroom desks only");
+  $("favoritesButton").setAttribute("aria-label",favoritesOnly?"Show all Verifier resources":"Show saved resources only");
 }
 
 function filterApps(){
@@ -1829,7 +1836,7 @@ function filterApps(){
     group.hidden=![...group.querySelectorAll(".app-card")].some(card=>!card.hidden);
   });
 
-  $("results").textContent=`${count} of ${APPS.length} newsroom desks shown${favoritesOnly?" · saved only":""}.`;
+  $("results").textContent=`${count} of ${APPS.length} Verifier resources shown${favoritesOnly?" · saved only":""}.`;
   $("empty").classList.toggle("show",count===0);
 }
 
@@ -1838,7 +1845,7 @@ function randomApp(){
   if(favoritesOnly)pool=pool.filter(app=>favorites.has(app.id));
   const app=pool[Math.floor(Math.random()*pool.length)];
   if(app)location.assign(appUrl(app));
-  else toast("No open newsroom desks are available in that selection.");
+  else toast("No open Verifier resources are available in that selection.");
 }
 
 function renderColumns(){
@@ -1872,8 +1879,8 @@ function buildDrawer(query=""){
   $("drawerContent").innerHTML=`
     <p class="menu-group">Network Anchors · ${anchorMatches.length}</p>
     <div class="menu-list">${anchorMatches.map(siteLink).join("")||"<small class='drawer-empty'>No network anchors matched.</small>"}</div>
-    <p class="menu-group">Newsroom Desks · ${appMatches.length}</p>
-    <div class="menu-list">${appMatches.map(app=>`<a class="menu-link" href="${appUrl(app)}"><i aria-hidden="true">${escapeHTML(app.icon)}</i><span><strong>${escapeHTML(app.title)}</strong><small>${escapeHTML(categoryLabel(app.category))} · ${escapeHTML(healthLabel(app.health||"ready"))}</small></span><span aria-hidden="true">→</span></a>`).join("")||"<small class='drawer-empty'>No newsroom desks matched.</small>"}</div>
+    <p class="menu-group">Verifier Resources · ${appMatches.length}</p>
+    <div class="menu-list">${appMatches.map(app=>`<a class="menu-link" href="${appUrl(app)}"><i aria-hidden="true">${escapeHTML(app.icon)}</i><span><strong>${escapeHTML(app.title)}</strong><small>${escapeHTML(typeLabel(app.type))} · ${escapeHTML(categoryLabel(app.category))}</small></span><span aria-hidden="true">→</span></a>`).join("")||"<small class='drawer-empty'>No newsroom desks matched.</small>"}</div>
     <p class="menu-group">Editorial Columns · ${columnMatches.length}</p>
     <div class="menu-list">${columnMatches.map(([title,file])=>`<a class="menu-link" href="${columnUrl(file)}"><i aria-hidden="true">§</i><span><strong>${escapeHTML(title)}</strong><small>Editorial column</small></span><span aria-hidden="true">→</span></a>`).join("")||"<small class='drawer-empty'>No columns matched.</small>"}</div>
     <p class="menu-group">Public Network · ${networkMatches.length}</p>
