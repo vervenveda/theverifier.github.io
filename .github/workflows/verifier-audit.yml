@@ -53,7 +53,6 @@ jobs:
               root / 'assets' / 'editorial-evidence-registry.js',
               root / 'scripts' / 'build_news_feed.py',
               root / '.github' / 'workflows' / 'build-news-feed.yml',
-              root / '.github' / 'workflows' / 'beta-index-coverage.yml',
               root / 'apps' / 'daily_digest_index.html',
               root / 'apps' / 'Modern_News_Engine_index.html',
               root / 'apps' / 'global_news_digest_index.html',
@@ -158,12 +157,19 @@ jobs:
           assert 'Source inclusion is not endorsement' in standard_html
           assert 'Human dignity' in standard_html
 
-          coverage = (root / '.github' / 'workflows' / 'beta-index-coverage.yml').read_text(encoding='utf-8')
-          assert 'actions/checkout@v7' in coverage
-          assert 'verifier-home-extension.js' in coverage
-          assert 'editorial-evidence-registry.js' in coverage
-          assert 'editorial-integrity.js' in coverage
-          assert "'columns'" in coverage
+          # Public coverage is enforced directly here rather than through a second,
+          # separately maintained workflow. Keep one integrity owner.
+          public_html = [root / 'index.html', root / 'editorial_standard_index.html']
+          public_html += sorted((root / 'apps').glob('*.html'))
+          public_html += sorted((root / 'columns').glob('*.html'))
+          assert len(public_html) >= 42, f'Expected complete Verifier public HTML inventory, found {len(public_html)}'
+          for page in public_html:
+              text = page.read_text(encoding='utf-8')
+              assert 'vnv-ecosystem-toolbar.js' in text, f'{page} missing official ecosystem toolbar'
+          for page in sorted((root / 'columns').glob('*.html')):
+              text = page.read_text(encoding='utf-8')
+              assert 'editorial-integrity.js' in text, f'{page} missing editorial integrity layer'
+              assert 'verifier-typography.css' in text, f'{page} missing Verifier typography layer'
 
           queue = (root / 'EDITORIAL_AUDIT_QUEUE.md').read_text(encoding='utf-8')
           assert 'The Quiet Consensus No One Voted For' in queue
