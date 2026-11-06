@@ -1,6 +1,6 @@
-/* The Verifier · homepage architecture extension · v1.0.0
-   Loaded after the main homepage script. Updates the public application manifest
-   without duplicating or replacing the large index.html implementation. */
+/* The Verifier · homepage editorial extension · v2.0.0
+   Presentation-only enhancements. Newsroom inventory and metadata are owned
+   exclusively by data/verifier-newsroom-directory.json. */
 (() => {
   "use strict";
 
@@ -10,9 +10,10 @@
     const status = document.createElement("p");
     status.dataset.verifierFeedHealth = "true";
     status.setAttribute("role", "status");
-    status.style.cssText = "font-size:.82rem;line-height:1.5;margin:12px 0;color:inherit;max-width:60ch";
+    status.style.cssText = "font-size:16px;line-height:1.5;margin:12px auto;color:inherit;max-width:60ch";
     status.textContent = "Checking the latest published news edition…";
     actions.insertAdjacentElement("afterend", status);
+
     fetch("./data/generated/latest.json", {cache:"no-store"})
       .then(response => {
         if (!response.ok) throw new Error("Edition temporarily unavailable");
@@ -31,106 +32,33 @@
         const when = new Date(stamp).toLocaleString();
         const freshness = age > 30 * 60 * 60 * 1000 ? "Archived edition — updates may be delayed" : "Latest published edition";
         const coverage = total ? ` · Sources available: ${healthy}/${total}` : "";
-        status.textContent = `${freshness} · Updated ${when}${coverage}. News headlines are publisher discoveries, not independently verified findings. Future event dates may differ from publication dates.`;
+        status.textContent = `${freshness} · Updated ${when}${coverage}. Headlines are publisher discoveries, not independently verified findings.`;
       })
       .catch(() => {
         status.textContent = "Live edition status unavailable. News links and research tools remain accessible.";
       });
   }
 
+  function addDailyTop30Shortcut() {
+    const actions = document.querySelector(".hero .actions");
+    if (!actions || actions.querySelector("[data-verifier-daily-top30]")) return;
+    const link = document.createElement("a");
+    link.href = "apps/daily_digest_index.html";
+    link.className = "btn primary";
+    link.textContent = "Open Daily Top 30";
+    link.setAttribute("data-verifier-daily-top30", "true");
+    actions.prepend(link);
+  }
+
   function apply() {
     try {
-      if (typeof APPS === "undefined" || !Array.isArray(APPS)) return;
-
-      const find = id => APPS.find(app => app.id === id);
-
-      if (!find("daily-top-30")) {
-        const globalDigestIndex = APPS.findIndex(app => app.id === "global-digest");
-        const item = {
-          id: "daily-top-30",
-          title: "Daily Top 30",
-          file: "daily_digest_index.html",
-          category: "live",
-          icon: "30",
-          badge: "Daily Edition",
-          description: "A locally archived daily edition selected from The Verifier's same-origin generated feed for freshness, geographic breadth, and source diversity.",
-          tags: "daily top 30 first party generated feed local archive source diversity current news"
-        };
-        if (globalDigestIndex >= 0) APPS.splice(globalDigestIndex, 0, item);
-        else APPS.unshift(item);
-      }
-
-      const ultimate = find("ultimate-news");
-      if (ultimate) {
-        ultimate.health = "shared-build";
-        ultimate.badge = "Newsroom Gateway";
-        ultimate.description = "Open the Interactive Edition Explorer and connected news, research, and learning resources.";
-      }
-
-      const directory = find("global-digest");
-      if (directory) {
-        directory.title = "Global Source Directory";
-        directory.badge = "Sources";
-        directory.description = "The canonical Verifier directory of global publishers, regions, languages, access models, and feed availability. Inclusion is not endorsement.";
-        directory.tags = "global source directory outlets regions languages provenance canonical registry";
-      }
-
-      const modern = find("modern-engine");
-      if (modern) {
-        modern.badge = "First-Party Engine";
-        modern.description = "The primary same-origin Verifier newsroom for search, source comparison, trends, local saving, briefings, and verification research.";
-        modern.tags += " first party same origin local first verification";
-      }
-
-      const kids = find("kids-news");
-      if (kids) {
-        kids.title = "Young Readers Newsroom";
-        kids.badge = "Curated Youth";
-        kids.description = "A curated, age-banded news and science doorway for young readers with transparent outbound sources and no automated child-safety guarantee.";
-        kids.tags = "young readers youth curated news science age band education";
-      }
-
-      const interactive = find("interactive-news");
-      if (interactive) {
-        interactive.title = "Interactive Edition Explorer";
-        interactive.description = "Search and explore locally archived Daily Top-30 editions with source and region filters, saving, and comparison tools.";
-        interactive.tags += " daily edition local archive source diversity";
-      }
-
-      const legacyInteractive = find("interactive-live-dashboard");
-      if (legacyInteractive) {
-        legacyInteractive.description = "Compatibility doorway to the canonical Interactive Edition Explorer so older links remain functional.";
-        legacyInteractive.badge = "Compatibility";
-      }
-
       showFeedHealth();
-      if (typeof renderApps === "function") renderApps();
-      if (typeof syncCounts === "function") syncCounts();
-      if (typeof filterApps === "function") filterApps();
-
-      const actions = document.querySelector(".hero .actions");
-      if (actions && !actions.querySelector('[data-verifier-daily-top30]')) {
-        const link = document.createElement("a");
-        link.href = "apps/daily_digest_index.html";
-        link.className = "btn primary";
-        link.textContent = "Open Daily Top 30";
-        link.setAttribute("data-verifier-daily-top30", "true");
-        actions.prepend(link);
-      }
-
-      const nav = document.querySelector(".nav-links");
-      if (nav && !nav.querySelector('[data-verifier-daily-nav]')) {
-        const link = document.createElement("a");
-        link.href = "apps/daily_digest_index.html";
-        link.textContent = "Daily 30";
-        link.setAttribute("data-verifier-daily-nav", "true");
-        nav.append(link);
-      }
+      addDailyTop30Shortcut();
     } catch (error) {
-      console.warn("Verifier homepage extension could not apply", error);
+      console.warn("Verifier homepage editorial extension could not apply", error);
     }
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply, { once: true });
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply, {once:true});
   else apply();
 })();
