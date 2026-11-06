@@ -6,46 +6,33 @@
 <title>The Verifier — Young Readers Newsroom</title>
 <meta name="description" content="A curated, age-banded news and science doorway for young readers with transparent sources and no unrestricted breaking-news feed.">
 <style>
-:root{--bg:#061333;--card:#0d2048;--ink:#eef5ff;--muted:#bed2f2;--blue:#5aa5ff;--gold:#ffd36a;--line:#294b7c;--radius:14px;--shadow:0 12px 28px rgba(0,0,0,.22);--fs:17px}*{box-sizing:border-box}html{font-size:var(--fs)}body{margin:0;background:radial-gradient(circle at 50% 0,#123875 0,#061333 45%,#020817 100%);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}a{color:#b9dcff}button,select{font:inherit}.mast{padding:25px 16px;text-align:center;border-bottom:1px solid var(--line);background:rgba(2,8,23,.72)}.mast h1{margin:0;color:#b9dcff;font-size:clamp(1.8rem,5vw,3rem)}.mast p{margin:.4rem auto 0;max-width:760px;color:var(--muted)}.wrap{max-width:980px;margin:auto;padding:16px 14px 44px}.notice{background:#102858;border:1px solid #4169a7;border-radius:12px;padding:11px 13px;color:#e8f1ff;font-size:.86rem}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}.toolbar label{font-weight:800}.toolbar select,.btn{border:1px solid var(--line);border-radius:999px;background:#0b1b3b;color:var(--ink);padding:8px 11px}.btn{cursor:pointer;font-weight:800;text-decoration:none}.btn.primary{background:#2a67c8;border-color:#4d8df1}.btn.gold{background:var(--gold);color:#18223a;border-color:var(--gold)}.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.85fr);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);box-shadow:var(--shadow);margin:14px 0}.hero-media{min-height:300px;background:linear-gradient(135deg,#193d79,#1b69a9);display:grid;place-items:center;overflow:hidden}.hero-media img{width:100%;height:100%;min-height:300px;object-fit:cover}.hero-body{padding:20px}.hero-body h2{margin:0 0 8px;color:#c9e3ff}.hero-body p{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:rgba(13,32,72,.94);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}.card h2{font-size:1.05rem;margin:0 0 7px;color:#c9e3ff}.card p{margin:.35rem 0;color:var(--muted)}.source-list{display:grid;gap:8px}.source{border:1px solid #2d5185;border-radius:11px;padding:10px;background:#091a3a}.source b{display:block;color:#fff}.source small{display:block;color:var(--muted);margin:3px 0 6px}.source a{font-weight:800}.facts{font-size:1rem;color:#fff}.prompt{background:#081831;border-left:4px solid var(--gold);padding:10px 12px;border-radius:0 10px 10px 0}.footer{text-align:center;color:#8faed8;font-size:.78rem;margin-top:22px}@media(max-width:720px){.hero{grid-template-columns:1fr}.hero-media,.hero-media img{min-height:190px}.grid{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+:root{--bg:#061333;--card:#0d2048;--ink:#eef5ff;--muted:#bed2f2;--blue:#5aa5ff;--gold:#ffd36a;--line:#294b7c;--radius:14px;--shadow:0 12px 28px rgba(0,0,0,.22);--fs:17px}*{box-sizing:border-box}html{font-size:var(--fs)}body{margin:0;background:radial-gradient(circle at 50% 0,#123875 0,#061333 45%,#020817 100%);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}a{color:#b9dcff}button,select{font:inherit}.mast{padding:25px 16px;text-align:center;border-bottom:1px solid var(--line);background:rgba(2,8,23,.72)}.mast h1{margin:0;color:#b9dcff;font-size:clamp(1.8rem,5vw,3rem)}.mast p{margin:.4rem auto 0;max-width:760px;color:var(--muted)}.wrap{max-width:980px;margin:auto;padding:16px 14px 44px}.notice{background:#102858;border:1px solid #4169a7;border-radius:12px;padding:11px 13px;color:#e8f1ff;font-size:16px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}.toolbar label{font-weight:800}.toolbar select,.btn{border:1px solid var(--line);border-radius:999px;background:#0b1b3b;color:var(--ink);padding:8px 11px}.btn{cursor:pointer;font-weight:800;text-decoration:none}.btn.primary{background:#2a67c8;border-color:#4d8df1}.btn.gold{background:var(--gold);color:#18223a;border-color:var(--gold)}.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.85fr);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);box-shadow:var(--shadow);margin:14px 0}.hero-media{min-height:300px;background:linear-gradient(135deg,#193d79,#1b69a9);display:grid;place-items:center;overflow:hidden}.hero-media img{width:100%;height:100%;min-height:300px;object-fit:cover}.hero-body{padding:20px}.hero-body h2{margin:0 0 8px;color:#c9e3ff}.hero-body p{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:rgba(13,32,72,.94);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}.card h2{font-size:1.05rem;margin:0 0 7px;color:#c9e3ff}.card p{margin:.35rem 0;color:var(--muted)}.source-list{display:grid;gap:8px}.source{border:1px solid #2d5185;border-radius:11px;padding:10px;background:#091a3a}.source b{display:block;color:#fff}.source small{display:block;color:var(--muted);margin:3px 0 6px}.source a{font-weight:800}.facts{font-size:1rem;color:#fff}.prompt{background:#081831;border-left:4px solid var(--gold);padding:10px 12px;border-radius:0 10px 10px 0}.footer{text-align:center;color:#8faed8;font-size:16px;margin-top:22px}@media(max-width:720px){.hero{grid-template-columns:1fr}.hero-media,.hero-media img{min-height:190px}.grid{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 <script src="../assets/verifier-safety.js"></script>
 <script src="../assets/verifier-local-cloud.js"></script>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
-<style id="vnv-global-ecosystem-shell">
-.vnv-global-strip{position:relative;z-index:2147482000;min-height:38px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:5px 12px;border-bottom:1px solid rgba(160,140,100,.28);background:#121918;color:#eee8dc;font:400 12px/1.2 "Avenir Next",Avenir,"Segoe UI",Arial,sans-serif}
-.vnv-global-strip a{color:inherit;text-decoration:none}.vnv-global-brand{display:flex;align-items:center;gap:8px;white-space:nowrap}.vnv-global-mark{width:26px;height:26px;display:grid;place-items:center;border:1px solid rgba(238,232,220,.38);border-radius:7px;font:500 10px Georgia,serif}.vnv-global-copy{display:grid}.vnv-global-copy strong{font:500 11px Georgia,serif;letter-spacing:.08em;text-transform:uppercase}.vnv-global-copy small{margin-top:1px;color:#bdb5a6;font-size:9px;letter-spacing:.06em;text-transform:uppercase}
-.vnv-global-links{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;overflow:hidden;white-space:nowrap}.vnv-global-links a{color:#d8d1c5;font-size:10px;letter-spacing:.04em}.vnv-global-links a:hover,.vnv-global-links a:focus-visible{color:#fff}
-.vnv-global-menu{position:relative;justify-self:end}.vnv-global-menu summary{list-style:none;width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(238,232,220,.28);border-radius:7px;cursor:pointer}.vnv-global-menu summary::-webkit-details-marker{display:none}.vnv-global-lines,.vnv-global-lines:before,.vnv-global-lines:after{content:"";display:block;width:14px;height:1.5px;background:#eee8dc}.vnv-global-lines{position:relative}.vnv-global-lines:before,.vnv-global-lines:after{position:absolute;left:0}.vnv-global-lines:before{top:-5px}.vnv-global-lines:after{top:5px}
-.vnv-global-panel{position:absolute;right:0;top:36px;width:min(300px,calc(100vw - 20px));padding:10px;border:1px solid rgba(238,232,220,.22);border-radius:7px;background:#17201f;box-shadow:0 18px 40px rgba(0,0,0,.28)}.vnv-global-panel p{margin:3px 5px 8px;color:#aaa294;font-size:9px;letter-spacing:.1em;text-transform:uppercase}.vnv-global-panel a{display:block;padding:9px 10px;border-radius:5px;color:#eee8dc;font-size:11px}.vnv-global-panel a:hover,.vnv-global-panel a:focus-visible{background:#22302e}
-@media(max-width:760px){.vnv-global-strip{grid-template-columns:minmax(0,1fr) auto}.vnv-global-links{display:none}.vnv-global-copy small{display:none}}@media print{.vnv-global-strip{display:none!important}}
+<style id="young-readers-blueprint-hardening">
+:root{--radius:7px;--fs:17px}
+body{font-family:"Nunito","Brandon Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;font-size:var(--fs)}
+.skip-link{position:absolute;left:14px;top:-80px;z-index:2147483600;padding:10px 14px;border-radius:7px;background:#202724;color:#fff8e9;text-decoration:none;font-size:16px}.skip-link:focus{top:14px}
+.mast{padding:44px 16px;background:linear-gradient(145deg,#0b1b3b,#061333);border-bottom:1px solid #294b7c}
+.eyebrow{margin:0 0 8px;color:#ffd36a;font:400 24px/1.2 Cinzel,Georgia,serif;letter-spacing:.08em}
+.mast h1{font:400 clamp(55px,7vw,66px)/1.04 Cinzel,Georgia,serif;letter-spacing:-.02em;color:#fff8e9}
+.mast p{font-size:18px;line-height:1.7}
+.notice,.toolbar label,.toolbar select,.btn,.hero-body p,.card p,.source small,.source a,.prompt,.footer{font-size:16px}
+.toolbar select,.btn,.hero,.card,.source,.prompt{border-radius:7px}
+.btn{min-height:44px}.btn.gold{background:#202724;color:#fff8e9;border-color:#ffd36a}
+.hero-body h2,.card h2{font-family:Cinzel,Georgia,serif;font-weight:400}
+.card h2{font-size:24px}
+.source a{display:inline-flex;align-items:center;min-height:40px;padding:7px 9px;border-radius:7px;background:#202724;color:#fff8e9;text-decoration:none}
+.footer{padding:22px 0;border-top:1px solid #294b7c}
+@media print{.toolbar,.skip-link{display:none!important}}
 </style>
 </head>
 <body>
-<div class="vnv-global-strip" data-vnv-global-strip>
-  <a class="vnv-global-brand" href="https://vervenveda.com/" aria-label="Verve N Veda home">
-    <span class="vnv-global-mark">VNV</span>
-    <span class="vnv-global-copy"><strong>Verve N Veda</strong><small>The Verifier · Young Readers</small></span>
-  </a>
-  <nav class="vnv-global-links" aria-label="Verve N Veda network links">
-    <a href="https://vervenveda.com/theverifier.github.io/apps/kids_news_network_index.html">This Page</a>
-    <a href="https://vervenveda.com/#directory">Ecosystem Directory</a>
-    <a href="https://vervenveda.com/core/directory-agi/">Directory AGI</a>
-    <a href="https://vervenveda.com/cloud/">Public Cloud</a>
-  </nav>
-  <details class="vnv-global-menu">
-    <summary aria-label="Open Verve N Veda ecosystem menu"><span class="vnv-global-lines" aria-hidden="true"></span></summary>
-    <div class="vnv-global-panel"><p>Ecosystem</p>
-      <a href="https://vervenveda.com/">Verve N Veda Gateway</a>
-      <a href="https://vervenveda.com/#directory">Complete Ecosystem Directory</a>
-      <a href="https://vervenveda.com/Arshif.github.io/">ARSHIF</a>
-      <a href="https://vervenveda.com/theverifier.github.io/">The Verifier</a>
-      <a href="https://vervenveda.com/river_to_road.github.io/">River to Road</a>
-      <a href="https://vervenveda.com/bazaarart.github.io/">Bazaar Art</a>
-    </div>
-  </details>
-</div>
-<header class="mast"><h1>Young Readers Newsroom</h1><p>Curated news, science, nature, and world-learning sources chosen for young readers—not an unrestricted breaking-news feed.</p></header>
-<main class="wrap">
+<a class="skip-link" href="#youngReadersMain">Skip to Young Readers Newsroom</a>
+<header class="mast"><p class="eyebrow">Verve N Veda</p><h1>Young Readers Newsroom</h1><p>Curated news, science, nature, and world-learning sources chosen for young readers—not an unrestricted breaking-news feed.</p></header>
+<main class="wrap" id="youngReadersMain">
 <div class="notice"><strong>For families and educators:</strong> no automated system can guarantee that every linked page will always contain age-appropriate material. This newsroom reduces risk through curated youth-focused destinations and age-banded guidance rather than pretending a keyword filter can make the open news web “kid-safe.”</div>
 <div class="toolbar"><label for="level">Reading level</label><select id="level"><option value="younger">Younger · about 7–10</option><option value="middle">Middle · about 11–13</option><option value="teen">Teen · about 14+</option></select><button class="btn" id="newFact" type="button">New Fact</button><button class="btn" id="fontDown" type="button">A−</button><button class="btn" id="fontUp" type="button">A+</button></div>
 <section class="hero"><div class="hero-media" id="spaceMedia"><span>NASA · Astronomy Picture of the Day</span></div><div class="hero-body"><h2 id="spaceTitle">Today's Space Window</h2><p id="spaceText">Loading NASA's public Astronomy Picture of the Day…</p><div id="spaceActions"></div></div></section>
@@ -55,7 +42,7 @@
 <article class="card"><h2>Science & Nature</h2><div class="source-list" id="scienceSources"></div></article>
 <article class="card"><h2>World & Current Events</h2><div class="source-list" id="worldSources"></div></article>
 </section>
-<div class="footer">The Verifier · Young Readers Newsroom · Curated access with transparent limits</div>
+<footer class="footer">The Verifier · Young Readers Newsroom · Curated access with transparent limits</footer>
 </main>
 <script>
 (() => {
@@ -105,11 +92,16 @@ function sourceCard(s){const d=document.createElement("div");d.className="source
 function renderSources(){for(const [key,id] of [["science","scienceSources"],["world","worldSources"]]){const box=$(id);box.replaceChildren();SOURCES[key].filter(s=>s.levels.includes(level)).forEach(s=>box.append(sourceCard(s)))}}
 function renderFact(){const list=FACTS[level]||FACTS.younger;$("fact").textContent=list[Math.floor(Math.random()*list.length)];$("literacy").textContent=LITERACY[level]||LITERACY.younger}
 async function loadAPOD(){try{const r=await fetch("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY",{cache:"no-store"});if(!r.ok)throw new Error(`HTTP ${r.status}`);const data=await r.json();$("spaceTitle").textContent=S.stripHTML(data.title||"NASA Astronomy Picture of the Day",300);$("spaceText").textContent=S.stripHTML(data.explanation||"Open NASA to explore today's astronomy feature.",900);const media=$("spaceMedia");media.replaceChildren();if(data.media_type==="image"&&data.url){const img=document.createElement("img");img.alt=S.text(data.title||"NASA Astronomy Picture of the Day",250);if(S.image(img,data.url))media.append(img);else media.textContent="NASA · Astronomy Picture of the Day"}else media.textContent="NASA · Astronomy Picture of the Day";const acts=$("spaceActions");acts.replaceChildren();const open=external("Open NASA APOD ↗",data.hdurl||data.url||"https://apod.nasa.gov/apod/");if(open){open.className="btn gold";acts.append(open)}}catch(e){$("spaceTitle").textContent="NASA Space Window";$("spaceText").textContent="NASA's daily feature is not available right now. You can still explore the curated science sources below.";$("spaceMedia").textContent="NASA · Astronomy Picture of the Day";const acts=$("spaceActions");acts.replaceChildren();const open=external("Open NASA APOD ↗","https://apod.nasa.gov/apod/");if(open){open.className="btn gold";acts.append(open)}}}
-async function loadPrefs(){level=await C.getPreference("youngReadersLevel","younger");font=Number(await C.getPreference("youngReadersFont",17))||17;$("level").value=["younger","middle","teen"].includes(level)?level:"younger";document.documentElement.style.setProperty("--fs",`${Math.max(14,Math.min(23,font))}px`)}
-$("level").addEventListener("change",async e=>{level=e.target.value;await C.setPreference("youngReadersLevel",level);renderSources();renderFact()});$("newFact").addEventListener("click",renderFact);$("fontDown").addEventListener("click",async()=>{font=Math.max(14,font-1);await C.setPreference("youngReadersFont",font);document.documentElement.style.setProperty("--fs",`${font}px`)});$("fontUp").addEventListener("click",async()=>{font=Math.min(23,font+1);await C.setPreference("youngReadersFont",font);document.documentElement.style.setProperty("--fs",`${font}px`)});(async()=>{await loadPrefs();renderSources();renderFact();loadAPOD()})();
+async function loadPrefs(){level=await C.getPreference("youngReadersLevel","younger");font=Number(await C.getPreference("youngReadersFont",17))||17;$("level").value=["younger","middle","teen"].includes(level)?level:"younger";document.documentElement.style.setProperty("--fs",`${Math.max(16,Math.min(23,font))}px`)}
+$("level").addEventListener("change",async e=>{level=e.target.value;await C.setPreference("youngReadersLevel",level);renderSources();renderFact()});$("newFact").addEventListener("click",renderFact);$("fontDown").addEventListener("click",async()=>{font=Math.max(16,font-1);await C.setPreference("youngReadersFont",font);document.documentElement.style.setProperty("--fs",`${font}px`)});$("fontUp").addEventListener("click",async()=>{font=Math.min(23,font+1);await C.setPreference("youngReadersFont",font);document.documentElement.style.setProperty("--fs",`${font}px`)});(async()=>{await loadPrefs();renderSources();renderFact();loadAPOD()})();
 })();
 </script>
 <script src="https://vervenveda.com/assets/vnv-support.js" defer></script>
+<script src="https://vervenveda.com/assets/vnv-header-autopopulate.js"></script>
+<script>VNV_HEADER.mount({"title":"Young Readers Newsroom","subtitle":"The Verifier · Curated News Literacy","icon":"V","home":"../","replaceLegacy":true,"actions":[{"label":"The Verifier","href":"../"},{"label":"Reading Level","href":"#level"},{"label":"Science & Nature","href":"#scienceSources"},{"label":"World News","href":"#worldSources"}]});</script>
+<script src="https://vervenveda.com/assets/vnv-333-ticker.js"></script>
+<script src="https://vervenveda.com/assets/vnv-ticker-autopopulate.js" data-vnv-ticker-autopopulate></script>
+<script>VNV_TICKER.autoPopulate({label:"Young Readers Quick Links",max:10});</script>
 <script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>
