@@ -546,20 +546,98 @@ h2{
   line-height:1.75;
 }
 
-/* Quote */
+/* Randomized quotation gallery */
 .statement{
   background:#0d2033;
 }
 
-.statement blockquote{
-  max-width:900px;
-  font:clamp(1.55rem,3.7vw,2.85rem)/1.35 var(--serif);
+.quote-gallery{
+  color:#fffdf6;
 }
 
-.statement cite{
-  color:#c9af78;
+.quote-gallery-shell{
+  max-width:960px;
+  margin:0 auto;
+  text-align:center;
+}
+
+.quote-gallery-kicker{
+  margin:0 0 18px;
+  color:#d8bf8d;
+  font-family:var(--serif);
   font-size:16px;
-  letter-spacing:.16em;
+  font-weight:400;
+  letter-spacing:.12em;
+}
+
+.quote-stage{
+  min-height:250px;
+  display:grid;
+  place-items:center;
+  padding:20px 0;
+}
+
+.quote-stage blockquote{
+  width:100%;
+  max-width:820px;
+  margin:0 auto;
+  color:#fffdf6;
+  font:400 clamp(24px,3vw,33px)/1.45 var(--serif);
+  letter-spacing:-.01em;
+}
+
+.quote-stage cite{
+  display:block;
+  margin-top:22px;
+  color:#d8bf8d;
+  font-family:var(--sans);
+  font-size:16px;
+  font-style:normal;
+  letter-spacing:.09em;
+}
+
+.quote-source{
+  display:block;
+  margin-top:5px;
+  color:rgba(255,253,246,.66);
+  font-family:var(--sans);
+  font-size:16px;
+  letter-spacing:0;
+}
+
+.quote-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin-top:10px;
+}
+
+.quote-control{
+  min-width:44px;
+  min-height:44px;
+  padding:8px 12px;
+  border:1px solid rgba(255,253,246,.28);
+  border-radius:7px;
+  color:#fffdf6;
+  background:transparent;
+  font-size:16px;
+}
+
+.quote-control:hover,
+.quote-control:focus-visible{
+  background:rgba(255,253,246,.10);
+}
+
+.quote-count{
+  min-width:74px;
+  color:rgba(255,253,246,.72);
+  font-size:16px;
+}
+
+@media(max-width:620px){
+  .quote-stage{min-height:290px}
+  .quote-stage blockquote{font-size:24px}
 }
 
 /* Network cards */
@@ -1490,16 +1568,132 @@ body.verifier-home{
 </div>
 </div>
 </section>
-<section class="section statement">
-<div class="shell">
+<section class="section statement quote-gallery" id="quotes" aria-labelledby="quoteGalleryTitle">
+<div class="shell quote-gallery-shell">
+<p class="quote-gallery-kicker" id="quoteGalleryTitle">Words worth remembering</p>
+<div class="quote-stage" id="quoteStage" aria-live="polite" aria-atomic="true">
 <blockquote>
-      “The goal of a constitutional republic is not to eliminate disagreement. The goal is to create a system where disagreement can happen peacefully, where power changes hands without violence, and where citizens remain the ultimate source of authority.”
-      <cite>
-       Jennifer Kay Pearl
-      </cite>
+<span id="quoteText">The unexamined life is not worth living.</span>
+<cite id="quoteAuthor">Socrates</cite>
+<span class="quote-source" id="quoteSource">Plato, Apology</span>
 </blockquote>
 </div>
+<div class="quote-controls" aria-label="Quotation slideshow controls">
+<button class="quote-control" id="quotePrevious" type="button" aria-label="Previous quotation">←</button>
+<button class="quote-control" id="quoteToggle" type="button" aria-label="Pause quotation slideshow" aria-pressed="false">Pause</button>
+<span class="quote-count" id="quoteCount" aria-live="off">1 / 30</span>
+<button class="quote-control" id="quoteNext" type="button" aria-label="Next quotation">→</button>
+</div>
+</div>
 </section>
+<script id="verifier-quote-gallery">
+(() => {
+  "use strict";
+
+  const quotes = [
+    ["The unexamined life is not worth living.","Socrates","Plato, Apology"],
+    ["I think, therefore I am.","René Descartes","Discourse on the Method"],
+    ["Knowledge itself is power.","Francis Bacon","Meditationes Sacrae"],
+    ["This above all: to thine own self be true.","William Shakespeare","Hamlet"],
+    ["The fault, dear Brutus, is not in our stars, but in ourselves.","William Shakespeare","Julius Caesar"],
+    ["There is nothing either good or bad, but thinking makes it so.","William Shakespeare","Hamlet"],
+    ["The mind is its own place, and in itself can make a heaven of hell, a hell of heaven.","John Milton","Paradise Lost"],
+    ["If I have seen further it is by standing on the shoulders of Giants.","Isaac Newton","Letter to Robert Hooke"],
+    ["Where there is no law, there is no freedom.","John Locke","Second Treatise of Government"],
+    ["The world is my country, all mankind are my brethren, and to do good is my religion.","Thomas Paine","Attributed in Thomas Paine memorial tradition"],
+    ["Well done is better than well said.","Benjamin Franklin","Poor Richard’s Almanack"],
+    ["Lost time is never found again.","Benjamin Franklin","Poor Richard’s Almanack"],
+    ["I cannot live without books.","Thomas Jefferson","Letter to John Adams"],
+    ["Remember the ladies, and be more generous and favourable to them than your ancestors.","Abigail Adams","Letter to John Adams"],
+    ["A house divided against itself cannot stand.","Abraham Lincoln","House Divided Speech"],
+    ["Those who deny freedom to others deserve it not for themselves.","Abraham Lincoln","Letter to H. L. Pierce and others"],
+    ["If there is no struggle, there is no progress.","Frederick Douglass","West India Emancipation Speech"],
+    ["Power concedes nothing without a demand. It never did and it never will.","Frederick Douglass","West India Emancipation Speech"],
+    ["Self-trust is the first secret of success.","Ralph Waldo Emerson","Success"],
+    ["Nothing great was ever achieved without enthusiasm.","Ralph Waldo Emerson","Circles"],
+    ["Go confidently in the direction of your dreams. Live the life you have imagined.","Henry David Thoreau","Walden"],
+    ["Our life is frittered away by detail. Simplify, simplify.","Henry David Thoreau","Walden"],
+    ["I am large, I contain multitudes.","Walt Whitman","Song of Myself"],
+    ["Hope is the thing with feathers that perches in the soul.","Emily Dickinson","Poem 314"],
+    ["To define is to limit.","Oscar Wilde","The Picture of Dorian Gray"],
+    ["There is no charm equal to tenderness of heart.","Jane Austen","Emma"],
+    ["I do not wish women to have power over men; but over themselves.","Mary Wollstonecraft","A Vindication of the Rights of Woman"],
+    ["It is hard to fail, but it is worse never to have tried to succeed.","Theodore Roosevelt","The Strenuous Life"],
+    ["The only thing we have to fear is fear itself.","Franklin D. Roosevelt","First Inaugural Address"],
+    ["The cost of liberty is less than the price of repression.","W. E. B. Du Bois","John Brown"]
+  ];
+
+  const text = document.getElementById("quoteText");
+  const author = document.getElementById("quoteAuthor");
+  const source = document.getElementById("quoteSource");
+  const count = document.getElementById("quoteCount");
+  const previous = document.getElementById("quotePrevious");
+  const next = document.getElementById("quoteNext");
+  const toggle = document.getElementById("quoteToggle");
+  const stage = document.getElementById("quoteStage");
+  if(!text || !author || !source || !count || !previous || !next || !toggle || !stage) return;
+
+  let order = [];
+  let position = 0;
+  let timer = null;
+  let paused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function shuffledOrder(){
+    const values = quotes.map((_, index) => index);
+    for(let i = values.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [values[i], values[j]] = [values[j], values[i]];
+    }
+    return values;
+  }
+
+  function render(){
+    const [quotation, name, work] = quotes[order[position]];
+    text.textContent = quotation;
+    author.textContent = name;
+    source.textContent = work;
+    count.textContent = (position + 1) + " / " + quotes.length;
+  }
+
+  function move(step){
+    position = (position + step + order.length) % order.length;
+    render();
+    restart();
+  }
+
+  function restart(){
+    if(timer) window.clearInterval(timer);
+    timer = null;
+    if(!paused) timer = window.setInterval(() => move(1), 9000);
+  }
+
+  function setPaused(value){
+    paused = value;
+    toggle.textContent = paused ? "Play" : "Pause";
+    toggle.setAttribute("aria-pressed", String(paused));
+    toggle.setAttribute("aria-label", paused ? "Play quotation slideshow" : "Pause quotation slideshow");
+    restart();
+  }
+
+  order = shuffledOrder();
+  render();
+  setPaused(paused);
+
+  previous.addEventListener("click", () => move(-1));
+  next.addEventListener("click", () => move(1));
+  toggle.addEventListener("click", () => setPaused(!paused));
+
+  stage.addEventListener("mouseenter", () => { if(!paused && timer) window.clearInterval(timer); });
+  stage.addEventListener("mouseleave", () => restart());
+  stage.addEventListener("focusin", () => { if(!paused && timer) window.clearInterval(timer); });
+  stage.addEventListener("focusout", () => restart());
+
+  document.addEventListener("visibilitychange", () => {
+    if(document.hidden && timer) window.clearInterval(timer);
+    else restart();
+  });
+})();
+</script>
 <section class="section" id="network">
 <div class="shell">
 <div class="heading">
