@@ -3,6 +3,7 @@
    Generated news JSON is deliberately network-first and is NOT cache-first here;
    user editions/history live in IndexedDB through the Local Browser Cloud. */
 const CACHE_NAME = "the-verifier-shell-v5";
+const NEWSROOM_DIRECTORY = "./data/verifier-newsroom-directory.json";
 const SHELL = [
   "./",
   "./index.html",
@@ -13,24 +14,31 @@ const SHELL = [
   "./assets/verifier-local-cloud.js",
   "./assets/verifier-news-data.js",
   "./data/sources.json",
-  "./apps/daily_digest_index.html",
-  "./apps/Modern_News_Engine_index.html",
-  "./apps/global_news_digest_index.html",
-  "./apps/interactive_news_index.html",
-  "./apps/education_news_index.html",
-  "./apps/kids_news_network_index.html",
-  "./apps/live_news_index.html",
-  "./apps/news_feed_index.html",
-  "./apps/world_wire_index.html"
+  NEWSROOM_DIRECTORY
 ];
 
+async function newsroomOfflineShell() {
+  try {
+    const response = await fetch(NEWSROOM_DIRECTORY, {cache:"no-store"});
+    if (!response.ok) throw new Error("Newsroom directory unavailable");
+    const directory = await response.json();
+    return (Array.isArray(directory.entries) ? directory.entries : [])
+      .filter(entry => entry?.offlineEligible === true && entry?.file)
+      .map(entry => "./apps/" + entry.file);
+  } catch {
+    return [];
+  }
+}
+
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(SHELL))
-      .then(() => self.skipWaiting())
-      .catch(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    try {
+      const cache = await caches.open(CACHE_NAME);
+      const newsroom = await newsroomOfflineShell();
+      await cache.addAll([...SHELL, ...newsroom]);
+    } catch {}
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", event => {
