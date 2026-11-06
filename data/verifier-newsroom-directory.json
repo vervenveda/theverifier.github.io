@@ -133,14 +133,15 @@
       "file": "Modern_News_Engine_index.html",
       "category": "research",
       "icon": "⚙",
-      "badge": "First-Party Engine",
-      "description": "The primary same-origin Verifier newsroom for search, source comparison, trends, local saving, briefings, and verification research.",
+      "badge": "News Engine",
+      "description": "A first-party Verifier workspace for current news discovery, source comparison, research, saved stories, trends, briefings, and verification tools.",
       "tags": "modern news engine discovery sort topics first party same origin local first verification",
       "type": "newsroom",
       "order": 9,
       "maturity": "open",
       "offlineEligible": true,
-      "hardened": true
+      "hardened": true,
+      "health": "ready"
     },
     {
       "id": "plera-search",
