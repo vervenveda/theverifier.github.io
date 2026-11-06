@@ -161,7 +161,7 @@ jobs:
           assert offline_entries, 'Canonical newsroom directory must declare offline-eligible pages'
 
           home = (root / 'index.html').read_text(encoding='utf-8')
-          assert 'verifier-newsroom-directory.json' in home, 'Homepage must consume canonical newsroom directory'
+          assert 'verifier-newsroom-directory.json' not in home, 'Homepage data loaders must live in the canonical homepage controller'
           assert 'verifier-editorial-columns.json' not in home, 'Homepage data loaders must live in the canonical homepage controller'
           assert 'assets/verifier-home.css' in home, 'Homepage must load canonical external stylesheet'
           assert 'assets/verifier-home.js' in home, 'Homepage must load canonical external controller'
