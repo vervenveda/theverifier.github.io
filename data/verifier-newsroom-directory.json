@@ -201,7 +201,8 @@
       "order": 13,
       "maturity": "open",
       "offlineEligible": true,
-      "hardened": false
+      "hardened": true,
+      "health": "ready"
     },
     {
       "id": "ecopulse",
@@ -231,7 +232,8 @@
       "order": 15,
       "maturity": "open",
       "offlineEligible": false,
-      "hardened": false
+      "hardened": true,
+      "health": "ready"
     },
     {
       "id": "science-daily",
@@ -291,7 +293,8 @@
       "order": 19,
       "maturity": "open",
       "offlineEligible": true,
-      "hardened": true
+      "hardened": true,
+      "health": "ready"
     },
     {
       "id": "daily-news-quiz",
