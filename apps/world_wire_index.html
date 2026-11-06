@@ -106,6 +106,156 @@ a{color:inherit}
 @media print{
   .skip-link,.toolbar,.health,.ticker{display:none!important}
 }
+
+/* ===== Elegant contrast refinement ===== */
+body{
+  background:
+    linear-gradient(rgba(25,32,48,.97),rgba(25,32,48,.97)),
+    radial-gradient(circle at 50% 0,rgba(120,103,73,.16),transparent 48%);
+  color:#fffdf6;
+}
+
+.mast h1,
+.mast .sub,
+.mast .date,
+.status,
+.health summary,
+.health-name,
+.health-meta,
+.toggle{
+  color:#fffdf6;
+}
+
+.eyebrow{
+  color:#d8bf8d;
+}
+
+.pill{
+  color:#fffdf6;
+  background:rgba(255,253,246,.10);
+  border-color:rgba(255,253,246,.24);
+}
+
+.ticker,
+.ticker a,
+.ticker b{
+  color:#fffdf6;
+}
+
+.toolbar{
+  background:rgba(255,253,246,.97);
+  border-color:#c9bdab;
+}
+
+.toolbar,
+.toolbar .control label,
+.toolbar .toggle,
+.toolbar .status{
+  color:#202724;
+}
+
+.controls input,
+.controls select{
+  color:#202724;
+  background:#fffdf6;
+  border-color:#c9bdab;
+}
+
+.controls button,
+.utility button{
+  color:#fffdf6;
+  background:#202724;
+  border-color:#202724;
+}
+
+.controls button:hover,
+.utility button:hover{
+  background:#2d3732;
+}
+
+.notice,
+.health,
+.health-card,
+.article,
+.footer,
+.empty{
+  color:#202724;
+  background:#fffdf6;
+  border-color:#c9bdab;
+}
+
+.article{
+  background:linear-gradient(180deg,#fffdf6,#fff8e9);
+}
+
+.article h2,
+.article p,
+.source,
+.coverage,
+.meta,
+.actions a,
+.actions button,
+.health summary,
+.health-name,
+.health-meta,
+.notice,
+.notice strong,
+.footer,
+.footer strong,
+.footer summary,
+.empty{
+  color:#202724;
+}
+
+.article p{
+  color:#4f5a54;
+}
+
+.source,
+.meta{
+  color:#5f665f;
+}
+
+.coverage{
+  color:#245f43;
+  background:rgba(36,95,67,.06);
+  border-color:rgba(36,95,67,.26);
+}
+
+.actions a,
+.actions button{
+  background:#fff8e9;
+  border-color:#c9bdab;
+}
+
+.actions a:hover,
+.actions button:hover{
+  background:#f3ead9;
+}
+
+.actions button[aria-pressed="true"]{
+  color:#fffdf6;
+  background:#202724;
+  border-color:#202724;
+}
+
+.health-state.good{color:#245f43}
+.health-state.warn{color:#815d13}
+.health-state.bad{color:#8e3434}
+
+.health{
+  background:rgba(255,253,246,.96);
+}
+
+.health summary,
+.health-name,
+.health-meta{
+  color:#202724;
+}
+
+.footer{
+  background:#fffdf6;
+}
 </style>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
 <script src="../assets/verifier-news-data.js"></script>
