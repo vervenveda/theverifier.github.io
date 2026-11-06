@@ -114,18 +114,18 @@
     },
     {
       "id": "live-research",
-      "title": "Live Research News",
+      "title": "Daily News Briefing",
       "file": "Live_Research_News_index.html",
       "category": "research",
       "icon": "⌕",
       "badge": "Research",
-      "description": "A research-oriented news workspace for following evidence, context, and deeper source trails.",
-      "tags": "live research news evidence sources context",
+      "description": "A calm, source-aware daily briefing for science, health, environment, and global reporting, with each story linked back to its original publisher.",
+      "tags": "daily news briefing source aware science health environment global original publishers",
       "type": "newsroom",
       "order": 8,
       "maturity": "open",
       "offlineEligible": false,
-      "hardened": false
+      "hardened": true
     },
     {
       "id": "modern-engine",
