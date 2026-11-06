@@ -12,7 +12,15 @@
 }
 
 .verifier-home{
+  font-family:"Brandon Grotesque","Nunito","Avenir Next",Avenir,Arial,sans-serif;
   font-size:var(--verifier-body-size);
+  font-weight:400;
+}
+.verifier-home :is(h1,h2,h3,.eyebrow,.kicker){
+  font-weight:444;
+}
+.verifier-home :is(button,input,select,textarea,label){
+  font-size:var(--verifier-ui-size);
 }
 
 .verifier-home .hero .eyebrow{
@@ -65,12 +73,12 @@
   margin-right:auto!important;
 }
 
+/* The blueprint scale remains authoritative on narrow screens; wrapping/reflow handles width. */
 @media(max-width:640px){
-  .verifier-home .hero .eyebrow{
-    font-size:24px;
-    letter-spacing:.06em;
-  }
-
+  .verifier-home .hero .eyebrow{font-size:var(--verifier-eyebrow-size);letter-spacing:.06em}
+  .verifier-home .hero h1{font-size:var(--verifier-title-size)}
+  .verifier-home .heading h2{font-size:var(--verifier-section-size)}
+}
   .verifier-home .hero h1{
     font-size:55px;
   }
