@@ -3,96 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#173f35">
-<meta name="description" content="The Verifier — a clean, source-aware daily news reader for science, health, environment and global news.">
-<title>The Verifier — Daily News</title>
+<meta name="theme-color" content="#202724">
+<meta name="description" content="The Verifier Daily News Briefing — a calm, source-aware briefing for science, health, environment, and global reporting.">
+<title>The Verifier — Daily News Briefing</title>
 <style>
 :root{
-  --bg:#f5f7f5;--surface:#fff;--surface-2:#eef3f0;--text:#17221f;--muted:#66736e;
-  --brand:#173f35;--brand-2:#2d6a4f;--accent:#52b788;--line:#dbe4df;
-  --shadow:0 8px 28px rgba(20,50,40,.08);--radius:16px;
+  --bg:#fff8e9;--surface:#fffdf6;--surface-2:#f3ead9;--text:#202724;--muted:#5f665f;
+  --brand:#202724;--brand-2:#2d3732;--accent:#b99352;--line:#cfc4b2;
+  --shadow:0 8px 28px rgba(32,39,36,.08);--radius:7px;
 }
 [data-theme="dark"]{
-  --bg:#101614;--surface:#18201d;--surface-2:#202a26;--text:#edf4f0;--muted:#aab8b2;
-  --brand:#8fd3b6;--brand-2:#65b993;--accent:#76d2a8;--line:#30403a;
+  --bg:#171d1a;--surface:#202724;--surface-2:#2d3732;--text:#fffdf6;--muted:#d2c9b9;
+  --brand:#fffdf6;--brand-2:#d8bf8d;--accent:#d8bf8d;--line:#4a544f;
   --shadow:0 10px 30px rgba(0,0,0,.28);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Nunito","Brandon Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;font-size:18px;line-height:1.6}
 button,input{font:inherit}
 button{cursor:pointer}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.site-header{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-.header-inner{max-width:1180px;margin:auto;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
-.logo{width:42px;height:42px;border-radius:12px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
-.brand h1{font-size:1.1rem;margin:0}
-.brand small{display:block;color:var(--muted);font-size:.72rem;margin-top:1px}
-.header-actions{display:flex;gap:8px}
-.icon-btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:9px 11px}
-.hero{max-width:1180px;margin:auto;padding:34px 20px 18px}
-.eyebrow{margin:0 0 6px;color:var(--brand-2);font-weight:800;text-transform:uppercase;letter-spacing:.09em;font-size:.75rem}
-.hero h2{font-size:clamp(2rem,5vw,3.4rem);line-height:1.03;letter-spacing:-.045em;margin:0;max-width:760px}
-.hero p{max-width:720px;color:var(--muted);margin:14px 0 0;font-size:1.02rem}
-.toolbar-wrap{position:sticky;top:75px;z-index:90;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.page-tools{max-width:1180px;margin:0 auto;padding:14px 20px 0;display:flex;justify-content:flex-end;gap:8px}
+.icon-btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:7px;padding:9px 11px;min-width:44px;min-height:44px}
+.hero{max-width:1180px;margin:auto;padding:33px 20px 24px;text-align:center}
+.eyebrow{margin:0 0 14px;color:#9a783f;font-family:Cinzel,Georgia,serif;font-weight:400;letter-spacing:.08em;font-size:33px;text-transform:none}
+.hero h1{font-family:Cinzel,Georgia,serif;font-size:clamp(55px,7vw,66px);font-weight:400;line-height:1.05;letter-spacing:-.02em;margin:0 auto;max-width:900px}
+.hero p{max-width:760px;color:var(--muted);margin:18px auto 0;font-size:18px}
+.toolbar-wrap{position:sticky;top:0;z-index:90;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .toolbar{max-width:1180px;margin:auto;padding:12px 20px;display:grid;grid-template-columns:1fr auto;gap:10px}
-.search{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 13px}
+.search{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:0 13px}
 .search input{width:100%;border:0;outline:0;background:transparent;color:var(--text);padding:11px 0}
 .categories{display:flex;gap:7px;overflow:auto;padding-bottom:2px;grid-column:1/-1;scrollbar-width:thin}
-.chip{white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 13px;font-weight:700;font-size:.84rem}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:7px;padding:8px 13px;font-weight:700;font-size:16px}
 .chip.active{background:var(--brand);border-color:var(--brand);color:#fff}
-.status{max-width:1180px;margin:0 auto;padding:12px 20px 0;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--muted);font-size:.84rem}
+.status{max-width:1180px;margin:0 auto;padding:12px 20px 0;display:flex;justify-content:space-between;gap:12px;align-items:center;color:var(--muted);font-size:16px}
 .refresh-btn{border:0;background:none;color:var(--brand-2);font-weight:800;padding:4px}
 .feed{max-width:1180px;margin:auto;padding:16px 20px 50px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px;display:flex;flex-direction:column;min-width:0}
 .card.featured{grid-column:1/-1}
 .card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
-.badge{font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.07em;padding:5px 8px;border-radius:999px;background:var(--surface-2);color:var(--brand-2)}
-.time{font-size:.75rem;color:var(--muted)}
-.card h3{font-size:1.16rem;line-height:1.25;margin:0 0 9px;letter-spacing:-.015em}
-.featured h3{font-size:clamp(1.35rem,3vw,1.85rem)}
+.badge{font-size:16px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;padding:5px 8px;border-radius:7px;background:var(--surface-2);color:var(--brand-2)}
+.time{font-size:16px;color:var(--muted)}
+.card h3{font-family:Cinzel,Georgia,serif;font-size:24px;font-weight:400;line-height:1.25;margin:0 0 9px;letter-spacing:-.015em}
+.featured h3{font-size:clamp(24px,3vw,33px)}
 .summary{color:var(--muted);margin:0 0 15px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .card-footer{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
-.source{font-size:.76rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.source{font-size:16px;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .read{color:var(--brand-2);font-weight:900;text-decoration:none;white-space:nowrap}
 .empty,.loading{grid-column:1/-1;background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius);padding:35px;text-align:center;color:var(--muted)}
 .skeleton{height:170px;border-radius:var(--radius);background:linear-gradient(90deg,var(--surface-2),var(--surface),var(--surface-2));background-size:200% 100%;animation:shimmer 1.2s infinite}
 @keyframes shimmer{to{background-position:-200% 0}}
-footer{border-top:1px solid var(--line);color:var(--muted);text-align:center;padding:25px 20px;font-size:.78rem}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:var(--brand);color:#fff;padding:10px 15px;border-radius:10px;box-shadow:var(--shadow);transition:.2s;z-index:200;font-size:.85rem}
+footer{border-top:1px solid var(--line);color:var(--muted);text-align:center;padding:25px 20px;font-size:16px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:var(--brand);color:#fff;padding:10px 15px;border-radius:7px;box-shadow:var(--shadow);transition:.2s;z-index:200;font-size:16px}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:760px){
-  .header-inner{padding:12px 15px}
+  .page-tools{padding:10px 15px 0}
   .hero{padding:26px 15px 14px}
   .toolbar{padding:10px 15px;grid-template-columns:1fr}
-  .toolbar-wrap{top:67px}
+  .toolbar-wrap{top:0}
   .status{padding:10px 15px 0}
   .feed{grid-template-columns:1fr;padding:14px 15px 40px}
   .card.featured{grid-column:auto}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+.skip-link{position:absolute;left:14px;top:-80px;z-index:2147483600;padding:10px 14px;border-radius:7px;background:#202724;color:#fffdf6;text-decoration:none;font-size:16px}
+.skip-link:focus{top:14px}
+@media print{
+  .skip-link,.page-tools,.toolbar-wrap,.status,.toast{display:none!important}
+  body{background:#fff;color:#202724}
+  .feed{display:block}
+  .card{break-inside:avoid;margin-bottom:14px;box-shadow:none}
+}
 </style>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
 </head>
 <body>
-<header class="site-header">
-  <div class="header-inner">
-    <a class="brand" href="../index.html" aria-label="The Verifier home">
-      <span class="logo" aria-hidden="true">V</span>
-      <span><h1>The Verifier</h1><small>Daily News · Source-aware reading</small></span>
-    </a>
-    <div class="header-actions">
-      <button class="icon-btn" id="refreshTop" type="button" aria-label="Refresh news" title="Refresh news">↻</button>
-      <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">☾</button>
-    </div>
-  </div>
-</header>
+<a class="skip-link" href="#newsFeed">Skip to briefing stories</a>
+
+<div class="page-tools" aria-label="Daily News Briefing tools">
+  <button class="icon-btn" id="refreshTop" type="button" aria-label="Refresh briefing" title="Refresh briefing">↻</button>
+  <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">☾</button>
+</div>
 
 <section class="hero">
-  <p class="eyebrow">Today’s briefing</p>
-  <h2>News worth reading. Sources worth checking.</h2>
-  <p>Browse current science, health, environment and world reporting in one calm, searchable feed. The Verifier links each story back to its original publisher.</p>
+  <p class="eyebrow">Verve N Veda</p>
+  <h1>Daily News Briefing</h1>
+  <p>News worth reading. Sources worth checking. Browse current science, health, environment, and world reporting in one calm, searchable briefing, with every story linked back to its original publisher.</p>
 </section>
 
 <div class="toolbar-wrap">
@@ -132,11 +128,10 @@ footer{border-top:1px solid var(--line);color:var(--muted);text-align:center;pad
 "use strict";
 
 /*
-  The app uses RSS2JSON as a browser-side RSS adapter because most RSS feeds
-  do not expose permissive CORS headers for direct browser requests.
-  Source feeds currently used:
-  - ScienceDaily: Environment, Health, Science
-  - BBC News: Science & Environment, World, US & Canada
+  Daily News Briefing reads the same-origin published Verifier edition from
+  ../data/generated/latest.json. Stories remain attributed to their original
+  publishers and are grouped locally into Environment, Health, Science, and
+  Global briefing categories.
 */
 
 const FEEDS = ["Environment", "Health", "Science", "Global"].map(category=>({url:category,category,source:"Verifier Edition"}));
@@ -347,7 +342,7 @@ async function loadNews(forceRefresh=false){
     toast("Live feeds unavailable — showing cached news");
   }else{
     allArticles = [];
-    feedEl.innerHTML = `<div class="empty"><strong>News could not be loaded.</strong><br>Please try Refresh again. If the problem continues, the RSS adapter may be unavailable.</div>`;
+    feedEl.innerHTML = `<div class="empty"><strong>News could not be loaded.</strong><br>Please try Refresh again. If the problem continues, the published Verifier edition may be temporarily unavailable.</div>`;
     statusEl.textContent = "Unable to connect to news feeds";
   }
 
@@ -413,6 +408,12 @@ window.addEventListener("touchend",e=>{
 },{passive:true});
 </script>
 
+<script src="../assets/verifier-safety.js" defer></script>
+<script src="https://vervenveda.com/assets/vnv-header-autopopulate.js"></script>
+<script>VNV_HEADER.mount({"title":"Daily News Briefing","subtitle":"The Verifier · Source-Aware Daily Briefing","icon":"V","home":"../","actions":[{"label":"The Verifier","href":"../"},{"label":"Search","href":"#searchBox"},{"label":"Categories","href":"#categories"},{"label":"Stories","href":"#newsFeed"}]});</script>
+<script src="https://vervenveda.com/assets/vnv-333-ticker.js"></script>
+<script src="https://vervenveda.com/assets/vnv-ticker-autopopulate.js" data-vnv-ticker-autopopulate></script>
+<script>VNV_TICKER.autoPopulate({label:"Daily News Briefing Quick Links",max:12});</script>
 <script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>
