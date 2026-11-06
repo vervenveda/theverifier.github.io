@@ -1,284 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Verifier — Interactive News Portal</title>
-<meta name="description" content="The Verifier by Verve N Veda — a calm, visual portal for interactive news literacy, verification, civic resources, and public-interest media tools." />
-<meta name="robots" content="index,follow" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#202724">
+<meta name="description" content="The Verifier Directory — the visual front door to Verifier newsrooms, source tools, research pathways, learning resources, and archives.">
+<title>The Verifier — Directory</title>
 <style>
 :root{
-  --ink:#162236;
-  --muted:#637083;
-  --cream:#fffdf7;
-  --paper:#f7f1e7;
-  --soft:#efe5d3;
-  --navy:#111a2e;
-  --navy2:#1b2841;
-  --green:#304a3d;
-  --gold:#bd9857;
-  --gold2:#e4cb96;
-  --red:#9b2f35;
-  --blue:#244c7c;
-  --line:rgba(82,63,34,.17);
-  --shadow:0 22px 60px rgba(26,35,53,.15);
-  --radius:24px;
+  --charcoal:#202724;
+  --charcoal-2:#2d3732;
+  --parchment:#fff8e9;
+  --cream:#fffdf6;
+  --gold:#b99352;
+  --gold-light:#d8bf8d;
+  --ink:#202724;
+  --muted:#5f665f;
+  --line:#cfc4b2;
+  --shadow:0 14px 34px rgba(32,39,36,.12);
+  --radius:7px;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
   margin:0;
-  min-height:100vh;
+  background:var(--parchment);
   color:var(--ink);
-  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at 12% 5%, rgba(189,152,87,.16), transparent 34%),
-    radial-gradient(circle at 82% 8%, rgba(36,76,124,.12), transparent 30%),
-    linear-gradient(135deg,#fffdf8 0%,#f8f2e8 44%,#efe4d1 100%);
-  overflow-x:hidden;
+  font-family:"Nunito","Brandon Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  font-size:18px;
+  line-height:1.65;
 }
 a{color:inherit}
-.vnv-page{
-  min-height:100vh;
-  position:relative;
-  isolation:isolate;
+button,input{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.skip-link{
+  position:absolute;left:14px;top:-80px;z-index:2147483600;
+  padding:10px 14px;border-radius:var(--radius);
+  background:var(--charcoal);color:var(--cream);text-decoration:none;font-size:16px
 }
-.vnv-page:before,
-.vnv-page:after{
-  content:"";
-  position:absolute;
-  z-index:-1;
-  pointer-events:none;
-  opacity:.58;
-  background-repeat:no-repeat;
-  background-size:contain;
-}
-.vnv-page:before{
-  width:420px;height:420px;left:-120px;top:84px;
-  background-image:url("data:image/svg+xml,%3Csvg width='420' height='420' viewBox='0 0 420 420' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23bd9857' stroke-opacity='.22' stroke-width='1.2'%3E%3Cpath d='M83 277c90-4 148-48 173-132 9-31 33-56 71-75'/%3E%3Cpath d='M111 333c71-74 91-137 61-190-18-31-51-54-100-69'/%3E%3Cpath d='M44 190c85 21 151 14 197-21 25-19 42-47 51-84'/%3E%3Ccircle cx='257' cy='145' r='7'/%3E%3Ccircle cx='172' cy='143' r='5'/%3E%3Ccircle cx='242' cy='170' r='4'/%3E%3C/g%3E%3C/svg%3E");
-}
-.vnv-page:after{
-  width:520px;height:520px;right:-220px;bottom:-100px;
-  background-image:url("data:image/svg+xml,%3Csvg width='520' height='520' viewBox='0 0 520 520' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23304a3d' stroke-opacity='.14' stroke-width='1.4'%3E%3Cpath d='M68 348c112-16 183-77 211-182 11-42 43-78 98-108'/%3E%3Cpath d='M148 443c68-96 82-180 40-251-29-49-82-86-159-112'/%3E%3Cpath d='M28 232c99 36 187 36 263 1 54-25 94-69 121-133'/%3E%3Cpath d='M306 128c58 45 82 105 72 180'/%3E%3C/g%3E%3C/svg%3E");
-}
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:50;
-  background:rgba(255,253,248,.86);
-  border-bottom:1px solid var(--line);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.nav{
-  max-width:1180px;
-  margin:0 auto;
-  min-height:70px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  padding:0 20px;
-}
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-  text-decoration:none;
-}
-.brand-mark{
-  width:38px;height:38px;border-radius:50%;
-  display:grid;place-items:center;
-  color:var(--green);
-  border:1px solid rgba(189,152,87,.4);
-  background:linear-gradient(145deg,#fffdf8,#efe4d1);
-  box-shadow:0 8px 22px rgba(189,152,87,.18);
-  flex:none;
-}
-.brand-title{font-family:Georgia,serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:14px;white-space:nowrap;color:var(--green)}
-.brand-sub{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
-.menu-wrap{position:relative;display:flex;align-items:center;gap:10px}
-.menu-btn{
-  width:46px;height:46px;border-radius:50%;border:1px solid var(--line);
-  background:#fffdf8;color:var(--ink);display:grid;place-items:center;cursor:pointer;
-  box-shadow:0 12px 24px rgba(16,26,46,.08);
-}
-.menu-btn span,.menu-btn span:before,.menu-btn span:after{display:block;width:18px;height:2px;border-radius:999px;background:var(--green);content:"";transition:.2s}
-.menu-btn span:before{transform:translateY(-6px)}
-.menu-btn span:after{transform:translateY(4px)}
-.menu-btn[aria-expanded="true"] span{background:transparent}
-.menu-btn[aria-expanded="true"] span:before{transform:translateY(1px) rotate(45deg)}
-.menu-btn[aria-expanded="true"] span:after{transform:translateY(-1px) rotate(-45deg)}
-.menu-panel{
-  position:absolute;
-  top:58px;right:0;
-  width:min(330px,calc(100vw - 24px));
-  border:1px solid var(--line);
-  border-radius:20px;
-  background:rgba(255,253,248,.98);
-  box-shadow:0 24px 70px rgba(16,26,46,.18);
-  padding:12px;
-  display:none;
-}
-.menu-panel.open{display:block}
-.menu-panel a{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:12px 12px;border-radius:14px;text-decoration:none;color:var(--ink);
-}
-.menu-panel a:hover,.menu-panel a:focus-visible{background:#f4ead9;outline:none}
-.menu-panel small{color:var(--muted)}
+.skip-link:focus{top:14px}
 .hero{
-  max-width:1180px;
-  margin:0 auto;
-  padding:36px 20px 22px;
-}
-.hero-grid{
-  display:grid;
-  grid-template-columns:1.05fr .95fr;
-  gap:24px;
-  align-items:stretch;
-}
-.hero-card{
-  position:relative;
-  overflow:hidden;
-  border:1px solid var(--line);
-  border-radius:32px;
-  background:linear-gradient(150deg,rgba(255,253,248,.96),rgba(247,241,231,.86));
-  box-shadow:var(--shadow);
-  padding:34px;
-}
-.hero-card:before{
-  content:"";
-  position:absolute;inset:0;
-  pointer-events:none;
   background:
-    radial-gradient(circle at 20% 16%, rgba(189,152,87,.18), transparent 30%),
-    linear-gradient(120deg, transparent 0%, rgba(255,255,255,.54) 44%, transparent 62%);
+    radial-gradient(circle at 75% 25%,rgba(216,191,141,.18),transparent 35%),
+    linear-gradient(145deg,#202724,#151c19);
+  color:var(--cream);
+  padding:55px 20px 66px;
 }
-.kicker{position:relative;color:var(--gold);font-weight:900;letter-spacing:.22em;text-transform:uppercase;font-size:12px;margin:0 0 12px}
-h1{position:relative;margin:0;color:var(--green);font-family:Georgia, 'Times New Roman', serif;font-size:clamp(42px,7vw,86px);line-height:.92;letter-spacing:-.045em}
-.lede{position:relative;max-width:680px;margin:20px 0 0;color:#4d5968;line-height:1.75;font-size:17px}
-.actions{position:relative;display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.hero-inner{
+  max-width:1180px;margin:auto;
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);
+  gap:44px;align-items:center
+}
+.eyebrow{
+  margin:0 0 14px;color:var(--gold-light);
+  font-family:Cinzel,Georgia,serif;font-size:33px;font-weight:400;letter-spacing:.08em
+}
+h1,h2,h3{font-family:Cinzel,Georgia,serif;font-weight:400}
+.hero h1{
+  margin:0;font-size:clamp(55px,7vw,66px);line-height:1.03;letter-spacing:-.025em
+}
+.deck{max-width:720px;margin:18px 0 0;color:#eee6d7;font-size:18px}
+.hero-actions{display:flex;gap:11px;flex-wrap:wrap;margin-top:24px}
 .btn{
-  min-height:46px;
-  display:inline-flex;align-items:center;justify-content:center;gap:10px;
-  border:1px solid transparent;border-radius:999px;padding:12px 18px;
-  text-decoration:none;font-weight:850;cursor:pointer;font-size:14px;
+  display:inline-flex;align-items:center;justify-content:center;min-height:44px;
+  padding:10px 16px;border:1px solid rgba(255,253,246,.34);
+  border-radius:var(--radius);text-decoration:none;font-size:16px
 }
-.btn.primary{background:var(--navy);color:white;box-shadow:0 12px 24px rgba(17,26,46,.16)}
-.btn.gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#241704;box-shadow:0 12px 24px rgba(189,152,87,.22)}
-.btn.ghost{background:rgba(255,253,248,.76);color:var(--ink);border-color:var(--line)}
-.btn:hover,.btn:focus-visible{transform:translateY(-1px);outline:2px solid rgba(189,152,87,.55);outline-offset:3px}
-.news-visual{
-  min-height:100%;
-  border:1px solid rgba(255,255,255,.16);
-  border-radius:32px;
-  overflow:hidden;
-  color:white;
-  box-shadow:var(--shadow);
-  background:
-    radial-gradient(circle at 28% 18%, rgba(228,203,150,.28), transparent 28%),
-    radial-gradient(circle at 85% 20%, rgba(80,130,190,.25), transparent 34%),
-    linear-gradient(145deg,#0d1526,#1b2841 54%,#111a2e);
-  position:relative;
-  padding:26px;
+.btn.primary{background:var(--cream);color:var(--charcoal);border-color:var(--cream)}
+.btn.secondary{background:transparent;color:var(--cream)}
+.visual{
+  border:1px solid rgba(255,253,246,.22);border-radius:var(--radius);
+  background:rgba(255,253,246,.04);padding:18px;box-shadow:var(--shadow)
 }
-.news-visual:before{
-  content:"";position:absolute;inset:0;opacity:.52;
-  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
-  background-size:42px 42px;
+.visual svg{display:block;width:100%;height:auto}
+.visual-note{margin:8px 4px 0;color:#d9d1c3;font-size:16px;text-align:center}
+.philosophy{
+  max-width:1180px;margin:-26px auto 0;padding:0 20px;position:relative;z-index:2
 }
-.orbit{position:relative;height:330px;display:grid;place-items:center}
-.orbit svg{width:min(100%,440px);height:auto;display:block;filter:drop-shadow(0 18px 28px rgba(0,0,0,.23))}
-.pulse-dot{animation:pulse 2.9s ease-in-out infinite}
-.pulse-dot:nth-child(2){animation-delay:.4s}.pulse-dot:nth-child(3){animation-delay:.8s}.pulse-dot:nth-child(4){animation-delay:1.2s}
-@keyframes pulse{0%,100%{opacity:.48;transform:scale(1)}50%{opacity:1;transform:scale(1.24)}}
-.visual-caption{position:relative;border:1px solid rgba(228,203,150,.26);border-radius:20px;background:rgba(255,255,255,.06);padding:14px;line-height:1.55;color:#f6ead0}
-.ticker-wrap{max-width:1180px;margin:0 auto;padding:0 20px 18px}
-.ticker{
-  border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fffdf8;box-shadow:0 12px 32px rgba(16,26,46,.08);
-  display:flex;align-items:center;min-height:48px;
+.philosophy-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:11px
 }
-.ticker-label{align-self:stretch;display:flex;align-items:center;padding:0 14px;background:var(--red);color:#fff;font-weight:900;letter-spacing:.12em;text-transform:uppercase;font-size:12px;white-space:nowrap}
-.ticker-track{flex:1;overflow:hidden;white-space:nowrap;color:#3f4b59;font-weight:650}
-.ticker-text{display:inline-block;padding-left:100%;animation:scroll 28s linear infinite}
-@keyframes scroll{to{transform:translateX(-100%)}}
-.main{max-width:1180px;margin:0 auto;padding:10px 20px 54px}
-.section-title{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:28px 0 14px}
-.section-title h2{font-family:Georgia,serif;font-size:clamp(28px,4vw,44px);line-height:1;margin:0;color:var(--green)}
-.section-title p{margin:0;color:var(--muted);line-height:1.5;max-width:640px}
+.philosophy-card{
+  background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;box-shadow:var(--shadow)
+}
+.philosophy-card strong{
+  display:block;margin-bottom:5px;font-family:Cinzel,Georgia,serif;font-size:24px;font-weight:400
+}
+.philosophy-card span{font-size:16px;color:var(--muted)}
+.main{max-width:1180px;margin:auto;padding:55px 20px 66px}
+.directory-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.55fr);gap:24px;align-items:end}
+.kicker{margin:0 0 7px;color:#8b6b35;font-family:Cinzel,Georgia,serif;font-size:24px}
+.directory-head h2{font-size:44px;line-height:1.1;margin:0}
+.directory-head p{margin:12px 0 0;color:var(--muted);max-width:760px}
+.search-box{
+  display:flex;align-items:center;gap:8px;background:var(--cream);
+  border:1px solid var(--line);border-radius:var(--radius);padding:0 12px
+}
+.search-box input{
+  width:100%;border:0;outline:0;background:transparent;color:var(--ink);
+  padding:12px 0;font-size:16px
+}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 33px}
+.filter-btn{
+  border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--cream);color:var(--charcoal);padding:9px 13px;font-size:16px;cursor:pointer
+}
+.filter-btn[aria-pressed="true"]{background:var(--charcoal);color:var(--cream);border-color:var(--charcoal)}
+.group{margin-top:44px}
+.group[hidden]{display:none}
+.group-title{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:16px}
+.group-title h2{margin:0;font-size:33px}
+.group-title p{margin:0;color:var(--muted);font-size:16px}
 .card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.feature-card{
-  border:1px solid var(--line);border-radius:24px;background:rgba(255,253,248,.82);box-shadow:0 16px 42px rgba(16,26,46,.08);padding:18px;
-  min-width:0;
+.news-card{
+  min-height:230px;display:flex;flex-direction:column;background:var(--cream);
+  border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+  box-shadow:0 8px 24px rgba(32,39,36,.07)
 }
-.feature-icon{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#f1e6d4;color:var(--green);border:1px solid rgba(189,152,87,.27);font-size:22px;margin-bottom:12px}
-.feature-card h3{margin:0 0 8px;color:var(--ink);font-family:Georgia,serif;font-size:22px}
-.feature-card p{margin:0;color:#5c6878;line-height:1.65}
-.bridge-panel{
-  margin-top:16px;
-  border:1px solid rgba(17,26,46,.16);
-  border-radius:28px;
-  background:linear-gradient(135deg,#fffdf8,#f1e6d4);
-  box-shadow:0 18px 46px rgba(16,26,46,.11);
-  padding:22px;
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:18px;
-  align-items:center;
+.news-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.card-icon{
+  min-width:38px;height:38px;display:grid;place-items:center;border-radius:var(--radius);
+  background:var(--charcoal);color:var(--cream);font-size:16px
 }
-.bridge-panel h3{font-family:Georgia,serif;color:var(--green);font-size:28px;margin:0 0 8px}.bridge-panel p{margin:0;color:#536173;line-height:1.6}.status-pill{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;border-radius:999px;background:#fffdf8;border:1px solid var(--line);font-size:13px;color:#4f5d6d}.status-dot{width:10px;height:10px;background:#75a867;border-radius:50%;box-shadow:0 0 0 6px rgba(117,168,103,.16)}
-.launch-box{display:grid;gap:10px;min-width:230px}.launch-box .btn{width:100%}
-.resource-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.resource-link{display:flex;align-items:center;gap:12px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:18px;background:rgba(255,253,248,.72);text-decoration:none}.resource-link:hover,.resource-link:focus-visible{background:#fffdf8;outline:2px solid rgba(189,152,87,.45);outline-offset:2px}.resource-link b{display:block;color:var(--ink)}.resource-link small{display:block;color:var(--muted);line-height:1.35}.resource-link span:first-child{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:var(--navy);color:#fff;flex:none}
-.editor-note{margin-top:18px;padding:16px;border:1px dashed rgba(189,152,87,.55);border-radius:20px;background:rgba(255,253,248,.52);color:#586474;line-height:1.6;font-size:14px}
-.footer{border-top:1px solid var(--line);padding:22px 20px;text-align:center;color:var(--muted);background:rgba(255,253,248,.62);font-size:13px}
-.footer a{color:var(--green);font-weight:800;text-decoration:none}
-@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.ticker-text,.pulse-dot{animation:none}.btn:hover{transform:none}}
-@media (max-width:900px){.hero-grid{grid-template-columns:1fr}.orbit{height:280px}.card-grid{grid-template-columns:1fr}.bridge-panel{grid-template-columns:1fr}.launch-box{min-width:0}.resource-list{grid-template-columns:1fr}.section-title{display:block}.section-title p{margin-top:8px}}
-@media (max-width:560px){.nav{padding:0 12px;min-height:64px}.brand-sub{display:none}.hero{padding:22px 12px 14px}.main{padding:8px 12px 38px}.ticker-wrap{padding:0 12px 12px}.hero-card,.news-visual{border-radius:24px;padding:22px}.actions .btn{width:100%}.ticker{display:block}.ticker-label{min-height:40px;justify-content:center}.ticker-track{padding:12px}.ticker-text{padding-left:0;animation:none;white-space:normal}.orbit{height:auto;min-height:240px}.brand-title{font-size:12px}.menu-panel{right:-2px}.bridge-panel{padding:16px;border-radius:22px}}
+.card-badge{font-size:16px;color:#775a2b;border:1px solid #d7c59f;border-radius:var(--radius);padding:4px 7px;background:#fff9eb}
+.news-card h3{font-size:24px;line-height:1.2;margin:16px 0 8px}
+.news-card p{margin:0;color:var(--muted);font-size:16px}
+.card-actions{margin-top:auto;padding-top:18px}
+.card-actions a{
+  display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;
+  border-radius:var(--radius);background:var(--charcoal);color:var(--cream);
+  text-decoration:none;font-size:16px
+}
+.editorial-door{
+  margin-top:55px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;
+  padding:26px;background:var(--charcoal);color:var(--cream);border-radius:var(--radius)
+}
+.editorial-door h2{font-size:33px;margin:0}
+.editorial-door p{margin:8px 0 0;color:#ded6c9}
+.editorial-door a{
+  display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;
+  border:1px solid rgba(255,253,246,.35);border-radius:var(--radius);
+  color:var(--cream);text-decoration:none;font-size:16px
+}
+.status{margin-top:18px;color:var(--muted);font-size:16px}
+footer{
+  background:var(--charcoal);color:var(--cream);text-align:center;
+  padding:24px 20px;font-size:16px
+}
+footer a{color:var(--cream)}
+@media(max-width:900px){
+  .hero-inner,.directory-head{grid-template-columns:1fr}
+  .visual{max-width:620px;margin:auto}
+  .philosophy-grid{grid-template-columns:repeat(2,1fr)}
+  .card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .hero{padding-top:44px}
+  .eyebrow{font-size:24px}
+  .hero h1{font-size:55px}
+  .philosophy-grid,.card-grid{grid-template-columns:1fr}
+  .group-title,.editorial-door{display:block}
+  .group-title p{margin-top:6px}
+  .editorial-door a{margin-top:18px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+@media print{
+  .skip-link,.hero-actions,.filters,.search-box{display:none!important}
+  .hero{background:#fff;color:#202724;padding:20px 0}
+  .deck,.visual-note{color:#202724}
+  .visual{display:none}
+  .philosophy{margin:0;padding:0}
+  .news-card{break-inside:avoid;box-shadow:none}
+  footer{background:#fff;color:#202724}
+}
 </style>
 <link rel="stylesheet" href="../assets/verifier-typography.css" data-verifier-typography="55-33-24">
 </head>
 <body>
-<div class="vnv-page" id="verifierApp">
-  <header class="topbar">
-    <nav class="nav" aria-label="Main navigation">
-      <a class="brand" href="https://vervenveda.com/" aria-label="Verve N Veda home">
-        <span class="brand-mark" aria-hidden="true">✦</span>
-        <span><span class="brand-title">Verve N Veda</span><br><span class="brand-sub">The Verifier · Interactive News</span></span>
-      </a>
-      <div class="menu-wrap">
-        <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-controls="menuPanel" aria-expanded="false"><span></span></button>
-        <div class="menu-panel" id="menuPanel">
-          <!-- Add or edit menu links here. -->
-          <a href="interactive_news_index.html"><b>Interactive Edition Explorer</b><small>Launch →</small></a>
-          <a href="https://vervenveda.com/"><b>Verve N Veda</b><small>Home →</small></a>
-          <a href="https://vervenveda.github.io/Khaemenes_Academy.github.io/"><b>Khaemenes Academy</b><small>Learning →</small></a>
-          <a href="#resources"><b>Resource Doors</b><small>On page →</small></a>
-          <a href="#maintainer"><b>GitHub Notes</b><small>Edit help →</small></a>
-        </div>
-      </div>
-    </nav>
-  </header>
+<a class="skip-link" href="#directory">Skip to Verifier Directory</a>
 
-  <section class="hero" aria-labelledby="pageTitle">
-    <div class="hero-grid">
-      <div class="hero-card">
-        <p class="kicker">The Verifier · Visual News Bridge</p>
-        <h1 id="pageTitle">Interactive News, Rebuilt With Clarity.</h1>
-        <p class="lede">This legacy doorway now opens into a calm, visual news-literacy portal: a place to explore context, compare sources, slow down before sharing, and enter the maintained Interactive Edition Explorer.</p>
-        <div class="actions">
-          <a class="btn primary" id="launchBtn" href="interactive_news_index.html">Open Interactive Explorer</a>
-          <a class="btn gold" href="https://vervenveda.com/">Visit VervenVeda.com</a>
-          <a class="btn ghost" href="https://vervenveda.github.io/Khaemenes_Academy.github.io/">Khaemenes Academy</a>
-        </div>
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <p class="eyebrow">Verve N Veda</p>
+      <h1>The Verifier Directory</h1>
+      <p class="deck">Choose a newsroom desk, research pathway, source directory, archive, or learning tool. This is the front door to the Verifier’s public news and media-literacy network.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#directory">Browse the Directory</a>
+        <a class="btn secondary" href="../">Return to The Verifier</a>
       </div>
-
-      <aside class="news-visual" aria-label="Verifier visual overview">
-        <div class="orbit" aria-hidden="true">
-          <svg viewBox="0 0 520 430" role="img" aria-label="A shielded news network with source, context, verify, and learn nodes">
+    </div>
+    <aside class="visual" aria-label="Source, context, verify, and learn">
+      <svg viewBox="0 0 520 430" role="img" aria-label="A shielded news network with source, context, verify, and learn nodes">
             <defs>
               <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f4d99b"/><stop offset="1" stop-color="#b98f46"/></linearGradient>
               <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f4d99b" stop-opacity=".72"/><stop offset="1" stop-color="#f4d99b" stop-opacity="0"/></radialGradient>
@@ -297,101 +214,184 @@ h1{position:relative;margin:0;color:var(--green);font-family:Georgia, 'Times New
             <g class="pulse-dot"><circle cx="90" cy="328" r="34" fill="#162236" stroke="#f4d99b" stroke-width="2"/><text x="90" y="334" text-anchor="middle" fill="#fff6df" font-size="16" font-family="system-ui" font-weight="800">VERIFY</text></g>
             <g class="pulse-dot"><circle cx="430" cy="322" r="31" fill="#162236" stroke="#9ec5ff" stroke-width="2"/><text x="430" y="328" text-anchor="middle" fill="#fff6df" font-size="16" font-family="system-ui" font-weight="800">LEARN</text></g>
           </svg>
-        </div>
-        <div class="visual-caption"><b>Legacy link preserved.</b> This page can sit at an older filename while guiding people into the current maintained experience. No one gets lost; the doorway becomes beautiful.</div>
-      </aside>
-    </div>
-  </section>
+      <p class="visual-note">Source · Context · Verify · Learn</p>
+    </aside>
+  </div>
+</section>
 
-  <div class="ticker-wrap" aria-label="Verifier ticker">
-    <div class="ticker">
-      <div class="ticker-label">Verifier</div>
-      <div class="ticker-track"><span class="ticker-text">Pause before sharing · Check the source · Compare the context · Look for primary documents · Separate facts from commentary · Protect vulnerable readers · Build public trust through calm verification</span></div>
+<section class="philosophy" aria-label="Verifier reading principles">
+  <div class="philosophy-grid">
+    <div class="philosophy-card"><strong>Source</strong><span>Know who published the claim and follow the story back to its original reporting or record.</span></div>
+    <div class="philosophy-card"><strong>Context</strong><span>Look at timing, location, history, and what is still uncertain before drawing conclusions.</span></div>
+    <div class="philosophy-card"><strong>Verify</strong><span>Compare independent coverage, primary records, and evidence before treating a claim as settled.</span></div>
+    <div class="philosophy-card"><strong>Learn</strong><span>Use the newsroom as a doorway into research, history, science, civics, and news literacy.</span></div>
+  </div>
+</section>
+
+<main class="main" id="directory">
+  <div class="directory-head">
+    <div>
+      <p class="kicker">The Verifier</p>
+      <h2>Choose how you want to read.</h2>
+      <p>Every doorway below comes from the canonical Verifier newsroom directory. The directory organizes tools by reader intent rather than by file name.</p>
     </div>
+    <label class="search-box" aria-label="Search Verifier Directory">
+      <span aria-hidden="true">⌕</span>
+      <input id="directorySearch" type="search" placeholder="Search desks, tools, topics…" autocomplete="off">
+    </label>
   </div>
 
-  <main class="main">
-    <section aria-labelledby="pillarsTitle">
-      <div class="section-title">
-        <h2 id="pillarsTitle">Three Doors Into Better News</h2>
-        <p>A visual landing page should do more than redirect. It should make the purpose obvious, calm the reader, and give them a trustworthy next step.</p>
-      </div>
-      <div class="card-grid">
-        <article class="feature-card"><div class="feature-icon" aria-hidden="true">◇</div><h3>Read With Context</h3><p>Invite visitors to slow down and look for timelines, original sources, location, authorship, and what is known versus what is still developing.</p></article>
-        <article class="feature-card"><div class="feature-icon" aria-hidden="true">✓</div><h3>Verify Before Sharing</h3><p>Encourage source comparison and careful language. The goal is not outrage; the goal is public clarity and responsible sharing.</p></article>
-        <article class="feature-card"><div class="feature-icon" aria-hidden="true">✦</div><h3>Learn the Pattern</h3><p>Connect the news doorway to learning tools, academy resources, civic literacy, and safe research habits for students and families.</p></article>
-      </div>
-    </section>
+  <div class="filters" id="directoryFilters" aria-label="Directory filters">
+    <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">All</button>
+    <button class="filter-btn" type="button" data-filter="live" aria-pressed="false">Today’s News</button>
+    <button class="filter-btn" type="button" data-filter="research" aria-pressed="false">Research &amp; Sources</button>
+    <button class="filter-btn" type="button" data-filter="science" aria-pressed="false">Science &amp; Environment</button>
+    <button class="filter-btn" type="button" data-filter="learning" aria-pressed="false">Learning &amp; News Literacy</button>
+    <button class="filter-btn" type="button" data-filter="archive" aria-pressed="false">Archives &amp; History</button>
+  </div>
 
-    <section class="bridge-panel" aria-labelledby="bridgeTitle">
-      <div>
-        <h3 id="bridgeTitle">Interactive News has moved — but the path is protected.</h3>
-        <p>This upgraded bridge keeps old URLs useful while presenting a clear, polished visual entrance to the maintained Interactive Edition Explorer.</p>
-        <span class="status-pill"><span class="status-dot" aria-hidden="true"></span><span id="statusText">Ready to launch manually. Auto-redirect is off for visual preview.</span></span>
-      </div>
-      <div class="launch-box">
-        <a class="btn primary" href="interactive_news_index.html">Launch Explorer</a>
-        <button class="btn ghost" type="button" id="copyPathBtn">Show file path note</button>
-      </div>
-    </section>
+  <div id="directoryGroups" aria-live="polite"></div>
+  <p class="status" id="directoryStatus" role="status">Loading the Verifier Directory…</p>
 
-    <section id="resources" aria-labelledby="resourcesTitle">
-      <div class="section-title">
-        <h2 id="resourcesTitle">Resource Doors</h2>
-        <p>Edit these links in the HTML when you are ready to add more Verve N Veda tools, Academy resources, and news-literacy portals.</p>
-      </div>
-      <div class="resource-list">
-        <!-- Add or edit resource buttons here. -->
-        <a class="resource-link" href="interactive_news_index.html"><span>📰</span><span><b>Interactive Edition Explorer</b><small>The maintained news experience.</small></span></a>
-        <a class="resource-link" href="https://vervenveda.com/"><span>✦</span><span><b>VervenVeda.com</b><small>Main resource and community home.</small></span></a>
-        <a class="resource-link" href="https://vervenveda.github.io/Khaemenes_Academy.github.io/"><span>🏛</span><span><b>Khaemenes Academy</b><small>Learning portals and educational resources.</small></span></a>
-        <a class="resource-link" href="#maintainer"><span>⚙</span><span><b>Maintainer Notes</b><small>Where to edit links and paths.</small></span></a>
-      </div>
-    </section>
+  <section class="editorial-door" aria-labelledby="editorialTitle">
+    <div>
+      <h2 id="editorialTitle">Editorial Columns</h2>
+      <p>Read Jennifer Pearl’s editorial desks covering politics, culture, science, finance, conflict, history, education, environment, and public life.</p>
+    </div>
+    <a href="../#columns">Open Editorial Columns →</a>
+  </section>
+</main>
 
-    <section id="maintainer" class="editor-note" aria-label="GitHub maintainer notes">
-      <b>GitHub note:</b> save this file under the same legacy filename you want to preserve. Keep <code>interactive_news_index.html</code> in the same folder, or edit the launch links in three places: the hero button, menu link, and resource card. For instant redirect later, add <code>?go=1</code> to the URL or turn on the redirect setting in the script.
-    </section>
-  </main>
+<footer>
+  The Verifier · Verve N Veda · <a href="../">Newsroom Home</a>
+</footer>
 
-  <footer class="footer">
-    The Verifier · Verve N Veda · Built as a local, static, GitHub-ready page · <a href="https://vervenveda.com/">VervenVeda.com</a> · <a href="https://vervenveda.github.io/Khaemenes_Academy.github.io/">Khaemenes Academy</a>
-  </footer>
-</div>
 <script>
-(function(){
-  'use strict';
-  const root=document.getElementById('verifierApp');
-  if(!root) return;
-  const menuBtn=root.querySelector('#menuBtn');
-  const menuPanel=root.querySelector('#menuPanel');
-  const statusText=root.querySelector('#statusText');
-  const copyPathBtn=root.querySelector('#copyPathBtn');
-  const TARGET_URL='interactive_news_index.html';
-  const AUTO_REDIRECT_SECONDS=0; // Set to 5 or 8 later if you want an automatic bridge after visual preview.
-  function closeMenu(){menuPanel.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');menuBtn.setAttribute('aria-label','Open menu');}
-  function openMenu(){menuPanel.classList.add('open');menuBtn.setAttribute('aria-expanded','true');menuBtn.setAttribute('aria-label','Close menu');}
-  menuBtn.addEventListener('click',function(){menuPanel.classList.contains('open')?closeMenu():openMenu();});
-  document.addEventListener('click',function(event){if(!root.contains(event.target)) return; if(!event.target.closest('.menu-wrap')) closeMenu();});
-  root.addEventListener('keydown',function(event){if(event.key==='Escape') closeMenu();});
-  root.querySelectorAll('.menu-panel a').forEach(function(link){link.addEventListener('click',closeMenu);});
-  copyPathBtn.addEventListener('click',function(){statusText.textContent='File path note: put this bridge and interactive_news_index.html in the same GitHub folder, or edit TARGET_URL and the visible links.';});
-  const params=new URLSearchParams(window.location.search);
-  if(params.get('go')==='1'){
-    window.location.replace(TARGET_URL + window.location.hash);
-    return;
+(() => {
+  "use strict";
+  const DIRECTORY_URL="../data/verifier-newsroom-directory.json";
+  const GROUPS={
+    live:{title:"Today’s News",description:"Daily briefings, world coverage, live feeds, and interactive reading."},
+    research:{title:"Research & Sources",description:"Source directories, research engines, search gates, and comparison tools."},
+    science:{title:"Science & Environment",description:"Science, climate, ecology, technology, and public-interest data."},
+    learning:{title:"Learning & News Literacy",description:"Education, young-reader resources, and current-events practice."},
+    archive:{title:"Archives & History",description:"Historical reporting, saved editions, and reflective reading."}
+  };
+  const state={entries:[],filter:"all",query:""};
+  const $=id=>document.getElementById(id);
+
+  function makeCard(entry){
+    const article=document.createElement("article");
+    article.className="news-card";
+    article.dataset.category=entry.category||"";
+    article.dataset.search=[entry.title,entry.badge,entry.description,entry.tags].join(" ").toLowerCase();
+
+    const top=document.createElement("div");
+    top.className="card-top";
+    const icon=document.createElement("span");
+    icon.className="card-icon";
+    icon.setAttribute("aria-hidden","true");
+    icon.textContent=entry.icon||"V";
+    const badge=document.createElement("span");
+    badge.className="card-badge";
+    badge.textContent=entry.badge||entry.type||"Desk";
+    top.append(icon,badge);
+
+    const h3=document.createElement("h3");
+    h3.textContent=entry.title;
+    const p=document.createElement("p");
+    p.textContent=entry.description||"Open this Verifier resource.";
+    const actions=document.createElement("div");
+    actions.className="card-actions";
+    const link=document.createElement("a");
+    link.href=entry.file;
+    link.textContent=entry.type==="directory"?"Open directory →":"Open →";
+    actions.append(link);
+    article.append(top,h3,p,actions);
+    return article;
   }
-  if(AUTO_REDIRECT_SECONDS>0 && window.location.hash !== '#stay'){
-    let left=AUTO_REDIRECT_SECONDS;
-    statusText.textContent='Auto-opening the Interactive Explorer in '+left+' seconds. Add #stay to preview this page.';
-    const timer=window.setInterval(function(){
-      left-=1;
-      if(left<=0){window.clearInterval(timer);window.location.replace(TARGET_URL);}else{statusText.textContent='Auto-opening the Interactive Explorer in '+left+' seconds. Add #stay to preview this page.';}
-    },1000);
+
+  function render(){
+    const root=$("directoryGroups");
+    root.replaceChildren();
+    let shown=0;
+
+    Object.entries(GROUPS).forEach(([key,meta])=>{
+      if(state.filter!=="all" && state.filter!==key) return;
+      const entries=state.entries.filter(entry=>{
+        if(entry.file==="ultimate_news_index.html") return false;
+        if(entry.category!==key) return false;
+        if(state.query){
+          const hay=[entry.title,entry.badge,entry.description,entry.tags].join(" ").toLowerCase();
+          if(!hay.includes(state.query)) return false;
+        }
+        return true;
+      });
+      if(!entries.length) return;
+
+      const section=document.createElement("section");
+      section.className="group";
+      const head=document.createElement("div");
+      head.className="group-title";
+      const h2=document.createElement("h2");
+      h2.textContent=meta.title;
+      const p=document.createElement("p");
+      p.textContent=meta.description;
+      head.append(h2,p);
+
+      const grid=document.createElement("div");
+      grid.className="card-grid";
+      entries.forEach(entry=>grid.append(makeCard(entry)));
+      section.append(head,grid);
+      root.append(section);
+      shown+=entries.length;
+    });
+
+    $("directoryStatus").textContent=shown
+      ? `${shown} Verifier ${shown===1?"destination":"destinations"} shown.`
+      : "No Verifier destinations match this search.";
   }
+
+  async function load(){
+    try{
+      const response=await fetch(DIRECTORY_URL,{cache:"no-store"});
+      if(!response.ok) throw new Error("Directory unavailable");
+      const data=await response.json();
+      state.entries=(Array.isArray(data.entries)?data.entries:[])
+        .slice()
+        .sort((a,b)=>(Number(a.order)||999)-(Number(b.order)||999));
+      render();
+    }catch(error){
+      console.warn("Verifier Directory unavailable",error);
+      $("directoryStatus").textContent="The directory is temporarily unavailable. Return to The Verifier home for current newsroom links.";
+    }
+  }
+
+  $("directorySearch").addEventListener("input",event=>{
+    state.query=event.target.value.trim().toLowerCase();
+    render();
+  });
+
+  $("directoryFilters").addEventListener("click",event=>{
+    const button=event.target.closest("[data-filter]");
+    if(!button) return;
+    state.filter=button.dataset.filter;
+    document.querySelectorAll("[data-filter]").forEach(item=>{
+      item.setAttribute("aria-pressed",String(item===button));
+    });
+    render();
+  });
+
+  load();
 })();
 </script>
 
+<script src="../assets/verifier-safety.js" defer></script>
+<script src="https://vervenveda.com/assets/vnv-header-autopopulate.js"></script>
+<script>VNV_HEADER.mount({"title":"The Verifier Directory","subtitle":"The Verifier · Newsroom & Research Directory","icon":"V","home":"../","actions":[{"label":"The Verifier","href":"../"},{"label":"Directory","href":"#directory"},{"label":"Editorial","href":"../#columns"}]});</script>
+<script src="https://vervenveda.com/assets/vnv-333-ticker.js"></script>
+<script src="https://vervenveda.com/assets/vnv-ticker-autopopulate.js" data-vnv-ticker-autopopulate></script>
+<script>VNV_TICKER.autoPopulate({label:"Verifier Directory Quick Links",max:12});</script>
 <script src="https://vervenveda.com/assets/vnv-ecosystem-toolbar.js"></script>
 </body>
 </html>
