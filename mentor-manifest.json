@@ -4,8 +4,18 @@
   "name": "The Verifier",
   "classification": "research-information",
   "mentorSearchable": true,
-  "audiences": ["middle", "high", "higher-learning", "adult", "parent"],
-  "roles": ["student", "parent", "educator"],
+  "audiences": [
+    "middle",
+    "high",
+    "higher-learning",
+    "adult",
+    "parent"
+  ],
+  "roles": [
+    "student",
+    "parent",
+    "educator"
+  ],
   "homepage": "https://vervenveda.com/theverifier.github.io/",
   "repository": "vervenveda/theverifier.github.io",
   "resources": [
@@ -14,11 +24,31 @@
       "title": "The Verifier",
       "description": "Public news, research, verification, editorial, and media-literacy portal.",
       "url": "https://vervenveda.com/theverifier.github.io/",
-      "audiences": ["middle", "high", "higher-learning", "adult", "parent"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "research"],
-      "skills": ["media-literacy", "research"],
-      "tags": ["news", "research", "current-info"],
+      "audiences": [
+        "middle",
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "research"
+      ],
+      "skills": [
+        "media-literacy",
+        "research"
+      ],
+      "tags": [
+        "news",
+        "research",
+        "current-info"
+      ],
       "mentorEligible": true,
       "featured": true,
       "requiresFreshnessCheck": true,
@@ -29,11 +59,34 @@
       "title": "Daily Top 30",
       "description": "A locally archived daily edition selected from configured public feeds using freshness, regional rotation, and source-diversity limits.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/daily_digest_index.html",
-      "audiences": ["high", "higher-learning", "adult", "parent"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "global-studies", "research"],
-      "skills": ["media-literacy", "source-comparison", "global-awareness"],
-      "tags": ["news", "daily-edition", "global", "current-info", "local-first"],
+      "audiences": [
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "global-studies",
+        "research"
+      ],
+      "skills": [
+        "media-literacy",
+        "source-comparison",
+        "global-awareness"
+      ],
+      "tags": [
+        "news",
+        "daily-edition",
+        "global",
+        "current-info",
+        "local-first"
+      ],
       "mentorEligible": true,
       "featured": true,
       "minutes": 20,
@@ -47,11 +100,33 @@
       "title": "Global Source Directory",
       "description": "Canonical directory of Verifier news and research sources with region, language, topic, access, and feed configuration metadata.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/global_news_digest_index.html",
-      "audiences": ["high", "higher-learning", "adult", "parent"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "global-studies", "research"],
-      "skills": ["media-literacy", "source-comparison", "global-awareness"],
-      "tags": ["news", "sources", "global", "provenance"],
+      "audiences": [
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "global-studies",
+        "research"
+      ],
+      "skills": [
+        "media-literacy",
+        "source-comparison",
+        "global-awareness"
+      ],
+      "tags": [
+        "news",
+        "sources",
+        "global",
+        "provenance"
+      ],
       "mentorEligible": true,
       "minutes": 15,
       "energy": "curious",
@@ -64,11 +139,31 @@
       "title": "Young Readers Newsroom",
       "description": "Curated, age-banded science and current-events doorway for young readers using youth-focused sources rather than an unrestricted breaking-news feed.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/kids_news_network_index.html",
-      "audiences": ["middle", "parent"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "science", "media-literacy"],
-      "skills": ["media-literacy", "source-awareness", "evidence-checking"],
-      "tags": ["young-readers", "curated", "science", "current-events"],
+      "audiences": [
+        "middle",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "science",
+        "media-literacy"
+      ],
+      "skills": [
+        "media-literacy",
+        "source-awareness",
+        "evidence-checking"
+      ],
+      "tags": [
+        "young-readers",
+        "curated",
+        "science",
+        "current-events"
+      ],
       "mentorEligible": true,
       "featured": true,
       "minutes": 15,
@@ -82,11 +177,30 @@
       "title": "Education News",
       "description": "Education-focused news discovery with locally stored favorites, alerts, and reading tools.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/education_news_index.html",
-      "audiences": ["middle", "high", "higher-learning", "adult", "parent"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "education"],
-      "skills": ["media-literacy"],
-      "tags": ["news", "education", "current-info"],
+      "audiences": [
+        "middle",
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "education"
+      ],
+      "skills": [
+        "media-literacy"
+      ],
+      "tags": [
+        "news",
+        "education",
+        "current-info"
+      ],
       "mentorEligible": true,
       "minutes": 15,
       "energy": "curious",
@@ -98,11 +212,30 @@
       "title": "EcoPulse News",
       "description": "Environment and climate current-information surface.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/EcoPulse_news_index.html",
-      "audiences": ["middle", "high", "higher-learning", "adult"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "environment"],
-      "skills": ["media-literacy", "environmental-literacy"],
-      "tags": ["news", "environment", "current-info"],
+      "audiences": [
+        "middle",
+        "high",
+        "higher-learning",
+        "adult"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "environment"
+      ],
+      "skills": [
+        "media-literacy",
+        "environmental-literacy"
+      ],
+      "tags": [
+        "news",
+        "environment",
+        "current-info"
+      ],
       "mentorEligible": true,
       "minutes": 15,
       "energy": "curious",
@@ -114,11 +247,31 @@
       "title": "Interactive Edition Explorer",
       "description": "Interactive exploration of locally archived Verifier daily editions with filters, comparison tools, and a transparent sensitive-content screening aid.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/interactive_news_index.html",
-      "audiences": ["high", "higher-learning", "adult", "parent"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "research"],
-      "skills": ["news-navigation", "media-literacy"],
-      "tags": ["news", "dashboard", "current-info", "local-first"],
+      "audiences": [
+        "high",
+        "higher-learning",
+        "adult",
+        "parent"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "research"
+      ],
+      "skills": [
+        "news-navigation",
+        "media-literacy"
+      ],
+      "tags": [
+        "news",
+        "dashboard",
+        "current-info",
+        "local-first"
+      ],
       "mentorEligible": true,
       "minutes": 20,
       "energy": "focused",
@@ -128,14 +281,36 @@
     },
     {
       "id": "live-research-news",
-      "title": "Live Research News",
-      "description": "Research-oriented current-information feed for source comparison and follow-up investigation.",
+      "title": "Daily News Briefing",
+      "description": "A source-aware daily briefing for science, health, environment, and global reporting with direct links to original publishers.",
       "url": "https://vervenveda.com/theverifier.github.io/apps/Live_Research_News_index.html",
-      "audiences": ["high", "higher-learning", "adult"],
-      "roles": ["student", "parent", "educator"],
-      "domains": ["news", "research"],
-      "skills": ["research", "source-comparison"],
-      "tags": ["news", "research", "current-info"],
+      "audiences": [
+        "high",
+        "higher-learning",
+        "adult"
+      ],
+      "roles": [
+        "student",
+        "parent",
+        "educator"
+      ],
+      "domains": [
+        "news",
+        "research"
+      ],
+      "skills": [
+        "research",
+        "source-comparison"
+      ],
+      "tags": [
+        "news",
+        "daily-briefing",
+        "science",
+        "health",
+        "environment",
+        "global",
+        "current-info"
+      ],
       "mentorEligible": true,
       "minutes": 20,
       "energy": "focused",
